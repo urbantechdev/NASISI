@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useERP } from '../../context/ERPContext';
 import { formatKsh } from '../../utils/currency';
 import { ERPPaymentMethod, ERPPaymentTransaction } from '../../types';
+import { motion } from 'motion/react';
 import {
   CreditCard,
   Phone,
@@ -100,8 +101,12 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
       {/* Top Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Collections */}
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+        <motion.div
+          whileHover={{ y: -4, scale: 1.02 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2 hover:border-blue-300 hover:shadow-md transition-all duration-300 group cursor-default"
+        >
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-blue-700 transition-colors">
             Total Collections (Ksh)
           </span>
           <span className="text-2xl font-black text-slate-900 font-['Outfit'] block">
@@ -110,10 +115,14 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
           <span className="text-[11px] text-slate-500">
             Across {transactions.length} verified transactions
           </span>
-        </div>
+        </motion.div>
 
         {/* M-Pesa Collections */}
-        <div className="bg-green-50/70 p-5 rounded-2xl border border-green-200 shadow-sm space-y-2">
+        <motion.div
+          whileHover={{ y: -4, scale: 1.02 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          className="bg-green-50/70 p-5 rounded-2xl border border-green-200 shadow-sm space-y-2 hover:border-green-300 hover:shadow-md transition-all duration-300 group cursor-default"
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-green-900">
               M-Pesa (Paybill & Till)
@@ -126,10 +135,14 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
           <span className="text-[11px] text-green-700">
             Paybill: {businessProfile.mpesaPaybillNumber} | Till: {businessProfile.mpesaTillNumber}
           </span>
-        </div>
+        </motion.div>
 
         {/* Bank Transfers */}
-        <div className="bg-blue-50/70 p-5 rounded-2xl border border-blue-200 shadow-sm space-y-2">
+        <motion.div
+          whileHover={{ y: -4, scale: 1.02 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          className="bg-blue-50/70 p-5 rounded-2xl border border-blue-200 shadow-sm space-y-2 hover:border-blue-300 hover:shadow-md transition-all duration-300 group cursor-default"
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-blue-900">
               Bank (EFT / RTGS)
@@ -142,10 +155,14 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
           <span className="text-[11px] text-blue-700">
             {businessProfile.bankName}
           </span>
-        </div>
+        </motion.div>
 
         {/* Cash Vouchers */}
-        <div className="bg-amber-50/70 p-5 rounded-2xl border border-amber-200 shadow-sm space-y-2">
+        <motion.div
+          whileHover={{ y: -4, scale: 1.02 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          className="bg-amber-50/70 p-5 rounded-2xl border border-amber-200 shadow-sm space-y-2 hover:border-amber-300 hover:shadow-md transition-all duration-300 group cursor-default"
+        >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-amber-900">
               Cash & Cheques
@@ -156,11 +173,17 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
             {formatKsh(cashTotal)}
           </span>
           <span className="text-[11px] text-amber-700">Cashier desk vouchers</span>
-        </div>
+        </motion.div>
       </div>
 
       {/* Interactive M-Pesa Reconciler Box */}
-      <div className="bg-gradient-to-r from-emerald-900 to-teal-950 text-white p-6 rounded-2xl shadow-xl space-y-4">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ scale: 1.005 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+        className="bg-gradient-to-r from-emerald-900 to-teal-950 text-white p-6 rounded-2xl shadow-xl space-y-4 border border-emerald-800/40"
+      >
         <div className="flex items-center gap-3">
           <div className="p-2 bg-emerald-500/20 text-emerald-300 rounded-xl border border-emerald-500/30">
             <Sparkles className="w-5 h-5" />
@@ -193,7 +216,7 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
               placeholder="e.g. RK49LXP92A"
               value={reconMpesaCode}
               onChange={(e) => setReconMpesaCode(e.target.value.toUpperCase())}
-              className="w-full p-2.5 bg-white/10 border border-emerald-500/40 rounded-xl text-white font-mono font-bold uppercase focus:ring-2 focus:ring-emerald-400 focus:outline-none placeholder:text-emerald-400/50"
+              className="w-full p-2.5 bg-white/10 border border-emerald-500/40 rounded-xl text-white font-mono font-bold uppercase focus:ring-2 focus:ring-emerald-400 focus:outline-none placeholder:text-emerald-400/50 transition-all"
             />
           </div>
 
@@ -205,7 +228,7 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
               value={reconInvoiceNo}
               onChange={(e) => setReconInvoiceNo(e.target.value)}
               required
-              className="w-full p-2.5 bg-white/10 border border-emerald-500/40 rounded-xl text-white font-mono font-bold focus:ring-2 focus:ring-emerald-400 focus:outline-none"
+              className="w-full p-2.5 bg-white/10 border border-emerald-500/40 rounded-xl text-white font-mono font-bold focus:ring-2 focus:ring-emerald-400 focus:outline-none cursor-pointer"
             >
               <option value="" className="text-slate-900">-- Select Unpaid Invoice --</option>
               {documents
@@ -228,7 +251,7 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
               placeholder="Amount in Ksh"
               value={reconAmount}
               onChange={(e) => setReconAmount(e.target.value)}
-              className="w-full p-2.5 bg-white/10 border border-emerald-500/40 rounded-xl text-white font-mono font-bold focus:ring-2 focus:ring-emerald-400 focus:outline-none placeholder:text-emerald-400/50"
+              className="w-full p-2.5 bg-white/10 border border-emerald-500/40 rounded-xl text-white font-mono font-bold focus:ring-2 focus:ring-emerald-400 focus:outline-none placeholder:text-emerald-400/50 transition-all"
             />
           </div>
 
@@ -241,24 +264,30 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
               placeholder="e.g. Margaret Owino"
               value={reconName}
               onChange={(e) => setReconName(e.target.value)}
-              className="w-full p-2.5 bg-white/10 border border-emerald-500/40 rounded-xl text-white focus:ring-2 focus:ring-emerald-400 focus:outline-none placeholder:text-emerald-400/50"
+              className="w-full p-2.5 bg-white/10 border border-emerald-500/40 rounded-xl text-white focus:ring-2 focus:ring-emerald-400 focus:outline-none placeholder:text-emerald-400/50 transition-all"
             />
           </div>
 
           <div className="flex items-end">
-            <button
+            <motion.button
               type="submit"
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               className="w-full p-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black rounded-xl shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <FileCheck className="w-4 h-4" />
               <span>Verify & Reconcile</span>
-            </button>
+            </motion.button>
           </div>
         </form>
-      </div>
+      </motion.div>
 
       {/* Transaction History & Filter Table */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-slate-300 transition-all duration-300"
+      >
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h3 className="text-base font-bold text-slate-900 font-['Outfit']">
@@ -269,13 +298,15 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
             </p>
           </div>
 
-          <button
+          <motion.button
+            whileHover={{ scale: 1.04, y: -1 }}
+            whileTap={{ scale: 0.96 }}
             onClick={onOpenRecordPayment}
-            className="px-4 py-2 bg-[#032345] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow transition-all inline-flex items-center gap-1.5"
+            className="px-4 py-2 bg-[#032345] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow transition-all inline-flex items-center gap-1.5 cursor-pointer group"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
             <span>+ Record Manual Payment</span>
-          </button>
+          </motion.button>
         </div>
 
         {/* Filter bar */}
@@ -287,7 +318,7 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
               placeholder="Search by Transaction ID, Customer, M-Pesa Code, or Invoice #..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
             />
           </div>
 
@@ -299,17 +330,19 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
               { id: 'bank_transfer', label: 'Bank Transfer' },
               { id: 'cash', label: 'Cash' },
             ].map((method) => (
-              <button
+              <motion.button
                 key={method.id}
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
                 onClick={() => setMethodFilter(method.id as any)}
-                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   methodFilter === method.id
                     ? 'bg-[#032345] text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
                 }`}
               >
                 {method.label}
-              </button>
+              </motion.button>
             ))}
           </div>
         </div>
@@ -337,15 +370,15 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
                 </tr>
               ) : (
                 filteredTransactions.map((txn) => (
-                  <tr key={txn.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-3 px-4 font-mono font-bold text-slate-900">
+                  <tr key={txn.id} className="hover:bg-blue-50/40 transition-colors group">
+                    <td className="py-3 px-4 font-mono font-bold text-slate-900 group-hover:text-blue-700 transition-colors">
                       {txn.transactionNumber}
                     </td>
 
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-1.5">
                         <span
-                          className={`font-black px-2 py-0.5 rounded text-[10px] uppercase ${
+                          className={`font-black px-2 py-0.5 rounded text-[10px] uppercase transition-transform group-hover:scale-105 ${
                             txn.method === 'mpesa'
                               ? 'bg-green-100 text-green-800'
                               : txn.method === 'bank_transfer'
@@ -374,7 +407,7 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
                     </td>
 
                     <td className="py-3 px-4">
-                      <span className="font-bold text-slate-900 block">{txn.customerName}</span>
+                      <span className="font-bold text-slate-900 block group-hover:text-blue-900 transition-colors">{txn.customerName}</span>
                       {txn.senderName && txn.senderName !== txn.customerName && (
                         <span className="text-[10px] text-slate-500 block">
                           Payer: {txn.senderName}
@@ -395,7 +428,7 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
                     </td>
 
                     <td className="py-3 px-4 text-center">
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 uppercase">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 uppercase transition-transform group-hover:scale-105">
                         <CheckCircle2 className="w-3 h-3" />
                         <span>Completed</span>
                       </span>
@@ -406,7 +439,8 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
             </tbody>
           </table>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
+

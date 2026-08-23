@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   ArrowRight,
+  Building2,
 } from 'lucide-react';
 import { QuoteItem } from '../types';
 
@@ -23,6 +24,7 @@ interface NavbarProps {
   onOpenQuoteModal: () => void;
   onOpenCustomizer: () => void;
   onOpenSizeGuide: () => void;
+  onOpenAdminERP?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -30,6 +32,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenQuoteModal,
   onOpenCustomizer,
   onOpenSizeGuide,
+  onOpenAdminERP,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -312,6 +315,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>Live Mockup</span>
             </button>
 
+            {/* Admin ERP Suite Portal Link */}
+            {onOpenAdminERP && (
+              <button
+                id="navbar-admin-erp-btn"
+                type="button"
+                onClick={onOpenAdminERP}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-emerald-200 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 rounded-lg transition-colors shadow-sm cursor-pointer"
+                title="Open Kenyan Enterprise ERP & Invoicing Suite (Ksh)"
+              >
+                <Building2 className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Admin ERP (Ksh)</span>
+              </button>
+            )}
+
             {/* Quote Request / Cart Button (Crisp White with Brand Blue Accent) */}
             <button
               id="navbar-quote-cart-btn"
@@ -466,6 +483,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <span>View Sizing & Fabric Chart</span>
               </button>
 
+              {onOpenAdminERP && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onOpenAdminERP();
+                  }}
+                  className="flex items-center justify-center gap-2 w-full py-2.5 text-xs font-bold text-emerald-300 bg-emerald-950/80 hover:bg-emerald-900 rounded-lg border border-emerald-500/40 shadow-sm cursor-pointer"
+                >
+                  <Building2 className="w-4 h-4 text-emerald-400" />
+                  <span>Admin ERP, Invoicing & M-Pesa Center (Ksh)</span>
+                </button>
+              )}
+
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
@@ -481,7 +512,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         )}
       </div>
 
-      {/* Wave Curve on the Bottom Edge with Visible White Border, White Glow & Motion */}
+      {/* Wave Curve on the Bottom Edge with Visible White Border, White Glow & Left-to-Right Smoke Motion */}
       <motion.div
         className="absolute top-full left-0 right-0 w-full overflow-hidden leading-none pointer-events-none -mt-[1px] filter drop-shadow-[0_6px_14px_rgba(255,255,255,0.65)]"
         animate={{
@@ -493,8 +524,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           ease: 'easeInOut',
         }}
       >
+        {/* Left-to-Right Flowing Ambient Smoke Effect along Header Bottom */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute top-0 -left-48 w-[400px] sm:w-[550px] h-10 bg-gradient-to-r from-transparent via-cyan-300/35 to-sky-200/30 rounded-full blur-xl animate-smoke-l2r-1" />
+          <div className="absolute top-1 -left-64 w-[500px] sm:w-[650px] h-12 bg-gradient-to-r from-transparent via-blue-400/25 to-indigo-300/20 rounded-full blur-2xl animate-smoke-l2r-2" />
+          <div className="absolute -top-1 -left-72 w-[450px] sm:w-[600px] h-11 bg-gradient-to-r from-transparent via-slate-950/25 to-blue-900/20 rounded-full blur-2xl animate-smoke-l2r-fast" />
+        </div>
+
         <svg
-          className="w-full h-6 sm:h-8 md:h-10 lg:h-12 block"
+          className="w-full h-6 sm:h-8 md:h-10 lg:h-12 block relative z-10"
           viewBox="0 0 1440 60"
           fill="none"
           preserveAspectRatio="none"

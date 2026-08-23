@@ -1,0 +1,278 @@
+import React, { useState } from 'react';
+import { useERP } from '../../context/ERPContext';
+import {
+  AdminERPSidebar,
+  ERPTabType,
+} from './AdminERPSidebar';
+import { AdminERPTopbar } from './AdminERPTopbar';
+import { AdminERPBottomNav } from './AdminERPBottomNav';
+import { ERPDashboardOverview } from './ERPDashboardOverview';
+import { ERPFinancialsBilling } from './ERPFinancialsBilling';
+import { ERPPaymentCenter } from './ERPPaymentCenter';
+import { ERPInventoryManager } from './ERPInventoryManager';
+import { ERPCustomerManager } from './ERPCustomerManager';
+import { ERPProductionTracker } from './ERPProductionTracker';
+import { ERPCompanySettings } from './ERPCompanySettings';
+import { ERPDocumentFormModal } from './ERPDocumentFormModal';
+import { ERPDocumentPrintModal } from './ERPDocumentPrintModal';
+import { ERPAddCustomerModal } from './ERPAddCustomerModal';
+import { ERPRecordPaymentModal } from './ERPRecordPaymentModal';
+import { ERPAddStockModal } from './ERPAddStockModal';
+import { ERPCustomer, ERPDocument, ERPDocumentType } from '../../types';
+
+interface AdminERPSuiteProps {
+  onSwitchToStorefront: () => void;
+}
+
+export const AdminERPSuite: React.FC<AdminERPSuiteProps> = ({
+  onSwitchToStorefront,
+}) => {
+  const { documents, customers, createDocument, updateDocument } = useERP();
+
+  const [activeTab, setActiveTab] = useState<ERPTabType>('overview');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Modals state
+  const [isDocFormOpen, setIsDocFormOpen] = useState(false);
+  const [docFormType, setDocFormType] = useState<ERPDocumentType>('invoice');
+  const [editingDoc, setEditingDoc] = useState<ERPDocument | null>(null);
+
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [viewingDoc, setViewingDoc] = useState<ERPDocument | null>(null);
+
+  const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
+  const [isRecordPaymentModalOpen, setIsRecordPaymentModalOpen] = useState(false);
+  const [isAddStockModalOpen, setIsAddStockModalOpen] = useState(false);
+
+  // Document actions
+  const handleOpenCreateDoc = (type: ERPDocumentType = 'invoice') => {
+    setEditingDoc(null);
+    setDocFormType(type);
+    setIsDocFormOpen(true);
+  };
+
+  const handleOpenEditDoc = (doc: ERPDocument) => {
+    setEditingDoc(doc);
+    setDocFormType(doc.type);
+    setIsDocFormOpen(true);
+  };
+
+  const handleViewDoc = (doc: ERPDocument) => {
+    setViewingDoc(doc);
+    setIsPrintModalOpen(true);
+  };
+
+  const handleCreateDocForCustomer = (
+    customer: ERPCustomer,
+    type: 'invoice' | 'quotation'
+  ) => {
+    setEditingDoc(null);
+    setDocFormType(type);
+    setIsDocFormOpen(true);
+  };
+
+  const handleSaveDocument = (
+    docData: Omit<ERPDocument, 'id' | 'createdAt' | 'updatedAt'>
+  ) => {
+    if (editingDoc) {
+      updateDocument(editingDoc.id, docData);
+      alert(`${docData.docNumber} updated successfully!`);
+    } else {
+      const created = createDocument(docData);
+      alert(`Created ${created.docNumber} successfully!`);
+    }
+    setIsDocFormOpen(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-100 flex flex-col font-['Plus_Jakarta_Sans',sans-serif]">
+      {/* 1. Full-Width Sticky/Fixed Top Header Bar */}
+      <AdminERPTopbar
+        activeTab={activeTab}
+        onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+        onOpenNewDocModal={handleOpenCreateDoc}
+        onOpenNewPaymentModal={() => setIsRecordPaymentModalOpen(true)}
+        onOpenNewInventoryModal={() => setIsAddStockModalOpen(true)}
+        onSwitchToStorefront={onSwitchToStorefront}
+      />
+
+      {/* 2. Persistent Left Sidebar (Stays directly below the full-width header) */}
+      <AdminERPSidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onOpenNewDocModal={handleOpenCreateDoc}
+        onOpenNewPaymentModal={() => setIsRecordPaymentModalOpen(true)}
+        onOpenNewInventoryModal={() => setIsAddStockModalOpen(true)}
+        onSwitchToStorefront={onSwitchToStorefront}
+        isOpenMobile={isMobileMenuOpen}
+        onCloseMobile={() => setIsMobileMenuOpen(false)}
+      />
+
+      {/* 3. Main Workspace Area (padded top for doubled header + wave, padded left for sidebar, padded bottom for 96px bottom action dock + wave) */}
+      <div className="flex-1 pt-[176px] sm:pt-[180px] pb-28 lg:pl-72 flex flex-col min-w-0 min-h-screen relative overflow-hidden">
+        {/* Ambient Deep Shadow Smoke Clouds Layer */}
+        <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden lg:left-72">
+          {/* Primary Midnight Shadow Smoke Cloud */}
+          <div className="absolute -top-24 left-1/4 w-[600px] h-[550px] bg-gradient-to-tr from-slate-900/12 via-blue-900/14 to-sky-500/8 rounded-full blur-3xl opacity-80 animate-smoke-1" />
+          
+          {/* Secondary Drifting Shadow Smoke Cloud */}
+          <div className="absolute top-1/3 -right-32 w-[700px] h-[650px] bg-gradient-to-bl from-slate-950/14 via-indigo-950/12 to-cyan-700/8 rounded-full blur-3xl opacity-75 animate-smoke-2" />
+          
+          {/* Deep Bottom Left Nebula Shadow Smoke Cloud */}
+          <div className="absolute bottom-10 left-10 w-[650px] h-[600px] bg-gradient-to-tr from-slate-900/15 via-blue-950/10 to-teal-800/8 rounded-full blur-3xl opacity-70 animate-smoke-3" />
+          
+          {/* Center Subtle Atmosphere Tint */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[850px] h-[850px] bg-radial from-blue-950/8 via-slate-900/5 to-transparent rounded-full blur-3xl" />
+        </div>
+
+        {/* Main ERP View Content */}
+        <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 relative z-10">
+          {activeTab === 'overview' && (
+            <ERPDashboardOverview
+              onNavigateTab={(tab) => setActiveTab(tab)}
+              onOpenNewDoc={handleOpenCreateDoc}
+              onOpenPaymentModal={() => setIsRecordPaymentModalOpen(true)}
+              onOpenInventoryModal={() => setIsAddStockModalOpen(true)}
+              onViewDoc={handleViewDoc}
+            />
+          )}
+
+          {activeTab === 'billing' && (
+            <ERPFinancialsBilling
+              onOpenCreateDoc={handleOpenCreateDoc}
+              onOpenEditDoc={handleOpenEditDoc}
+              onViewDoc={handleViewDoc}
+            />
+          )}
+
+          {activeTab === 'payments' && (
+            <ERPPaymentCenter
+              onOpenRecordPayment={() => setIsRecordPaymentModalOpen(true)}
+            />
+          )}
+
+          {activeTab === 'inventory' && (
+            <ERPInventoryManager
+              onOpenAddStockModal={() => setIsAddStockModalOpen(true)}
+            />
+          )}
+
+          {activeTab === 'customers' && (
+            <ERPCustomerManager
+              onOpenCreateDocForCustomer={handleCreateDocForCustomer}
+              onOpenAddCustomerModal={() => setIsAddCustomerModalOpen(true)}
+            />
+          )}
+
+          {activeTab === 'production' && <ERPProductionTracker />}
+
+          {activeTab === 'settings' && <ERPCompanySettings />}
+        </main>
+
+        {/* Footer Bar for Admin with Single Wave Curved Top Edge & Blue Smoke Aura */}
+        <footer className="relative bg-[#041429] text-slate-400 mt-auto pt-8 pb-6 text-xs select-none">
+          {/* Top Edge: Distinct Single Wave Curve with Vivid Blue Smoke Mist Aura */}
+          <div className="absolute bottom-full left-0 right-0 pointer-events-none overflow-visible z-10 -mb-[1px]">
+            {/* Layer 1: Ambient Glowing Blue & Dark Shadow Smoke / Mist Layer */}
+            <div className="absolute -bottom-3 inset-x-0 h-14 bg-gradient-to-r from-slate-950/25 via-blue-950/30 to-slate-950/25 blur-2xl opacity-90 pointer-events-none" />
+            <div className="absolute -bottom-1 inset-x-0 h-10 bg-gradient-to-r from-sky-400/25 via-blue-500/35 to-cyan-400/25 blur-xl opacity-90" />
+            <div className="absolute bottom-0 left-[15%] w-[35%] h-8 bg-gradient-to-r from-cyan-400/35 to-sky-300/40 rounded-full blur-lg opacity-90 animate-smoke-1" />
+            <div className="absolute bottom-2 right-[10%] w-[40%] h-9 bg-gradient-to-r from-blue-600/30 via-slate-900/30 to-indigo-500/25 rounded-full blur-xl opacity-85 animate-smoke-2" />
+            <div className="absolute bottom-1 left-[50%] w-[25%] h-7 bg-sky-400/35 rounded-full blur-md opacity-80 animate-smoke-3" />
+
+            {/* Layer 2: Pronounced Single Wave SVG Line with Blue Neon Stroke & Drop Shadow */}
+            <svg
+              viewBox="0 0 1440 56"
+              fill="none"
+              preserveAspectRatio="none"
+              className="w-full h-8 sm:h-11 block filter drop-shadow-[0_-6px_14px_rgba(14,165,233,0.5)] drop-shadow-[0_-2px_6px_rgba(37,99,235,0.65)]"
+            >
+              <defs>
+                <linearGradient id="adminFooterWaveGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.95" />
+                  <stop offset="25%" stopColor="#38bdf8" stopOpacity="1" />
+                  <stop offset="60%" stopColor="#2563eb" stopOpacity="1" />
+                  <stop offset="85%" stopColor="#0ea5e9" stopOpacity="0.95" />
+                  <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.9" />
+                </linearGradient>
+                <linearGradient id="adminFooterWaveFill" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="#041429" stopOpacity="1" />
+                  <stop offset="100%" stopColor="#041429" stopOpacity="1" />
+                </linearGradient>
+              </defs>
+              {/* Wave Body fill seamlessly joining the dark footer container */}
+              <path
+                d="M 0,16 C 400,56 1040,6 1440,44 L 1440,56 L 0,56 Z"
+                fill="url(#adminFooterWaveFill)"
+              />
+              {/* Glowing Single Wave Crest Line */}
+              <path
+                d="M 0,16 C 400,56 1040,6 1440,44"
+                stroke="url(#adminFooterWaveGrad)"
+                strokeWidth="3.5"
+                strokeLinecap="round"
+              />
+            </svg>
+          </div>
+
+          <div className="relative z-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-slate-300 font-medium">
+                NASISI Uniforms & Manufacturing Enterprise ERP • Kenya Tax Engine & M-Pesa Integration
+              </span>
+            </div>
+            <span className="font-mono text-slate-400 text-[11px] bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-700/60">
+              Standard 16% VAT • Kenya Shillings (Ksh) • Real-time KRA Reconciliation
+            </span>
+          </div>
+        </footer>
+      </div>
+
+      {/* 4. Admin Desktop Bottom Quick Actions Dock (Fast creation of KRA invoices, quotes, proformas, M-Pesa payments, stock, and clients) */}
+      <AdminERPBottomNav
+        onOpenNewDocModal={handleOpenCreateDoc}
+        onOpenNewPaymentModal={() => setIsRecordPaymentModalOpen(true)}
+        onOpenNewInventoryModal={() => setIsAddStockModalOpen(true)}
+        onOpenNewCustomerModal={() => setIsAddCustomerModalOpen(true)}
+      />
+
+      {/* Modals */}
+      {/* 1. Document Creation / Edit Form Modal */}
+      <ERPDocumentFormModal
+        isOpen={isDocFormOpen}
+        onClose={() => setIsDocFormOpen(false)}
+        onSave={handleSaveDocument}
+        editDocument={editingDoc}
+        initialType={docFormType}
+        customers={customers}
+      />
+
+      {/* 2. Official Printable Document Modal (KRA Tax Invoice, Receipt, DLN, Quote) */}
+      <ERPDocumentPrintModal
+        isOpen={isPrintModalOpen}
+        onClose={() => setIsPrintModalOpen(false)}
+        document={viewingDoc}
+      />
+
+      {/* 3. Add Customer Modal */}
+      <ERPAddCustomerModal
+        isOpen={isAddCustomerModalOpen}
+        onClose={() => setIsAddCustomerModalOpen(false)}
+      />
+
+      {/* 4. Record Payment Modal */}
+      <ERPRecordPaymentModal
+        isOpen={isRecordPaymentModalOpen}
+        onClose={() => setIsRecordPaymentModalOpen(false)}
+      />
+
+      {/* 5. Add Inventory SKU Modal */}
+      <ERPAddStockModal
+        isOpen={isAddStockModalOpen}
+        onClose={() => setIsAddStockModalOpen(false)}
+      />
+    </div>
+  );
+};
+

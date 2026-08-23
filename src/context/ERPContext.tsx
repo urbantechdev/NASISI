@@ -7,7 +7,9 @@ import {
   ERPInventoryItem,
   ERPPaymentTransaction,
   ERPProductionOrder,
+  UniformProduct,
 } from '../types';
+import { UNIFORM_PRODUCTS } from '../data/uniformsData';
 import {
   INITIAL_BUSINESS_PROFILE,
   INITIAL_CUSTOMERS,
@@ -25,6 +27,15 @@ interface ERPContextType {
   transactions: ERPPaymentTransaction[];
   inventory: ERPInventoryItem[];
   productionOrders: ERPProductionOrder[];
+  products: UniformProduct[];
+
+  // Platform Products / Storefront Catalog Operations
+  addProduct: (product: Omit<UniformProduct, 'id'> | UniformProduct) => UniformProduct;
+  updateProduct: (id: string, updates: Partial<UniformProduct>) => void;
+  deleteProduct: (id: string) => void;
+  togglePublishProduct: (id: string) => void;
+  duplicateProduct: (id: string) => UniformProduct;
+  syncAllProductsToInventory: () => void;
 
   // Document Operations
   createDocument: (doc: Omit<ERPDocument, 'id' | 'createdAt' | 'updatedAt'>) => ERPDocument;
@@ -66,9 +77,22 @@ const STORAGE_KEYS = {
   CUSTOMERS: 'nasisi_erp_customers_v2',
   DOCUMENTS: 'nasisi_erp_documents_v2',
   TRANSACTIONS: 'nasisi_erp_transactions_v2',
-  INVENTORY: 'nasisi_erp_inventory_v2',
+  INVENTORY: 'nasisi_erp_inventory_v3',
   PRODUCTION: 'nasisi_erp_production_v2',
+  PRODUCTS: 'nasisi_erp_products_v3',
 };
+
+// Generate initial products with inventory SKU and publishing defaults
+const INITIAL_SYNCHRONIZED_PRODUCTS: UniformProduct[] = UNIFORM_PRODUCTS.map((p, idx) => ({
+  ...p,
+  published: true,
+  sku: p.sku || `SKU-GAR-${p.category.substring(0, 3).toUpperCase()}-${String(idx + 101)}`,
+  stockOnHand: p.stockOnHand ?? (idx === 0 ? 145 : idx === 1 ? 220 : 60 + idx * 15),
+  stockReserved: p.stockReserved ?? (idx % 2 === 0 ? 30 : 15),
+  unitCost: p.unitCost ?? Math.round(p.basePrice * 0.58),
+  location: p.location || `Warehouse Rack ${String.fromCharCode(65 + (idx % 6))}-${(idx % 4) + 1}`,
+  supplier: p.supplier || 'Nasisi Internal Tailoring Unit',
+}));
 
 export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [businessProfile, setBusinessProfile] = useState<ERPBusinessProfile>(() => {
@@ -91,9 +115,68 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
   });
 
+  // Synchronized Products state
+  const [products, setProducts] = useState<UniformProduct[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // fallback
+    }
+    return INITIAL_SYNCHRONIZED_PRODUCTS;
+  });
+
+  // Inventory items with synced platform garments + raw materials
   const [inventory, setInventory] = useState<ERPInventoryItem[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.INVENTORY);
-    return saved ? JSON.parse(saved) : INITIAL_INVENTORY;
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.INVENTORY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // fallback
+    }
+
+    // Build unified initial inventory from INITIAL_INVENTORY + INITIAL_SYNCHRONIZED_PRODUCTS
+    const rawAndExisting = [...INITIAL_INVENTORY];
+    INITIAL_SYNCHRONIZED_PRODUCTS.forEach((prod) => {
+      const existing = rawAndExisting.find(
+        (i) => i.id === prod.id || i.sku === prod.sku || i.productId === prod.id
+      );
+      if (!existing) {
+        rawAndExisting.unshift({
+          id: `inv-${prod.id}`,
+          productId: prod.id,
+          sku: prod.sku || `SKU-${prod.id.toUpperCase()}`,
+          name: prod.name,
+          category: 'finished_garment',
+          categoryLabel: prod.categoryLabel || 'Finished Garment',
+          size: prod.sizes?.[0] || 'Standard',
+          color: prod.availableColors?.[0]?.name || 'Standard',
+          unit: 'pieces',
+          stockOnHand: prod.stockOnHand || 50,
+          stockReserved: prod.stockReserved || 10,
+          reorderLevel: 20,
+          unitCost: prod.unitCost || Math.round(prod.basePrice * 0.58),
+          sellingPrice: prod.basePrice,
+          location: prod.location || 'Warehouse Main Bay',
+          supplier: prod.supplier || 'Nasisi Internal Tailoring Unit',
+          lastRestockedDate: new Date().toISOString().split('T')[0],
+          status: 'in_stock',
+          published: prod.published !== false,
+        });
+      }
+    });
+
+    return rawAndExisting;
   });
 
   const [productionOrders, setProductionOrders] = useState<ERPProductionOrder[]>(() => {
@@ -119,6 +202,10 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [transactions]);
 
   useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+  }, [products]);
+
+  useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.INVENTORY, JSON.stringify(inventory));
   }, [inventory]);
 
@@ -126,8 +213,207 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem(STORAGE_KEYS.PRODUCTION, JSON.stringify(productionOrders));
   }, [productionOrders]);
 
+  // =========================================================================
+  // PLATFORM PRODUCT OPERATIONS (Live Storefront <-> Admin Inventory Sync)
+  // =========================================================================
+
+  const addProduct = (
+    productData: Omit<UniformProduct, 'id'> | UniformProduct
+  ): UniformProduct => {
+    const id = 'id' in productData && productData.id ? productData.id : `prod-${Date.now()}`;
+    const sku =
+      productData.sku ||
+      `SKU-GAR-${productData.category.substring(0, 3).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
+
+    const newProduct: UniformProduct = {
+      ...productData,
+      id,
+      sku,
+      published: productData.published !== false,
+      stockOnHand: productData.stockOnHand ?? 50,
+      stockReserved: productData.stockReserved ?? 0,
+      unitCost: productData.unitCost ?? Math.round(productData.basePrice * 0.58),
+      location: productData.location || 'Warehouse Bay A',
+      supplier: productData.supplier || 'Nasisi Internal Tailoring Unit',
+    };
+
+    // 1. Add to Products list
+    setProducts((prev) => [newProduct, ...prev]);
+
+    // 2. Synchronize to Inventory as a Finished Garment SKU
+    setInventory((prev) => {
+      const filtered = prev.filter((i) => i.productId !== id && i.id !== `inv-${id}` && i.sku !== sku);
+      const newInvItem: ERPInventoryItem = {
+        id: `inv-${id}`,
+        productId: id,
+        sku,
+        name: newProduct.name,
+        category: 'finished_garment',
+        categoryLabel: newProduct.categoryLabel || 'Finished Garment',
+        size: newProduct.sizes?.[0] || 'Standard',
+        color: newProduct.availableColors?.[0]?.name || 'Standard',
+        unit: 'pieces',
+        stockOnHand: newProduct.stockOnHand ?? 50,
+        stockReserved: newProduct.stockReserved ?? 0,
+        reorderLevel: 20,
+        unitCost: newProduct.unitCost ?? Math.round(newProduct.basePrice * 0.58),
+        sellingPrice: newProduct.basePrice,
+        location: newProduct.location || 'Warehouse Main Bay',
+        supplier: newProduct.supplier || 'Nasisi Internal Tailoring Unit',
+        lastRestockedDate: new Date().toISOString().split('T')[0],
+        status:
+          (newProduct.stockOnHand ?? 50) <= 0
+            ? 'out_of_stock'
+            : (newProduct.stockOnHand ?? 50) <= 20
+            ? 'low_stock'
+            : 'in_stock',
+        published: newProduct.published !== false,
+      };
+      return [newInvItem, ...filtered];
+    });
+
+    return newProduct;
+  };
+
+  const updateProduct = (id: string, updates: Partial<UniformProduct>) => {
+    setProducts((prev) =>
+      prev.map((p) => {
+        if (p.id === id) {
+          return { ...p, ...updates };
+        }
+        return p;
+      })
+    );
+
+    // Synchronize to Inventory
+    setInventory((prev) =>
+      prev.map((item) => {
+        if (
+          item.productId === id ||
+          item.id === `inv-${id}` ||
+          (item.sku && updates.sku && item.sku === updates.sku)
+        ) {
+          const newStock = updates.stockOnHand !== undefined ? updates.stockOnHand : item.stockOnHand;
+          const reorder = item.reorderLevel;
+          const status = newStock <= 0 ? 'out_of_stock' : newStock <= reorder ? 'low_stock' : 'in_stock';
+
+          return {
+            ...item,
+            name: updates.name ?? item.name,
+            sku: updates.sku ?? item.sku,
+            categoryLabel: updates.categoryLabel ?? item.categoryLabel,
+            sellingPrice: updates.basePrice ?? item.sellingPrice,
+            unitCost: updates.unitCost ?? item.unitCost,
+            stockOnHand: newStock,
+            stockReserved: updates.stockReserved !== undefined ? updates.stockReserved : item.stockReserved,
+            location: updates.location ?? item.location,
+            supplier: updates.supplier ?? item.supplier,
+            published: updates.published !== undefined ? updates.published : item.published,
+            status,
+          };
+        }
+        return item;
+      })
+    );
+  };
+
+  const deleteProduct = (id: string) => {
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+    // Also remove corresponding item from inventory
+    setInventory((prev) => prev.filter((item) => item.productId !== id && item.id !== `inv-${id}`));
+  };
+
+  const togglePublishProduct = (id: string) => {
+    let nextPublishedState = true;
+    setProducts((prev) =>
+      prev.map((p) => {
+        if (p.id === id) {
+          nextPublishedState = p.published === false ? true : false;
+          return { ...p, published: nextPublishedState };
+        }
+        return p;
+      })
+    );
+
+    setInventory((prev) =>
+      prev.map((item) => {
+        if (item.productId === id || item.id === `inv-${id}`) {
+          return { ...item, published: nextPublishedState };
+        }
+        return item;
+      })
+    );
+  };
+
+  const duplicateProduct = (id: string): UniformProduct => {
+    const original = products.find((p) => p.id === id);
+    if (!original) throw new Error('Product not found');
+
+    const newId = `prod-copy-${Date.now()}`;
+    const newSku = `SKU-GAR-${original.category.substring(0, 3).toUpperCase()}-${Math.floor(
+      100 + Math.random() * 900
+    )}`;
+
+    const cloned: UniformProduct = {
+      ...original,
+      id: newId,
+      name: `${original.name} (Copy)`,
+      sku: newSku,
+      published: false, // Start copies as draft
+      stockOnHand: original.stockOnHand || 40,
+    };
+
+    return addProduct(cloned);
+  };
+
+  const syncAllProductsToInventory = () => {
+    setInventory((prev) => {
+      const updated = [...prev];
+      products.forEach((prod) => {
+        const existingIdx = updated.findIndex(
+          (i) => i.productId === prod.id || i.id === `inv-${prod.id}` || i.sku === prod.sku
+        );
+        const itemPayload: ERPInventoryItem = {
+          id: existingIdx >= 0 ? updated[existingIdx].id : `inv-${prod.id}`,
+          productId: prod.id,
+          sku: prod.sku || `SKU-${prod.id.toUpperCase()}`,
+          name: prod.name,
+          category: 'finished_garment',
+          categoryLabel: prod.categoryLabel || 'Finished Garment',
+          size: prod.sizes?.[0] || 'Standard',
+          color: prod.availableColors?.[0]?.name || 'Standard',
+          unit: 'pieces',
+          stockOnHand: prod.stockOnHand ?? 50,
+          stockReserved: prod.stockReserved ?? 0,
+          reorderLevel: 20,
+          unitCost: prod.unitCost ?? Math.round(prod.basePrice * 0.58),
+          sellingPrice: prod.basePrice,
+          location: prod.location || 'Warehouse Main Bay',
+          supplier: prod.supplier || 'Nasisi Internal Tailoring Unit',
+          lastRestockedDate: new Date().toISOString().split('T')[0],
+          status:
+            (prod.stockOnHand ?? 50) <= 0
+              ? 'out_of_stock'
+              : (prod.stockOnHand ?? 50) <= 20
+              ? 'low_stock'
+              : 'in_stock',
+          published: prod.published !== false,
+        };
+
+        if (existingIdx >= 0) {
+          updated[existingIdx] = { ...updated[existingIdx], ...itemPayload };
+        } else {
+          updated.unshift(itemPayload);
+        }
+      });
+      return updated;
+    });
+  };
+
   // Document Operations
-  const createDocument = (docData: Omit<ERPDocument, 'id' | 'createdAt' | 'updatedAt'>): ERPDocument => {
+  const createDocument = (
+    docData: Omit<ERPDocument, 'id' | 'createdAt' | 'updatedAt'>
+  ): ERPDocument => {
     const newDoc: ERPDocument = {
       ...docData,
       id: `doc-${Date.now()}`,
@@ -158,15 +444,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const updateDocument = (id: string, updates: Partial<ERPDocument>) => {
     setDocuments((prev) =>
-      prev.map((doc) =>
-        doc.id === id
-          ? {
-              ...doc,
-              ...updates,
-              updatedAt: new Date().toISOString(),
-            }
-          : doc
-      )
+      prev.map((d) => (d.id === id ? { ...d, ...updates, updatedAt: new Date().toISOString() } : d))
     );
   };
 
@@ -179,25 +457,44 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!quote) return null;
 
     const invoiceNumber = `INV-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-    const today = new Date().toISOString().split('T')[0];
-    const dueDate = new Date(Date.now() + 30 * 86400000).toISOString().split('T')[0];
-
     const newInvoice: ERPDocument = {
       ...quote,
-      id: `doc-inv-${Date.now()}`,
-      type: 'invoice',
+      id: `doc-${Date.now()}`,
       docNumber: invoiceNumber,
-      title: quote.title.replace('Quotation', 'Tax Invoice'),
+      type: 'invoice',
+      title: quote.title.replace('Quotation', 'Tax Invoice').replace('Quote', 'Tax Invoice'),
       status: 'issued',
-      issueDate: today,
-      dueDate,
+      issueDate: new Date().toISOString().split('T')[0],
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      amountPaid: 0,
+      balanceDue: quote.totalAmount,
       relatedDocNumber: quote.docNumber,
+      notes: `Converted from Quotation ${quote.docNumber}. 16% VAT applicable.`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    setDocuments((prev) => [newInvoice, ...prev]);
-    updateDocument(quotationId, { status: 'issued' });
+    setDocuments((prev) => [
+      newInvoice,
+      ...prev.map((d) => (d.id === quotationId ? { ...d, status: 'issued' as const } : d)),
+    ]);
+
+    // Update customer stats
+    if (newInvoice.customerId) {
+      setCustomers((prev) =>
+        prev.map((c) =>
+          c.id === newInvoice.customerId
+            ? {
+                ...c,
+                totalOrdersCount: c.totalOrdersCount + 1,
+                totalSpendKsh: c.totalSpendKsh + newInvoice.totalAmount,
+                outstandingBalanceKsh: c.outstandingBalanceKsh + newInvoice.balanceDue,
+              }
+            : c
+        )
+      );
+    }
+
     return newInvoice;
   };
 
@@ -206,29 +503,28 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!invoice) return null;
 
     const dlnNumber = `DLN-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-    const today = new Date().toISOString().split('T')[0];
-
-    const newDln: ERPDocument = {
+    const newDLN: ERPDocument = {
       ...invoice,
-      id: `doc-dln-${Date.now()}`,
-      type: 'delivery_note',
+      id: `doc-${Date.now()}`,
       docNumber: dlnNumber,
+      type: 'delivery_note',
       title: `Dispatch Note for ${invoice.customerName}`,
       status: 'dispatched',
-      issueDate: today,
-      deliveryDate: today,
-      deliveryStatus: 'in_transit',
-      relatedDocNumber: invoice.docNumber,
-      vehicleRegistration: 'KBZ 849X',
-      driverName: 'Peter Ochieng',
+      issueDate: new Date().toISOString().split('T')[0],
+      deliveryDate: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      vehicleRegistration: 'KBZ 849X (Nasisi Logistics Van)',
+      driverName: 'Peter Ochieng (Senior Driver)',
       driverPhone: '+254 728 901 234',
       dispatchedBy: 'Samson Kimani (Dispatch Supervisor)',
+      deliveryStatus: 'in_transit',
+      relatedDocNumber: invoice.docNumber,
+      notes: `Official delivery acknowledgment for Invoice ${invoice.docNumber}. Goods inspected and packed.`,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    setDocuments((prev) => [newDln, ...prev]);
-    return newDln;
+    setDocuments((prev) => [newDLN, ...prev]);
+    return newDLN;
   };
 
   const createReceiptFromInvoice = (
@@ -241,23 +537,14 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!invoice) return null;
 
     const rctNumber = `RCT-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-    const today = new Date().toISOString().split('T')[0];
-
     const newReceipt: ERPDocument = {
-      id: `doc-rct-${Date.now()}`,
+      ...invoice,
+      id: `doc-${Date.now()}`,
       docNumber: rctNumber,
       type: 'receipt',
-      title: `Official Receipt for Payment on ${invoice.docNumber}`,
+      title: `Official Receipt - ${method.toUpperCase()} Payment`,
       status: 'paid',
-      issueDate: today,
-      customerId: invoice.customerId,
-      customerName: invoice.customerName,
-      contactPerson: invoice.contactPerson,
-      customerEmail: invoice.customerEmail,
-      customerPhone: invoice.customerPhone,
-      customerKraPin: invoice.customerKraPin,
-      customerAddress: invoice.customerAddress,
-      customerCity: invoice.customerCity,
+      issueDate: new Date().toISOString().split('T')[0],
       items: [
         {
           id: `li-rct-${Date.now()}`,
@@ -417,6 +704,16 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           } else {
             updated.status = 'in_stock';
           }
+
+          // If linked to product, sync selling price
+          if (it.productId && updates.sellingPrice) {
+            setProducts((prodList) =>
+              prodList.map((p) =>
+                p.id === it.productId ? { ...p, basePrice: updates.sellingPrice! } : p
+              )
+            );
+          }
+
           return updated;
         }
         return it;
@@ -431,11 +728,20 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const newStock = Math.max(0, it.stockOnHand + delta);
           const newStatus =
             newStock <= 0 ? 'out_of_stock' : newStock <= it.reorderLevel ? 'low_stock' : 'in_stock';
+
+          // If linked to a product, sync product stockOnHand
+          if (it.productId) {
+            setProducts((prodList) =>
+              prodList.map((p) => (p.id === it.productId ? { ...p, stockOnHand: newStock } : p))
+            );
+          }
+
           return {
             ...it,
             stockOnHand: newStock,
             status: newStatus,
-            lastRestockedDate: delta > 0 ? new Date().toISOString().split('T')[0] : it.lastRestockedDate,
+            lastRestockedDate:
+              delta > 0 ? new Date().toISOString().split('T')[0] : it.lastRestockedDate,
           };
         }
         return it;
@@ -496,12 +802,14 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCustomers(INITIAL_CUSTOMERS);
     setDocuments(INITIAL_DOCUMENTS);
     setTransactions(INITIAL_TRANSACTIONS);
+    setProducts(INITIAL_SYNCHRONIZED_PRODUCTS);
     setInventory(INITIAL_INVENTORY);
     setProductionOrders(INITIAL_PRODUCTION_ORDERS);
     localStorage.removeItem(STORAGE_KEYS.PROFILE);
     localStorage.removeItem(STORAGE_KEYS.CUSTOMERS);
     localStorage.removeItem(STORAGE_KEYS.DOCUMENTS);
     localStorage.removeItem(STORAGE_KEYS.TRANSACTIONS);
+    localStorage.removeItem(STORAGE_KEYS.PRODUCTS);
     localStorage.removeItem(STORAGE_KEYS.INVENTORY);
     localStorage.removeItem(STORAGE_KEYS.PRODUCTION);
   };
@@ -515,6 +823,13 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         transactions,
         inventory,
         productionOrders,
+        products,
+        addProduct,
+        updateProduct,
+        deleteProduct,
+        togglePublishProduct,
+        duplicateProduct,
+        syncAllProductsToInventory,
         createDocument,
         updateDocument,
         deleteDocument,

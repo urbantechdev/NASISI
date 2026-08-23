@@ -9,8 +9,21 @@ import { Footer } from './components/Footer';
 import { UniformModal } from './components/UniformModal';
 import { QuoteEstimatorModal } from './components/QuoteEstimatorModal';
 import { SizeAndFabricGuide } from './components/SizeAndFabricGuide';
+import { ERPProvider } from './context/ERPContext';
+import { AdminERPSuite } from './components/admin/AdminERPSuite';
 
 export default function App() {
+  // View mode: storefront (client catalog & mockup studio) vs erp (Kenyan Enterprise ERP & Invoicing Suite)
+  const [viewMode, setViewMode] = useState<'storefront' | 'erp'>(() => {
+    try {
+      const saved = localStorage.getItem('nasisi_view_mode');
+      if (saved === 'erp' || saved === 'storefront') return saved;
+    } catch {
+      // ignore
+    }
+    return 'storefront';
+  });
+
   // Cart state persisted to localStorage
   const [quoteItems, setQuoteItems] = useState<QuoteItem[]>(() => {
     try {
@@ -45,6 +58,14 @@ export default function App() {
 
   useEffect(() => {
     try {
+      localStorage.setItem('nasisi_view_mode', viewMode);
+    } catch {
+      // ignore
+    }
+  }, [viewMode]);
+
+  useEffect(() => {
+    try {
       localStorage.setItem('nasisi_quote_items', JSON.stringify(quoteItems));
     } catch {
       // ignore
@@ -70,58 +91,65 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 font-['Plus_Jakarta_Sans',sans-serif]">
-      {/* Header & Sticky Nav */}
-      <Navbar
-        quoteItems={quoteItems}
-        onOpenQuoteModal={() => setIsQuoteModalOpen(true)}
-        onOpenCustomizer={() => setIsCustomizerModalOpen(true)}
-        onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
-      />
+    <ERPProvider>
+      {viewMode === 'erp' ? (
+        <AdminERPSuite onSwitchToStorefront={() => setViewMode('storefront')} />
+      ) : (
+        <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 font-['Plus_Jakarta_Sans',sans-serif]">
+          {/* Header & Sticky Nav */}
+          <Navbar
+            quoteItems={quoteItems}
+            onOpenQuoteModal={() => setIsQuoteModalOpen(true)}
+            onOpenCustomizer={() => setIsCustomizerModalOpen(true)}
+            onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
+            onOpenAdminERP={() => setViewMode('erp')}
+          />
 
-      <main className="flex-1 pt-24 sm:pt-28 md:pt-32">
-        {/* Plain Hero Banner with no text or items */}
-        <Hero />
+          <main className="flex-1 pt-24 sm:pt-28 md:pt-32">
+            {/* Plain Hero Banner with no text or items */}
+            <Hero />
 
-        {/* Uniform Catalog */}
-        <UniformCatalog
-          onSelectProduct={(product) => setSelectedProductForModal(product)}
-          onOpenCustomizerWithProduct={handleOpenCustomizerWithProduct}
-        />
-      </main>
+            {/* Uniform Catalog */}
+            <UniformCatalog
+              onSelectProduct={(product) => setSelectedProductForModal(product)}
+              onOpenCustomizerWithProduct={handleOpenCustomizerWithProduct}
+            />
+          </main>
 
-      {/* Modern Footer */}
-      <Footer />
+          {/* Modern Footer */}
+          <Footer onOpenAdminERP={() => setViewMode('erp')} />
 
-      {/* Modals & Studios */}
-      <InteractiveCustomizer
-        isOpen={isCustomizerModalOpen}
-        onClose={() => setIsCustomizerModalOpen(false)}
-        onAddToCart={handleAddToCart}
-        preselectedProduct={customizerProduct}
-        preselectedColorHex={customizerColorHex}
-        onOpenQuoteModal={() => setIsQuoteModalOpen(true)}
-      />
+          {/* Modals & Studios */}
+          <InteractiveCustomizer
+            isOpen={isCustomizerModalOpen}
+            onClose={() => setIsCustomizerModalOpen(false)}
+            onAddToCart={handleAddToCart}
+            preselectedProduct={customizerProduct}
+            preselectedColorHex={customizerColorHex}
+            onOpenQuoteModal={() => setIsQuoteModalOpen(true)}
+          />
 
-      <UniformModal
-        product={selectedProductForModal}
-        onClose={() => setSelectedProductForModal(null)}
-        onAddToCart={handleAddToCart}
-        onOpenCustomizerWithProduct={handleOpenCustomizerWithProduct}
-      />
+          <UniformModal
+            product={selectedProductForModal}
+            onClose={() => setSelectedProductForModal(null)}
+            onAddToCart={handleAddToCart}
+            onOpenCustomizerWithProduct={handleOpenCustomizerWithProduct}
+          />
 
-      <QuoteEstimatorModal
-        isOpen={isQuoteModalOpen}
-        onClose={() => setIsQuoteModalOpen(false)}
-        quoteItems={quoteItems}
-        onRemoveItem={handleRemoveItem}
-        onClearCart={handleClearCart}
-      />
+          <QuoteEstimatorModal
+            isOpen={isQuoteModalOpen}
+            onClose={() => setIsQuoteModalOpen(false)}
+            quoteItems={quoteItems}
+            onRemoveItem={handleRemoveItem}
+            onClearCart={handleClearCart}
+          />
 
-      <SizeAndFabricGuide
-        isOpen={isSizeGuideOpen}
-        onClose={() => setIsSizeGuideOpen(false)}
-      />
-    </div>
+          <SizeAndFabricGuide
+            isOpen={isSizeGuideOpen}
+            onClose={() => setIsSizeGuideOpen(false)}
+          />
+        </div>
+      )}
+    </ERPProvider>
   );
 }

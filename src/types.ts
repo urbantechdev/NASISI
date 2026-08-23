@@ -34,6 +34,14 @@ export interface UniformProduct {
   image: string;
   badge?: string;
   popular?: boolean;
+  // Synced inventory and publishing fields
+  published?: boolean;
+  sku?: string;
+  stockOnHand?: number;
+  stockReserved?: number;
+  unitCost?: number;
+  supplier?: string;
+  location?: string;
 }
 
 export interface QuoteItem {
@@ -236,6 +244,8 @@ export interface ERPInventoryItem {
   supplier?: string;
   lastRestockedDate: string;
   status: 'in_stock' | 'low_stock' | 'out_of_stock';
+  productId?: string; // Links directly to platform UniformProduct
+  published?: boolean; // Reflects live status on customer storefront
 }
 
 export interface ERPCustomer {

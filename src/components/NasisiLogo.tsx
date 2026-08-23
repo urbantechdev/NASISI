@@ -2,7 +2,7 @@ import React from 'react';
 
 interface NasisiLogoProps {
   className?: string;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   variant?: 'full' | 'compact' | 'icon-only' | 'white';
   showTagline?: boolean;
 }
@@ -26,6 +26,8 @@ export const NasisiLogo: React.FC<NasisiLogoProps> = ({
         return { iconSize: 64, textSize: 'text-3xl', subSize: 'text-xs' };
       case 'xl':
         return { iconSize: 96, textSize: 'text-4xl', subSize: 'text-sm' };
+      case '2xl':
+        return { iconSize: 128, textSize: 'text-5xl', subSize: 'text-base' };
       case 'md':
       default:
         return { iconSize: 48, textSize: 'text-2xl', subSize: 'text-[10px]' };

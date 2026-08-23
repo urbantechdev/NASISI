@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { UNIFORM_PRODUCTS } from '../data/uniformsData';
+import { useERP } from '../context/ERPContext';
 import { UniformProduct, UniformCategory } from '../types';
 import {
   Search,
@@ -29,61 +29,67 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
   onSelectProduct,
   onOpenCustomizerWithProduct,
 }) => {
+  const { products } = useERP();
   const [selectedCategory, setSelectedCategory] = useState<UniformCategory>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Only show published products on storefront catalog
+  const liveProducts = useMemo(() => {
+    return products.filter((p) => p.published !== false);
+  }, [products]);
+
   const categories: { id: UniformCategory; label: string; count: number; icon: LucideIcon }[] = [
-    { id: 'all', label: 'All Garments', count: UNIFORM_PRODUCTS.length, icon: LayoutGrid },
+    { id: 'all', label: 'All Garments', count: liveProducts.length, icon: LayoutGrid },
     {
       id: 'school',
       label: 'School Uniforms',
-      count: UNIFORM_PRODUCTS.filter((p) => p.category === 'school').length,
+      count: liveProducts.filter((p) => p.category === 'school').length,
       icon: GraduationCap,
     },
     {
       id: 'healthcare',
       label: 'Healthcare & Scrubs',
-      count: UNIFORM_PRODUCTS.filter((p) => p.category === 'healthcare').length,
+      count: liveProducts.filter((p) => p.category === 'healthcare').length,
       icon: Stethoscope,
     },
     {
       id: 'hospitality',
       label: 'Hospitality & Culinary',
-      count: UNIFORM_PRODUCTS.filter((p) => p.category === 'hospitality').length,
+      count: liveProducts.filter((p) => p.category === 'hospitality').length,
       icon: ChefHat,
     },
     {
       id: 'service',
       label: 'Corporate & Service Polos',
-      count: UNIFORM_PRODUCTS.filter((p) => p.category === 'service').length,
+      count: liveProducts.filter((p) => p.category === 'service').length,
       icon: Briefcase,
     },
     {
       id: 'workwear',
       label: 'Workwear & Industrial',
-      count: UNIFORM_PRODUCTS.filter((p) => p.category === 'workwear').length,
+      count: liveProducts.filter((p) => p.category === 'workwear').length,
       icon: HardHat,
     },
     {
       id: 'knitwear',
       label: 'Custom Knitwear & Fleece',
-      count: UNIFORM_PRODUCTS.filter((p) => p.category === 'knitwear').length,
+      count: liveProducts.filter((p) => p.category === 'knitwear').length,
       icon: Scissors,
     },
   ];
 
   const filteredProducts = useMemo(() => {
-    return UNIFORM_PRODUCTS.filter((product) => {
+    return liveProducts.filter((product) => {
       const matchesCategory =
         selectedCategory === 'all' || product.category === selectedCategory;
       const matchesSearch =
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.fabric.composition.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.idealFor.some((item) => item.toLowerCase().includes(searchQuery.toLowerCase()));
+        (product.fabric?.composition || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.idealFor || []).some((item) => item.toLowerCase().includes(searchQuery.toLowerCase()));
       return matchesCategory && matchesSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [liveProducts, selectedCategory, searchQuery]);
 
   return (
     <section id="catalog" className="py-8 sm:py-12 bg-slate-50 border-b border-slate-200">

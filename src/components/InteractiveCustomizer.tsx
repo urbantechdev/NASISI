@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { UniformProduct, QuoteItem } from '../types';
-import { UNIFORM_PRODUCTS } from '../data/uniformsData';
+import { useERP } from '../context/ERPContext';
 import {
   Sparkles,
   SlidersHorizontal,
@@ -121,6 +121,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
   preselectedColorHex,
   onOpenQuoteModal,
 }) => {
+  const { products } = useERP();
   const [selectedGarment, setSelectedGarment] = useState(
     preselectedProduct
       ? GARMENT_OPTIONS.find((g) => g.productId === preselectedProduct.id) || GARMENT_OPTIONS[0]
@@ -213,7 +214,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
 
   const handleSendToCart = () => {
     const targetProduct =
-      UNIFORM_PRODUCTS.find((p) => p.id === selectedGarment.productId) || UNIFORM_PRODUCTS[0];
+      products.find((p) => p.id === selectedGarment.productId) || products[0];
 
     const newItem: QuoteItem = {
       id: `mockup-${Date.now()}`,
@@ -287,7 +288,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 md:p-8 animate-fadeIn"
+      className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 md:p-8 animate-fadeIn"
       role="dialog"
       aria-modal="true"
       aria-labelledby="mockup-modal-title"

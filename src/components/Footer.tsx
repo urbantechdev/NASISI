@@ -1,8 +1,12 @@
 import React from 'react';
 import { NasisiLogo } from './NasisiLogo';
-import { Phone, Mail, MapPin, MessageSquare, ArrowUp, Sparkles, ShieldCheck } from 'lucide-react';
+import { Phone, Mail, MapPin, MessageSquare, ArrowUp, Sparkles, ShieldCheck, Building2 } from 'lucide-react';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  onOpenAdminERP?: () => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ onOpenAdminERP }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -125,7 +129,16 @@ export const Footer: React.FC = () => {
         {/* Bottom bar */}
         <div className="mt-12 pt-6 border-t border-slate-300/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <p>© {new Date().getFullYear()} NASISI Knitwear and Graphics. All rights reserved.</p>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 flex-wrap">
+            {onOpenAdminERP && (
+              <button
+                onClick={onOpenAdminERP}
+                className="text-emerald-800 hover:text-emerald-950 font-bold flex items-center gap-1 bg-emerald-100 hover:bg-emerald-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                <span>Admin ERP Portal (Ksh)</span>
+              </button>
+            )}
             <a
               href="https://urbantechdev.com"
               target="_blank"

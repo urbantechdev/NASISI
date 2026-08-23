@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useERP } from '../../context/ERPContext';
 import { formatKsh } from '../../utils/currency';
+import { motion } from 'motion/react';
 import {
   ERPDocument,
   ERPDocumentStatus,
@@ -111,7 +112,11 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
   return (
     <div className="space-y-6">
       {/* Header & Filter Tabs */}
-      <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 hover:border-slate-300 transition-all duration-300"
+      >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h2 className="text-xl font-bold text-slate-900 font-['Outfit',sans-serif]">
@@ -123,41 +128,51 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
           </div>
 
           <div className="flex items-center gap-2 flex-wrap">
-            <button
+            <motion.button
+              whileHover={{ scale: 1.04, y: -1 }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => onOpenCreateDoc('invoice')}
-              className="px-3.5 py-2 bg-[#032345] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow transition-all inline-flex items-center gap-1.5"
+              className="px-3.5 py-2 bg-[#032345] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow transition-all inline-flex items-center gap-1.5 cursor-pointer group"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
               <span>+ Tax Invoice</span>
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.04, y: -1 }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => onOpenCreateDoc('quotation')}
-              className="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-[#032345] font-bold text-xs rounded-xl border border-blue-200 transition-all inline-flex items-center gap-1"
+              className="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-[#032345] font-bold text-xs rounded-xl border border-blue-200 transition-all inline-flex items-center gap-1 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>+ Quotation</span>
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.04, y: -1 }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => onOpenCreateDoc('proforma')}
-              className="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-[#032345] font-bold text-xs rounded-xl border border-blue-200 transition-all inline-flex items-center gap-1"
+              className="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-[#032345] font-bold text-xs rounded-xl border border-blue-200 transition-all inline-flex items-center gap-1 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>+ Proforma</span>
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.04, y: -1 }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => onOpenCreateDoc('receipt')}
-              className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs rounded-xl border border-emerald-200 transition-all inline-flex items-center gap-1"
+              className="px-3 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs rounded-xl border border-emerald-200 transition-all inline-flex items-center gap-1 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>+ Receipt</span>
-            </button>
-            <button
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.04, y: -1 }}
+              whileTap={{ scale: 0.96 }}
               onClick={() => onOpenCreateDoc('delivery_note')}
-              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl border border-slate-300 transition-all inline-flex items-center gap-1"
+              className="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs rounded-xl border border-slate-300 transition-all inline-flex items-center gap-1 cursor-pointer"
             >
               <Truck className="w-3.5 h-3.5" />
               <span>+ Delivery Note</span>
-            </button>
+            </motion.button>
           </div>
         </div>
 
@@ -171,17 +186,19 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
             { id: 'receipt', label: `Receipts (${documents.filter((d) => d.type === 'receipt').length})` },
             { id: 'delivery_note', label: `Delivery Notes (${documents.filter((d) => d.type === 'delivery_note').length})` },
           ].map((tab) => (
-            <button
+            <motion.button
               key={tab.id}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
               onClick={() => setTypeFilter(tab.id as any)}
-              className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all ${
+              className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
                 typeFilter === tab.id
                   ? 'bg-[#032345] text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
               }`}
             >
               {tab.label}
-            </button>
+            </motion.button>
           ))}
         </div>
 
@@ -194,7 +211,7 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
               placeholder="Search by Document Number, Customer Name, KRA PIN or M-Pesa Code..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
             />
           </div>
 
@@ -203,7 +220,7 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="p-2 border border-slate-300 rounded-xl text-xs bg-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              className="p-2 border border-slate-300 rounded-xl text-xs bg-white font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none cursor-pointer"
             >
               <option value="all">All Lifecycle Statuses</option>
               <option value="draft">Draft</option>
@@ -215,10 +232,14 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
             </select>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       {/* Documents Table */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hover:border-slate-300 transition-all duration-300"
+      >
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs border-collapse">
             <thead>
@@ -242,9 +263,9 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
                 </tr>
               ) : (
                 filteredDocuments.map((doc) => (
-                  <tr key={doc.id} className="hover:bg-slate-50 transition-colors">
+                  <tr key={doc.id} className="hover:bg-blue-50/40 transition-colors group">
                     <td className="py-3.5 px-4">
-                      <span className="font-mono font-bold text-slate-900 text-xs block">
+                      <span className="font-mono font-bold text-slate-900 text-xs block group-hover:text-blue-700 transition-colors">
                         {doc.docNumber}
                       </span>
                       <span className="text-[10px] uppercase font-bold text-slate-400">
@@ -258,7 +279,7 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
                     </td>
 
                     <td className="py-3.5 px-4">
-                      <span className="font-bold text-slate-900 text-xs block">
+                      <span className="font-bold text-slate-900 text-xs block group-hover:text-blue-900 transition-colors">
                         {doc.customerName}
                       </span>
                       <span className="text-[11px] text-slate-500 block truncate max-w-xs">
@@ -294,7 +315,7 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
 
                     <td className="py-3.5 px-3 text-center">
                       <span
-                        className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase ${
+                        className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-bold uppercase transition-transform group-hover:scale-105 ${
                           doc.status === 'paid'
                             ? 'bg-emerald-100 text-emerald-800'
                             : doc.status === 'partially_paid'
@@ -315,72 +336,84 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-1.5">
                         {/* Print / View Button */}
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.08 }}
+                          whileTap={{ scale: 0.95 }}
                           onClick={() => onViewDoc(doc)}
-                          className="p-1.5 bg-blue-50 hover:bg-blue-100 text-[#032345] rounded-lg transition-colors inline-flex items-center gap-1 font-bold text-[11px]"
+                          className="p-1.5 bg-blue-50 hover:bg-blue-100 text-[#032345] rounded-lg transition-colors inline-flex items-center gap-1 font-bold text-[11px] cursor-pointer shadow-2xs"
                           title="Print / View Official Document Sheet"
                         >
                           <Printer className="w-3.5 h-3.5" />
                           <span className="hidden sm:inline">Print</span>
-                        </button>
+                        </motion.button>
 
                         {/* Convert Quotation to Invoice */}
                         {doc.type === 'quotation' && (
-                          <button
+                          <motion.button
+                            whileHover={{ scale: 1.08 }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={() => handleConvertQuote(doc)}
-                            className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg transition-colors inline-flex items-center gap-1 font-bold text-[11px]"
+                            className="p-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg transition-colors inline-flex items-center gap-1 font-bold text-[11px] cursor-pointer shadow-2xs"
                             title="Convert to Tax Invoice"
                           >
-                            <Sparkles className="w-3.5 h-3.5" />
+                            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
                             <span className="hidden sm:inline">To Invoice</span>
-                          </button>
+                          </motion.button>
                         )}
 
                         {/* Create Delivery Note from Invoice */}
                         {doc.type === 'invoice' && (
-                          <button
+                          <motion.button
+                            whileHover={{ scale: 1.08 }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={() => handleCreateDeliveryNote(doc)}
-                            className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg transition-colors inline-flex items-center gap-1 font-bold text-[11px]"
+                            className="p-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg transition-colors inline-flex items-center gap-1 font-bold text-[11px] cursor-pointer shadow-2xs"
                             title="Create Delivery Note"
                           >
-                            <Truck className="w-3.5 h-3.5" />
+                            <Truck className="w-3.5 h-3.5 text-slate-700" />
                             <span className="hidden sm:inline">Dispatch</span>
-                          </button>
+                          </motion.button>
                         )}
 
                         {/* Settle / Receipt Button */}
                         {doc.type === 'invoice' && doc.balanceDue > 0 && (
-                          <button
+                          <motion.button
+                            whileHover={{ scale: 1.08 }}
+                            whileTap={{ scale: 0.95 }}
                             onClick={() => handleQuickReceivePayment(doc)}
-                            className="p-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg transition-colors inline-flex items-center gap-1 font-bold text-[11px]"
+                            className="p-1.5 bg-emerald-700 hover:bg-emerald-600 text-white rounded-lg transition-colors inline-flex items-center gap-1 font-bold text-[11px] cursor-pointer shadow-2xs"
                             title="Record Payment & Generate Official Receipt"
                           >
                             <DollarSign className="w-3.5 h-3.5" />
                             <span className="hidden sm:inline">Pay</span>
-                          </button>
+                          </motion.button>
                         )}
 
                         {/* Edit Button */}
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
                           onClick={() => onOpenEditDoc(doc)}
-                          className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors"
+                          className="p-1.5 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer"
                           title="Edit Document"
                         >
                           <Edit2 className="w-3.5 h-3.5" />
-                        </button>
+                        </motion.button>
 
                         {/* Delete Button */}
-                        <button
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
                           onClick={() => {
                             if (confirm(`Delete ${doc.docNumber}?`)) {
                               deleteDocument(doc.id);
                             }
                           }}
-                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
                           title="Delete Document"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        </motion.button>
                       </div>
                     </td>
                   </tr>
@@ -389,7 +422,7 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
             </tbody>
           </table>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };
