@@ -28,8 +28,8 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdminERP }) => {
         </svg>
       </div>
 
-      {/* Brand motto top strip */}
-      <div className="bg-[#032345] py-6 px-4">
+      {/* Brand motto top strip - hidden on mobile */}
+      <div className="hidden sm:block bg-[#032345] py-6 px-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <div>
             <span className="text-xs uppercase font-bold tracking-widest text-blue-200 block">
@@ -48,22 +48,28 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdminERP }) => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-9">
+        {/* On Mobile: Only show Logo and Title. On Desktop/Tablet: Show full 5-column grid */}
+        <div className="sm:hidden flex flex-col items-center justify-center text-center space-y-1.5 pb-2">
+          <NasisiLogo size="lg" variant="full" />
+        </div>
+
+        {/* Desktop / Tablet Grid (Hidden on Mobile) */}
+        <div className="hidden sm:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-10">
           
           {/* Col 1 & 2: Brand Info */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-2.5">
             <NasisiLogo size="lg" variant="full" />
-            <p className="text-xs text-slate-600 leading-relaxed max-w-sm pt-2">
+            <p className="text-xs text-slate-600 leading-relaxed max-w-sm pt-1">
               Premier manufacturer and supplier of academic school uniforms, healthcare scrubs, hospitality wear, high-vis industrial gear, and bespoke computerized embroidery for local organizations.
             </p>
-            <div className="flex items-center gap-3 pt-2 text-xs text-slate-700">
-              <span className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-slate-300 shadow-sm">
-                <ShieldCheck className="w-4 h-4 text-[#032345]" />
+            <div className="flex items-center gap-2.5 pt-1 text-xs text-slate-700">
+              <span className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-slate-300 shadow-sm">
+                <ShieldCheck className="w-3.5 h-3.5 text-[#032345]" />
                 <span>Anti-Pill Tested</span>
               </span>
-              <span className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-slate-300 shadow-sm">
-                <Sparkles className="w-4 h-4 text-[#032345]" />
+              <span className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-lg border border-slate-300 shadow-sm">
+                <Sparkles className="w-3.5 h-3.5 text-[#032345]" />
                 <span>Pantone Matched</span>
               </span>
             </div>
@@ -99,57 +105,65 @@ export const Footer: React.FC<FooterProps> = ({ onOpenAdminERP }) => {
             </ul>
           </div>
 
-          {/* Col 5: Quick Contact */}
-          <div className="space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-[#032345]">
-              Factory Desk
-            </h4>
-            <div className="space-y-2.5 text-xs text-slate-600 font-medium">
-              <p className="flex items-center gap-2">
-                <Phone className="w-3.5 h-3.5 text-[#032345]" />
-                <span>+254 (0) 722 000 111</span>
-              </p>
-              <p className="flex items-center gap-2">
-                <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
-                <span>WhatsApp Active 24/7</span>
-              </p>
-              <p className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-[#032345]" />
-                <span>orders@nasisiuniforms.com</span>
-              </p>
-              <p className="flex items-start gap-2 pt-1">
-                <MapPin className="w-3.5 h-3.5 text-[#032345] flex-shrink-0 mt-0.5" />
-                <span>Industrial Area Workshop, Unit 4B</span>
-              </p>
+            {/* Col 5: Quick Contact */}
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-[#032345]">
+                Factory Desk
+              </h4>
+              <div className="space-y-2.5 text-xs text-slate-600 font-medium">
+                <p className="flex items-center gap-2">
+                  <Phone className="w-3.5 h-3.5 text-[#032345]" />
+                  <a href="tel:0728102929" className="hover:text-[#032345] transition-colors">0728102929 (+254 728 102 929)</a>
+                </p>
+                <p className="flex items-center gap-2">
+                  <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+                  <a
+                    href="https://wa.me/254728102929?text=Hello%20NASISI%20Uniforms%2C%20I%20would%20like%20to%20inquire%20about%20uniform%20orders."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-700 hover:text-emerald-900 font-semibold transition-colors"
+                  >
+                    WhatsApp (0728102929)
+                  </a>
+                </p>
+                <p className="flex items-center gap-2">
+                  <Mail className="w-3.5 h-3.5 text-[#032345]" />
+                  <span>orders@nasisiuniforms.com</span>
+                </p>
+                <p className="flex items-start gap-2 pt-1">
+                  <MapPin className="w-3.5 h-3.5 text-[#032345] flex-shrink-0 mt-0.5" />
+                  <span>Industrial Area Workshop, Unit 4B</span>
+                </p>
+              </div>
             </div>
-          </div>
 
         </div>
 
-        {/* Bottom bar */}
-        <div className="mt-12 pt-6 border-t border-slate-300/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+        {/* Bottom All Rights Reserved and Powered By bar */}
+        <div className="mt-2.5 sm:mt-6 pt-3 sm:pt-4 border-t border-slate-300/80 flex flex-col sm:flex-row items-center justify-between gap-2.5 sm:gap-4 text-xs text-slate-500 text-center sm:text-left">
           <p>© {new Date().getFullYear()} NASISI Knitwear and Graphics. All rights reserved.</p>
-          <div className="flex items-center gap-4 flex-wrap">
+          
+          <div className="flex items-center gap-3 sm:gap-4 flex-wrap justify-center sm:justify-end">
+            <a
+              href="https://urbantechdev.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-600 hover:text-[#032345] font-semibold transition-colors hover:underline"
+            >
+              Powered by Urbantechdev
+            </a>
             {onOpenAdminERP && (
               <button
                 onClick={onOpenAdminERP}
-                className="text-emerald-800 hover:text-emerald-950 font-bold flex items-center gap-1 bg-emerald-100 hover:bg-emerald-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                className="hidden sm:inline-flex text-emerald-800 hover:text-emerald-950 font-bold items-center gap-1 bg-emerald-100 hover:bg-emerald-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
               >
                 <Building2 className="w-3.5 h-3.5" />
                 <span>Admin ERP Portal (Ksh)</span>
               </button>
             )}
-            <a
-              href="https://urbantechdev.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-slate-600 hover:text-[#032345] font-medium transition-colors hover:underline"
-            >
-              Powered by Urbantechdev
-            </a>
             <button
               onClick={scrollToTop}
-              className="p-2 rounded-lg bg-white hover:bg-slate-200 text-[#032345] border border-slate-300 shadow-sm transition-colors"
+              className="hidden sm:inline-flex p-2 rounded-lg bg-white hover:bg-slate-200 text-[#032345] border border-slate-300 shadow-sm transition-colors"
               title="Back to Top"
             >
               <ArrowUp className="w-4 h-4" />

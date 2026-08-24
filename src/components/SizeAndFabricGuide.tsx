@@ -7,8 +7,6 @@ interface SizeAndFabricGuideProps {
 }
 
 export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, onClose }) => {
-  if (!isOpen) return null;
-
   const [activeTab, setActiveTab] = useState<'sizes' | 'fabrics' | 'care'>('sizes');
   const [sizeCategory, setSizeCategory] = useState<'school_junior' | 'adult'>('school_junior');
 
@@ -31,30 +29,32 @@ export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, 
     { size: '4XL / 5XL (Custom)', chest: '55"+', waist: '48"+', neck: '20.5"+', length: '34"' },
   ];
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
+    <div className="fixed inset-0 z-[100] bg-slate-900/75 backdrop-blur-md flex items-center justify-center p-0 sm:p-6 overflow-hidden sm:overflow-y-auto animate-fadeIn">
       <div
-        className="relative bg-white rounded-3xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden"
+        className="relative bg-white w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-3xl sm:rounded-3xl flex flex-col shadow-2xl border-0 sm:border sm:border-slate-200 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white sticky top-0 z-20">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#032345] flex items-center justify-center font-bold">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 bg-white sticky top-0 z-20 shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0 pr-2">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#032345] flex items-center justify-center font-bold shrink-0">
               <Ruler className="w-4 h-4" />
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 font-['Outfit',sans-serif]">
+            <div className="min-w-0">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 font-['Outfit',sans-serif] truncate">
                 Size Chart & Technical Fabric Guide
               </h3>
-              <span className="text-xs text-slate-500">
-                Official specifications for NASISI uniform tailoring & knitwear
+              <span className="text-[11px] sm:text-xs text-slate-500 truncate block">
+                Official specifications for NASISI uniform tailoring
               </span>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            className="p-2 sm:p-1.5 rounded-xl sm:rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors shrink-0"
           >
             <X className="w-5 h-5" />
           </button>

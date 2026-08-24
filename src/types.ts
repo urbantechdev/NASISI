@@ -282,6 +282,32 @@ export interface ERPProductionOrder {
   notes?: string;
 }
 
+export interface ERPInquiryTicket {
+  id: string;
+  ticketNumber: string; // e.g. "INQ-2026-0042"
+  title: string;
+  customerName: string;
+  organizationName?: string;
+  phone: string; // "0728102929" or client phone
+  email?: string;
+  productName: string;
+  category: string;
+  quantity: number;
+  selectedColor?: string;
+  brandingType?: string;
+  logoPlacement?: string[];
+  unitPrice: number;
+  estimatedTotalKsh: number;
+  status: 'new' | 'contacted' | 'quoted' | 'converted_invoice' | 'closed';
+  priority: 'urgent' | 'high' | 'normal';
+  source: 'storefront_quote_request' | 'mockup_studio' | 'quick_inquiry' | 'direct_submission';
+  notes?: string;
+  items?: QuoteItem[];
+  whatsappUrl: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface ERPBusinessProfile {
   companyName: string;
   tagline: string;
@@ -291,6 +317,7 @@ export interface ERPBusinessProfile {
   email: string;
   phone: string;
   altPhone: string;
+  whatsappNumber: string;
   physicalAddress: string;
   city: string;
   country: string;

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useERP } from '../../context/ERPContext';
 import { formatKsh } from '../../utils/currency';
 import { motion } from 'motion/react';
@@ -19,8 +19,12 @@ import {
   Eye,
   Printer,
   Sparkles,
+  MessageSquare,
+  ExternalLink,
+  FileSpreadsheet,
+  Zap,
 } from 'lucide-react';
-import { ERPDocument, ERPPaymentTransaction } from '../../types';
+import { ERPDocument, ERPPaymentTransaction, ERPInquiryTicket } from '../../types';
 
 interface ERPDashboardOverviewProps {
   onNavigateTab: (tab: any) => void;
@@ -37,7 +41,27 @@ export const ERPDashboardOverview: React.FC<ERPDashboardOverviewProps> = ({
   onOpenInventoryModal,
   onViewDoc,
 }) => {
-  const { documents, transactions, inventory, customers, productionOrders, businessProfile } = useERP();
+  const {
+    documents,
+    transactions,
+    inventory,
+    customers,
+    productionOrders,
+    businessProfile,
+    inquiryTickets,
+    updateInquiryTicket,
+    convertTicketToInvoice,
+    convertTicketToQuotation,
+  } = useERP();
+
+  const [ticketFilter, setTicketFilter] = useState<'all' | 'new' | 'contacted' | 'quoted'>('all');
+
+  const filteredTickets = inquiryTickets.filter((t) => {
+    if (ticketFilter === 'all') return true;
+    return t.status === ticketFilter;
+  });
+
+  const newTicketCount = inquiryTickets.filter((t) => t.status === 'new').length;
 
   // Metrics
   const totalInvoiced = documents
@@ -213,6 +237,199 @@ export const ERPDashboardOverview: React.FC<ERPDashboardOverviewProps> = ({
           </div>
         </motion.div>
       </div>
+
+      {/* Live Inquiry Tickets & Instant WhatsApp Leads Command Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-white rounded-3xl border border-slate-200 shadow-md p-6 space-y-5"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white flex items-center justify-center shadow-md shrink-0">
+              <Zap className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-lg font-bold text-slate-900 font-['Outfit']">
+                  Instant Storefront Inquiries & WhatsApp Leads
+                </h3>
+                {newTicketCount > 0 && (
+                  <span className="px-2.5 py-0.5 bg-emerald-100 text-emerald-800 text-[11px] font-black rounded-full uppercase tracking-wider animate-pulse border border-emerald-300">
+                    {newTicketCount} New Requests
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500">
+                Live tickets raised automatically when clients request quotes or design in the Mockup Studio. Platform Hotline: <strong className="text-emerald-700 font-mono">0728102929</strong>.
+              </p>
+            </div>
+          </div>
+
+          {/* Filter Pills */}
+          <div className="flex items-center gap-1.5 self-start sm:self-auto bg-slate-100 p-1 rounded-xl">
+            {(['all', 'new', 'contacted', 'quoted'] as const).map((f) => (
+              <button
+                key={f}
+                type="button"
+                onClick={() => setTicketFilter(f)}
+                className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer capitalize ${
+                  ticketFilter === f
+                    ? 'bg-white text-[#032345] shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tickets Table / List */}
+        {filteredTickets.length === 0 ? (
+          <div className="py-8 text-center text-xs text-slate-400">
+            No inquiry tickets matching current filter.
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-200 font-bold">
+                  <th className="pb-3 px-2">Ticket #</th>
+                  <th className="pb-3 px-2">Client / Phone</th>
+                  <th className="pb-3 px-2">Product & Specs</th>
+                  <th className="pb-3 px-2 text-right">Est. Total</th>
+                  <th className="pb-3 px-2 text-center">Status</th>
+                  <th className="pb-3 px-2 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {filteredTickets.map((ticket) => (
+                  <tr key={ticket.id} className="hover:bg-slate-50 transition-colors group">
+                    <td className="py-3.5 px-2">
+                      <span className="font-mono font-bold text-[#032345] block">
+                        #{ticket.ticketNumber}
+                      </span>
+                      <span className="text-[10px] text-slate-400 block font-mono">
+                        {ticket.createdAt.substring(0, 16)}
+                      </span>
+                    </td>
+
+                    <td className="py-3.5 px-2">
+                      <span className="font-bold text-slate-900 block">
+                        {ticket.customerName || 'Storefront Visitor'}
+                      </span>
+                      <span className="text-[11px] text-slate-500 font-mono flex items-center gap-1">
+                        <Phone className="w-3 h-3 text-slate-400" />
+                        {ticket.phone || '0728102929'}
+                      </span>
+                    </td>
+
+                    <td className="py-3.5 px-2">
+                      <span className="font-semibold text-slate-900 block">
+                        {ticket.productName}
+                      </span>
+                      <span className="text-[11px] text-slate-500 block">
+                        Qty: <strong>{ticket.quantity} pcs</strong> • {ticket.brandingType?.toUpperCase()}
+                        {ticket.selectedColor && ` • ${ticket.selectedColor}`}
+                      </span>
+                      {ticket.notes && (
+                        <span className="text-[10px] text-slate-400 italic block line-clamp-1">
+                          "{ticket.notes}"
+                        </span>
+                      )}
+                    </td>
+
+                    <td className="py-3.5 px-2 text-right">
+                      <span className="font-mono font-extrabold text-slate-900 text-sm block">
+                        {formatKsh(ticket.estimatedTotalKsh)}
+                      </span>
+                      <span className="text-[10px] text-slate-400">
+                        @{formatKsh(ticket.unitPrice || 0)}/unit
+                      </span>
+                    </td>
+
+                    <td className="py-3.5 px-2 text-center">
+                      <select
+                        value={ticket.status}
+                        onChange={(e) =>
+                          updateInquiryTicket(ticket.id, {
+                            status: e.target.value as ERPInquiryTicket['status'],
+                          })
+                        }
+                        className={`text-[10px] font-bold uppercase rounded-lg px-2 py-1 border transition-colors cursor-pointer ${
+                          ticket.status === 'new'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                            : ticket.status === 'contacted'
+                            ? 'bg-blue-50 text-blue-800 border-blue-300'
+                            : ticket.status === 'quoted'
+                            ? 'bg-amber-50 text-amber-800 border-amber-300'
+                            : ticket.status === 'converted_invoice'
+                            ? 'bg-purple-50 text-purple-800 border-purple-300'
+                            : 'bg-slate-100 text-slate-700 border-slate-200'
+                        }`}
+                      >
+                        <option value="new">🟢 NEW</option>
+                        <option value="contacted">🔵 CONTACTED</option>
+                        <option value="quoted">🟡 QUOTED</option>
+                        <option value="converted_invoice">🟣 INVOICED</option>
+                        <option value="closed">⚪ CLOSED</option>
+                      </select>
+                    </td>
+
+                    <td className="py-3.5 px-2 text-right">
+                      <div className="flex items-center justify-end gap-1.5 flex-wrap">
+                        {/* WhatsApp Hotline direct link */}
+                        <a
+                          href={ticket.whatsappUrl || `https://wa.me/254728102929?text=Hello%20${encodeURIComponent(ticket.customerName || 'Client')},%20regarding%20ticket%20%23${ticket.ticketNumber}%20for%20${ticket.quantity}%20pcs%20of%20${encodeURIComponent(ticket.productName)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[11px] font-bold inline-flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
+                          title="Open WhatsApp Chat (0728102929)"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>WhatsApp</span>
+                        </a>
+
+                        {/* Convert to Invoice */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newInv = convertTicketToInvoice(ticket.id);
+                            if (newInv) {
+                              onViewDoc(newInv);
+                            }
+                          }}
+                          className="px-2.5 py-1.5 bg-[#032345] hover:bg-[#021a34] text-white rounded-lg text-[11px] font-bold inline-flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
+                          title="Generate Tax Invoice"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span>Invoice</span>
+                        </button>
+
+                        {/* Convert to Quotation */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const newQtn = convertTicketToQuotation(ticket.id);
+                            if (newQtn) {
+                              onViewDoc(newQtn);
+                            }
+                          }}
+                          className="px-2 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-[11px] font-semibold transition-colors cursor-pointer"
+                          title="Create Quotation Document"
+                        >
+                          <FileSpreadsheet className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </motion.div>
 
       {/* Main Split: Recent Documents & Payment Ledger */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

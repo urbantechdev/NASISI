@@ -125,3 +125,79 @@
   animation: smokeWaveL2R1 6.5s linear infinite 1.2s;
 }
 
+/* Scanner Ray Balanced Shiny Effect Animations (Left-to-Right) */
+@keyframes scannerRaySweep {
+  0% {
+    transform: translateX(-120%) skewX(-20deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translateX(250%) skewX(-20deg);
+    opacity: 0;
+  }
+}
+
+@keyframes scannerLaserBar {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.65;
+  }
+  88% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translateX(110vw);
+    opacity: 0;
+  }
+}
+
+@keyframes scannerWaveFollow {
+  0% {
+    transform: translateX(-80px);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.65;
+  }
+  88% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translateX(calc(100vw + 80px));
+    opacity: 0;
+  }
+}
+
+.animate-scanner-ray {
+  animation: scannerRaySweep 5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-scanner-ray-fast {
+  animation: scannerRaySweep 4.2s cubic-bezier(0.4, 0, 0.2, 1) infinite 1s;
+}
+
+.animate-scanner-laser {
+  animation: scannerLaserBar 5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-scanner-laser-delayed {
+  animation: scannerLaserBar 5s cubic-bezier(0.4, 0, 0.2, 1) infinite 0.3s;
+}
+
+.animate-scanner-wave {
+  animation: scannerWaveFollow 5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+

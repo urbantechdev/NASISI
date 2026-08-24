@@ -38,8 +38,6 @@ export const ERPDocumentFormModal: React.FC<ERPDocumentFormModalProps> = ({
   initialType = 'invoice',
   customers,
 }) => {
-  if (!isOpen) return null;
-
   const [docType, setDocType] = useState<ERPDocumentType>(
     editDocument ? editDocument.type : initialType
   );
@@ -262,8 +260,10 @@ export const ERPDocumentFormModal: React.FC<ERPDocumentFormModalProps> = ({
     onClose();
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-fadeIn">
+    <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4 animate-fadeIn">
       <div
         className="relative bg-white rounded-2xl max-w-4xl w-full max-h-[94vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden"
         onClick={(e) => e.stopPropagation()}

@@ -229,8 +229,10 @@ export const AdminERPSuite: React.FC<AdminERPSuiteProps> = ({
         </footer>
       </div>
 
-      {/* 4. Admin Desktop Bottom Quick Actions Dock (Fast creation of KRA invoices, quotes, proformas, M-Pesa payments, stock, and clients) */}
+      {/* 4. Admin Mobile 5-Icon Navigation & Desktop Bottom Quick Actions Dock */}
       <AdminERPBottomNav
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
         onOpenNewDocModal={handleOpenCreateDoc}
         onOpenNewPaymentModal={() => setIsRecordPaymentModalOpen(true)}
         onOpenNewInventoryModal={() => setIsAddStockModalOpen(true)}

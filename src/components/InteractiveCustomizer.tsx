@@ -121,7 +121,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
   preselectedColorHex,
   onOpenQuoteModal,
 }) => {
-  const { products } = useERP();
+  const { products, raiseInquiryTicket } = useERP();
   const [selectedGarment, setSelectedGarment] = useState(
     preselectedProduct
       ? GARMENT_OPTIONS.find((g) => g.productId === preselectedProduct.id) || GARMENT_OPTIONS[0]
@@ -142,6 +142,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
   const [logoOffsetY, setLogoOffsetY] = useState(0); // -15 to 15
   const [orderQuantity, setOrderQuantity] = useState(50);
   const [addedSuccess, setAddedSuccess] = useState(false);
+  const [ticketInfo, setTicketInfo] = useState<{ ticketNumber: string; whatsappUrl: string } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -240,6 +241,35 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
     };
 
     onAddToCart(newItem);
+
+    // Instantly raise inquiry ticket on the ERP dashboard and WhatsApp
+    const raised = raiseInquiryTicket({
+      productName: `Custom ${selectedGarment.name}`,
+      category: 'customizer_mockup',
+      quantity: orderQuantity,
+      selectedColor: garmentColor.name,
+      brandingType: brandingTechnique === 'embroidery' ? 'embroidery' : 'screen_printing',
+      logoPlacement: [
+        activePlacement === 'left_chest'
+          ? 'Left Chest'
+          : activePlacement === 'center_chest'
+          ? 'Center Front'
+          : activePlacement === 'full_back'
+          ? 'Full Back'
+          : 'Left Sleeve',
+      ],
+      unitPrice: unitCost,
+      estimatedTotalKsh: totalEstimate,
+      notes: `Mockup Studio Design: ${selectedGarment.name} (${garmentColor.name}), Crest: ${customLogoUrl ? 'Custom File Uploaded' : selectedSampleLogo.name}.`,
+      customerName: 'Mockup Studio Client',
+      phone: '0728102929',
+      source: 'interactive_customizer',
+    });
+
+    setTicketInfo({
+      ticketNumber: raised.ticketNumber,
+      whatsappUrl: raised.whatsappUrl,
+    });
     setAddedSuccess(true);
 
     try {
@@ -288,7 +318,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-5 md:p-8 animate-fadeIn"
+      className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-0 sm:p-5 md:p-8 overflow-hidden sm:overflow-y-auto animate-fadeIn"
       role="dialog"
       aria-modal="true"
       aria-labelledby="mockup-modal-title"
@@ -297,20 +327,20 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
       <div className="fixed inset-0" onClick={onClose} aria-hidden="true" />
 
       {/* Modal Dialog Card */}
-      <div className="relative w-full max-w-6xl bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-auto z-10 flex flex-col max-h-[92vh]">
+      <div className="relative w-full h-full sm:h-auto max-w-6xl bg-white rounded-none sm:rounded-3xl shadow-2xl border-0 sm:border sm:border-slate-200 overflow-hidden z-10 flex flex-col sm:max-h-[92vh]">
         
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 bg-[#032345] text-white border-b border-blue-950 flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-blue-200 border border-white/10">
-              <Sparkles className="w-5 h-5 text-blue-300" />
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 bg-[#032345] text-white border-b border-blue-950 flex-shrink-0">
+          <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white/10 flex items-center justify-center text-blue-200 border border-white/10 shrink-0">
+              <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-blue-300" />
             </div>
-            <div>
-              <h2 id="mockup-modal-title" className="text-lg sm:text-xl font-bold font-['Outfit',sans-serif] text-white flex items-center gap-2">
-                <span>Live Uniform Mockup & Digitization Studio</span>
+            <div className="min-w-0">
+              <h2 id="mockup-modal-title" className="text-base sm:text-xl font-bold font-['Outfit',sans-serif] text-white flex items-center gap-2 truncate">
+                <span>Live Uniform Mockup Studio</span>
               </h2>
-              <p className="text-xs text-blue-200">
-                Test custom crests, thread textures & instant bulk pricing in real-time
+              <p className="text-[11px] sm:text-xs text-blue-200 truncate">
+                Test custom crests & instant bulk pricing in real-time
               </p>
             </div>
           </div>
@@ -318,10 +348,10 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
           <button
             onClick={onClose}
             type="button"
-            className="p-2 rounded-xl text-blue-200 hover:text-white hover:bg-white/10 transition-colors focus:outline-none cursor-pointer"
+            className="p-1.5 sm:p-2 rounded-xl text-blue-200 hover:text-white hover:bg-white/10 transition-colors focus:outline-none cursor-pointer shrink-0"
             aria-label="Close Customizer"
           >
-            <X className="w-6 h-6" />
+            <X className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
         </div>
 
@@ -329,14 +359,36 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
         <div className="p-5 sm:p-7 overflow-y-auto space-y-6 flex-1">
           
           {addedSuccess && (
-            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex flex-col sm:flex-row items-center justify-between gap-3 animate-fadeIn">
-              <div className="flex items-center gap-2.5">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
-                <span className="text-xs sm:text-sm font-bold">
-                  Success! Your custom {selectedGarment.name} mockup ({orderQuantity} units) has been added to your Quote Cart.
-                </span>
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-blue-50 border border-emerald-300 text-emerald-950 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-fadeIn">
+              <div className="flex items-start gap-2.5">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs sm:text-sm font-bold text-slate-900">
+                      Success! Custom {selectedGarment.name} mockup ({orderQuantity} units) added to Quote Cart.
+                    </span>
+                    {ticketInfo && (
+                      <span className="px-2 py-0.5 bg-emerald-200 text-emerald-900 text-[10px] font-black rounded-full uppercase">
+                        Ticket #{ticketInfo.ticketNumber} Raised
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-emerald-800 mt-0.5">
+                    Ticket logged directly on ERP dashboard. You can continue directly on WhatsApp or review in cart.
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap shrink-0">
+                {ticketInfo?.whatsappUrl && (
+                  <a
+                    href={ticketInfo.whatsappUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors inline-flex items-center gap-1.5 shadow-xs"
+                  >
+                    <span>WhatsApp (0728102929)</span>
+                  </a>
+                )}
                 {onOpenQuoteModal && (
                   <button
                     type="button"

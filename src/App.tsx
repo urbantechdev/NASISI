@@ -9,6 +9,7 @@ import { Footer } from './components/Footer';
 import { UniformModal } from './components/UniformModal';
 import { QuoteEstimatorModal } from './components/QuoteEstimatorModal';
 import { SizeAndFabricGuide } from './components/SizeAndFabricGuide';
+import { MobileStorefrontBottomNav } from './components/MobileStorefrontBottomNav';
 import { ERPProvider } from './context/ERPContext';
 import { AdminERPSuite } from './components/admin/AdminERPSuite';
 
@@ -103,9 +104,10 @@ export default function App() {
             onOpenCustomizer={() => setIsCustomizerModalOpen(true)}
             onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
             onOpenAdminERP={() => setViewMode('erp')}
+            onSelectProduct={(product) => setSelectedProductForModal(product)}
           />
 
-          <main className="flex-1 pt-24 sm:pt-28 md:pt-32">
+          <main className="flex-1 pt-24 sm:pt-28 md:pt-32 pb-24 lg:pb-0">
             {/* Plain Hero Banner with no text or items */}
             <Hero />
 
@@ -115,6 +117,14 @@ export default function App() {
               onOpenCustomizerWithProduct={handleOpenCustomizerWithProduct}
             />
           </main>
+
+          {/* Modern Mobile Bottom Navigation (5-icon with larger center studio button & wave top edge) */}
+          <MobileStorefrontBottomNav
+            quoteItems={quoteItems}
+            onOpenQuoteModal={() => setIsQuoteModalOpen(true)}
+            onOpenCustomizer={() => setIsCustomizerModalOpen(true)}
+            onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
+          />
 
           {/* Modern Footer */}
           <Footer onOpenAdminERP={() => setViewMode('erp')} />

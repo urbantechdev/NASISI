@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Phone, Mail, MapPin, MessageSquare, Clock, Send, ChevronDown, CheckCircle2, Sparkles, Building2 } from 'lucide-react';
+import { useERP } from '../context/ERPContext';
 import confetti from 'canvas-confetti';
 
 export const ContactSection: React.FC = () => {
+  const { raiseInquiryTicket } = useERP();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
@@ -10,6 +12,7 @@ export const ContactSection: React.FC = () => {
   const [serviceNeeded, setServiceNeeded] = useState('School Uniforms');
   const [message, setMessage] = useState('');
   const [sent, setSent] = useState(false);
+  const [raisedTicketNo, setRaisedTicketNo] = useState<string | null>(null);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
 
   const faqs = [
@@ -37,13 +40,29 @@ export const ContactSection: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const ticket = raiseInquiryTicket({
+      productName: serviceNeeded,
+      category: 'bulk_uniforms',
+      quantity: 50,
+      selectedColor: 'Custom Organization Color',
+      brandingType: 'embroidery',
+      logoPlacement: ['Left Chest / Crest'],
+      unitPrice: 1500,
+      estimatedTotalKsh: 75000,
+      notes: `Inquiry Message: ${message}. Organization: ${organization}. Email: ${email}`,
+      customerName: `${name} (${organization || 'Individual'})`,
+      phone: phone || '0728102929',
+      source: 'contact_form_inquiry',
+    });
+
+    setRaisedTicketNo(ticket.ticketNumber);
     setSent(true);
     try {
       confetti({
         particleCount: 70,
         spread: 70,
         origin: { y: 0.8 },
-        colors: ['#032345', '#38BDF8', '#FFFFFF'],
+        colors: ['#032345', '#38BDF8', '#FFFFFF', '#10B981'],
       });
     } catch {
       // ignore
@@ -91,8 +110,8 @@ export const ContactSection: React.FC = () => {
                   <Phone className="w-4 h-4 text-[#032345] flex-shrink-0" />
                   <div>
                     <strong className="block text-slate-900">Direct Hotline:</strong>
-                    <a href="tel:+254700000000" className="text-[#032345] hover:underline font-semibold">
-                      +254 (0) 722 000 111 / +254 (0) 733 000 222
+                    <a href="tel:0728102929" className="text-[#032345] hover:underline font-semibold font-mono">
+                      0728102929 / +254 728 102 929
                     </a>
                   </div>
                 </div>
@@ -119,13 +138,13 @@ export const ContactSection: React.FC = () => {
               {/* WhatsApp Quick Chat CTA */}
               <div className="pt-2">
                 <a
-                  href="https://wa.me/254700000000?text=Hello%20NASISI%2C%20I%20would%20like%20to%20inquire%20about%20uniform%20manufacturing."
+                  href="https://wa.me/254728102929?text=Hello%20NASISI%2C%20I%20would%20like%20to%20inquire%20about%20uniform%20manufacturing."
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-3 bg-[#25D366] hover:bg-[#1EBE5D] text-white text-xs font-bold rounded-xl shadow-sm transition-colors"
                 >
                   <MessageSquare className="w-4 h-4" />
-                  <span>Chat on WhatsApp Directly</span>
+                  <span>Chat on WhatsApp Directly (0728102929)</span>
                 </a>
               </div>
             </div>
@@ -176,20 +195,36 @@ export const ContactSection: React.FC = () => {
               </p>
 
               {sent ? (
-                <div className="bg-white rounded-2xl p-8 text-center border border-blue-200 space-y-3">
-                  <div className="w-12 h-12 bg-green-100 text-green-700 rounded-full flex items-center justify-center mx-auto">
+                <div className="bg-white rounded-2xl p-8 text-center border border-emerald-300 space-y-3 shadow-xs">
+                  <div className="w-12 h-12 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto">
                     <CheckCircle2 className="w-6 h-6" />
                   </div>
-                  <h4 className="text-base font-bold text-slate-900">Message Received!</h4>
+                  <h4 className="text-base font-bold text-slate-900">Inquiry Ticket Raised!</h4>
+                  {raisedTicketNo && (
+                    <div className="inline-block bg-emerald-50 border border-emerald-200 text-emerald-900 font-mono font-bold px-3 py-1 rounded-lg text-xs">
+                      Ticket #{raisedTicketNo}
+                    </div>
+                  )}
                   <p className="text-xs text-slate-600 max-w-md mx-auto">
-                    Thank you, {name}. Our uniform coordinator will contact you at <strong>{phone || email}</strong> shortly with your custom proposal.
+                    Thank you, {name}. Our uniform coordinator has received your ticket on the factory dashboard and will contact you at <strong>{phone || email}</strong> shortly.
                   </p>
-                  <button
-                    onClick={() => setSent(false)}
-                    className="text-xs font-bold text-[#032345] hover:underline pt-2"
-                  >
-                    Send Another Message
-                  </button>
+                  <div className="pt-2 flex justify-center gap-3">
+                    <a
+                      href={`https://wa.me/254728102929?text=Hello%20NASISI%2C%20I%20have%20submitted%20inquiry%20ticket%20%23${raisedTicketNo}%20for%20${encodeURIComponent(organization || name)}.`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold inline-flex items-center gap-1.5 transition-colors"
+                    >
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>Open WhatsApp (0728102929)</span>
+                    </a>
+                    <button
+                      onClick={() => setSent(false)}
+                      className="text-xs font-bold text-[#032345] hover:underline px-3 py-2"
+                    >
+                      Send Another
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <form onSubmit={handleSubmit} className="space-y-4 text-xs">
@@ -229,7 +264,7 @@ export const ContactSection: React.FC = () => {
                       <input
                         type="tel"
                         required
-                        placeholder="+254 700 000 000"
+                        placeholder="0728102929 or +254 700 000 000"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         className="w-full p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#032345] focus:outline-none"
@@ -288,7 +323,7 @@ export const ContactSection: React.FC = () => {
                     className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#032345] hover:bg-[#021a34] text-white font-extrabold text-xs rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer"
                   >
                     <Send className="w-4 h-4" />
-                    <span>Submit Inquiry for Immediate Review</span>
+                    <span>Submit Inquiry & Raise ERP Ticket</span>
                   </button>
                 </form>
               )}

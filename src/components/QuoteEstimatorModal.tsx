@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { QuoteItem, QuoteSubmission } from '../types';
+import { useERP } from '../context/ERPContext';
 import {
   X,
   Trash2,
@@ -17,6 +18,7 @@ import {
   User,
   ShieldCheck,
   CheckCircle2,
+  ExternalLink,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -35,7 +37,7 @@ export const QuoteEstimatorModal: React.FC<QuoteEstimatorModalProps> = ({
   onRemoveItem,
   onClearCart,
 }) => {
-  if (!isOpen) return null;
+  const { raiseInquiryTicket, createDocument } = useERP();
 
   const [orgName, setOrgName] = useState('');
   const [contactName, setContactName] = useState('');
@@ -45,6 +47,8 @@ export const QuoteEstimatorModal: React.FC<QuoteEstimatorModalProps> = ({
   const [requiredDate, setRequiredDate] = useState('');
   const [notes, setNotes] = useState('');
   const [submittedQuote, setSubmittedQuote] = useState<QuoteSubmission | null>(null);
+  const [raisedTicketNumber, setRaisedTicketNumber] = useState<string | null>(null);
+  const [whatsappShareUrl, setWhatsappShareUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const subtotal = quoteItems.reduce((sum, item) => sum + item.totalPrice, 0);
@@ -74,6 +78,48 @@ export const QuoteEstimatorModal: React.FC<QuoteEstimatorModalProps> = ({
       }),
     };
 
+    // 1. Instantly raise Inquiry Ticket on ERP dashboard & WhatsApp
+    const ticket = raiseInquiryTicket({
+      productName: quoteItems.map((it) => `${it.product.name} (${it.totalQuantity} pcs)`).join(', '),
+      category: quoteItems[0]?.product?.category || 'bulk_uniforms',
+      quantity: totalUnits,
+      selectedColor: quoteItems.map((it) => it.selectedColor).join(', '),
+      brandingType: quoteItems[0]?.brandingType || 'embroidery',
+      logoPlacement: quoteItems.flatMap((it) => it.logoPlacement),
+      unitPrice: Math.round(subtotal / Math.max(totalUnits, 1)),
+      estimatedTotalKsh: subtotal,
+      notes: `Org: ${orgName} (${orgType}). Target Date: ${requiredDate || 'Standard'}. Details: ${notes || 'None'}`,
+      customerName: `${contactName} - ${orgName}`,
+      phone: phone || '0728102929',
+      source: 'storefront_quote_request',
+    });
+
+    // 2. Automatically generate ERP Quotation
+    createDocument({
+      type: 'quotation',
+      customerName: `${orgName} (${contactName})`,
+      customerPhone: phone || '0728102929',
+      customerEmail: email || '',
+      subtotalAmount: subtotal,
+      taxAmount: Math.round(subtotal * 0.16),
+      discountAmount: 0,
+      totalAmount: Math.round(subtotal * 1.16),
+      amountPaid: 0,
+      balanceDue: Math.round(subtotal * 1.16),
+      status: 'sent',
+      items: quoteItems.map((it) => ({
+        id: it.id,
+        productName: it.product.name,
+        description: `${it.selectedColor} • ${it.brandingType.toUpperCase()} • ${it.logoPlacement.join(', ')}`,
+        quantity: it.totalQuantity,
+        unitPrice: it.unitPrice,
+        totalPrice: it.totalPrice,
+      })),
+      notes: `Storefront Quote Request • Ticket #${ticket.ticketNumber} • Date Needed: ${requiredDate || 'Standard turnaround'}. Instructions: ${notes}`,
+    });
+
+    setRaisedTicketNumber(ticket.ticketNumber);
+    setWhatsappShareUrl(ticket.whatsappUrl);
     setSubmittedQuote(submission);
 
     try {
@@ -81,7 +127,7 @@ export const QuoteEstimatorModal: React.FC<QuoteEstimatorModalProps> = ({
         particleCount: 100,
         spread: 80,
         origin: { y: 0.6 },
-        colors: ['#032345', '#38BDF8', '#FFFFFF'],
+        colors: ['#032345', '#38BDF8', '#FFFFFF', '#10B981'],
       });
     } catch {
       // ignore
@@ -90,8 +136,9 @@ export const QuoteEstimatorModal: React.FC<QuoteEstimatorModalProps> = ({
 
   const handleCopyQuoteSummary = () => {
     if (!submittedQuote) return;
+    const ticketTag = raisedTicketNumber ? `Ticket #${raisedTicketNumber}` : `NASISI-Q-${Math.floor(100000 + Math.random() * 900000)}`;
     const text = `--- NASISI KNITWEAR & GRAPHICS OFFICIAL QUOTE ESTIMATE ---
-Reference: NASISI-Q-${Math.floor(100000 + Math.random() * 900000)}
+Reference / ${ticketTag}
 Organization: ${submittedQuote.organizationName}
 Contact: ${submittedQuote.contactPerson} (${submittedQuote.phone})
 Date: ${submittedQuote.submittedAt}
@@ -109,9 +156,10 @@ ${submittedQuote.items
   )
   .join('\n\n')}
 
-TOTAL ESTIMATE: Ksh ${subtotal.toLocaleString()}
+TOTAL ESTIMATE: Ksh ${subtotal.toLocaleString()} (Excl. 16% VAT)
+Platform WhatsApp: 0728102929 (+254 728 102 929)
 Motto: We stitch it. You wear it. We print it. You represent.
-Hotline: +254 (0) 722 000 111 | info@nasisiuniforms.com`;
+Hotline: 0728102929 | info@nasisiuniforms.com`;
 
     navigator.clipboard.writeText(text);
     setCopied(true);
@@ -119,41 +167,42 @@ Hotline: +254 (0) 722 000 111 | info@nasisiuniforms.com`;
   };
 
   const generateWhatsAppUrl = () => {
+    if (whatsappShareUrl) return whatsappShareUrl;
     if (!submittedQuote) return '#';
-    const message = `Hello NASISI Uniforms, I would like to confirm quotation for *${encodeURIComponent(
+    const message = `Hello NASISI Uniforms, I have submitted a Quote Request for *${encodeURIComponent(
       submittedQuote.organizationName
-    )}*. Total Items: ${totalUnits} pcs, Estimate: Ksh ${subtotal.toLocaleString()}. Contact: ${encodeURIComponent(
-      submittedQuote.contactPerson
-    )} (${submittedQuote.phone}).`;
-    return `https://wa.me/254700000000?text=${message}`;
+    )}* (Contact: ${encodeURIComponent(submittedQuote.contactPerson)}, Tel: ${submittedQuote.phone}). Total Items: ${totalUnits} pcs, Estimate: Ksh ${subtotal.toLocaleString()}. Please provide official invoice & production proof.`;
+    return `https://wa.me/254728102929?text=${message}`;
   };
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-[110] overflow-y-auto bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
+    <div className="fixed inset-0 z-[110] bg-slate-900/75 backdrop-blur-md flex items-center justify-center p-0 sm:p-6 overflow-hidden sm:overflow-y-auto animate-fadeIn">
       <div
-        className="relative bg-white rounded-3xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden"
+        className="relative bg-white w-full h-full sm:h-auto sm:max-h-[92vh] sm:max-w-3xl sm:rounded-3xl flex flex-col shadow-2xl border-0 sm:border sm:border-slate-200 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white sticky top-0 z-20">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-[#032345] text-white flex items-center justify-center font-bold">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 bg-white sticky top-0 z-20 shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0 pr-2">
+            <div className="w-8 h-8 rounded-xl bg-[#032345] text-white flex items-center justify-center font-bold shrink-0">
               <FileText className="w-4 h-4" />
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-slate-900 font-['Outfit',sans-serif]">
+            <div className="min-w-0">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 font-['Outfit',sans-serif] truncate">
                 {submittedQuote ? 'Official Quotation Summary' : 'Bulk Uniform Quote Request'}
               </h3>
-              <span className="text-xs text-slate-500">
+              <span className="text-[11px] sm:text-xs text-slate-500 truncate block">
                 {submittedQuote
                   ? `Prepared for ${submittedQuote.organizationName}`
-                  : `${quoteItems.length} items configured • Free digital artwork proof included`}
+                  : `${quoteItems.length} items configured • Free digital proof`}
               </span>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            className="p-2 sm:p-1.5 rounded-xl sm:rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
@@ -164,18 +213,25 @@ Hotline: +254 (0) 722 000 111 | info@nasisiuniforms.com`;
           {submittedQuote ? (
             /* Submission Success View */
             <div className="space-y-6">
-              <div className="text-center bg-blue-50/70 p-6 rounded-2xl border border-blue-200 space-y-2">
-                <div className="w-12 h-12 bg-[#032345] text-white rounded-full flex items-center justify-center mx-auto shadow-md">
+              <div className="text-center bg-gradient-to-r from-emerald-50 via-teal-50 to-blue-50 p-6 rounded-2xl border border-emerald-300 space-y-2.5">
+                <div className="w-12 h-12 bg-emerald-600 text-white rounded-full flex items-center justify-center mx-auto shadow-md">
                   <Check className="w-6 h-6" />
                 </div>
                 <h4 className="text-xl font-bold text-slate-900 font-['Outfit',sans-serif]">
-                  Quotation Generated Successfully!
+                  Inquiry Ticket Raised & Quotation Generated!
                 </h4>
                 <p className="text-xs text-slate-600 max-w-md mx-auto">
-                  Our production manager has received your specifications. We will prepare your free vectorized stitch proof and final invoice within 24 hours.
+                  Your quote has been logged into our factory ERP dashboard. Our production and sales team has been notified for instant follow-up and vectorized proof generation.
                 </p>
-                <div className="inline-block bg-white px-3 py-1 rounded-md text-xs font-mono font-bold text-[#032345] border border-blue-200 mt-2">
-                  Quote Ref: NASISI-Q-{Math.floor(100000 + Math.random() * 900000)}
+                <div className="flex items-center justify-center gap-2 flex-wrap pt-1">
+                  {raisedTicketNumber && (
+                    <div className="inline-block bg-emerald-100 px-3 py-1 rounded-md text-xs font-mono font-bold text-emerald-900 border border-emerald-300">
+                      Inquiry Ticket: #{raisedTicketNumber}
+                    </div>
+                  )}
+                  <div className="inline-block bg-white px-3 py-1 rounded-md text-xs font-mono font-bold text-[#032345] border border-blue-200">
+                    Platform Hotline: 0728102929
+                  </div>
                 </div>
               </div>
 

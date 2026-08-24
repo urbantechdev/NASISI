@@ -98,7 +98,7 @@ export const ERPDocumentPrintModal: React.FC<ERPDocumentPrintModalProps> = ({
   const docConfig = getDocTypeHeader();
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-6 print:p-0 print:bg-white animate-fadeIn">
+    <div className="fixed inset-0 z-[110] overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-2 sm:p-6 print:p-0 print:bg-white animate-fadeIn">
       <div
         className="relative bg-white rounded-2xl max-w-4xl w-full max-h-[96vh] flex flex-col shadow-2xl border border-slate-300 overflow-hidden print:max-h-none print:shadow-none print:border-none print:rounded-none"
         onClick={(e) => e.stopPropagation()}

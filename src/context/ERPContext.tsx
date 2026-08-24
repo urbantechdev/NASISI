@@ -4,6 +4,7 @@ import {
   ERPCustomer,
   ERPDocument,
   ERPDocumentType,
+  ERPInquiryTicket,
   ERPInventoryItem,
   ERPPaymentTransaction,
   ERPProductionOrder,
@@ -14,6 +15,7 @@ import {
   INITIAL_BUSINESS_PROFILE,
   INITIAL_CUSTOMERS,
   INITIAL_DOCUMENTS,
+  INITIAL_INQUIRY_TICKETS,
   INITIAL_INVENTORY,
   INITIAL_PRODUCTION_ORDERS,
   INITIAL_TRANSACTIONS,
@@ -28,6 +30,18 @@ interface ERPContextType {
   inventory: ERPInventoryItem[];
   productionOrders: ERPProductionOrder[];
   products: UniformProduct[];
+  inquiryTickets: ERPInquiryTicket[];
+
+  // Inquiry Tickets / Leads Operations
+  raiseInquiryTicket: (ticket: Partial<ERPInquiryTicket> & {
+    productName: string;
+    quantity: number;
+    estimatedTotalKsh: number;
+  }) => ERPInquiryTicket;
+  updateInquiryTicket: (id: string, updates: Partial<ERPInquiryTicket>) => void;
+  deleteInquiryTicket: (id: string) => void;
+  convertTicketToInvoice: (ticketId: string) => ERPDocument | null;
+  convertTicketToQuotation: (ticketId: string) => ERPDocument | null;
 
   // Platform Products / Storefront Catalog Operations
   addProduct: (product: Omit<UniformProduct, 'id'> | UniformProduct) => UniformProduct;
@@ -80,6 +94,7 @@ const STORAGE_KEYS = {
   INVENTORY: 'nasisi_erp_inventory_v3',
   PRODUCTION: 'nasisi_erp_production_v2',
   PRODUCTS: 'nasisi_erp_products_v3',
+  TICKETS: 'nasisi_erp_inquiry_tickets_v2',
 };
 
 // Generate initial products with inventory SKU and publishing defaults
@@ -184,6 +199,19 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return saved ? JSON.parse(saved) : INITIAL_PRODUCTION_ORDERS;
   });
 
+  const [inquiryTickets, setInquiryTickets] = useState<ERPInquiryTicket[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.TICKETS);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // fallback
+    }
+    return INITIAL_INQUIRY_TICKETS;
+  });
+
   // Sync to localStorage
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(businessProfile));
@@ -212,6 +240,10 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.PRODUCTION, JSON.stringify(productionOrders));
   }, [productionOrders]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.TICKETS, JSON.stringify(inquiryTickets));
+  }, [inquiryTickets]);
 
   // =========================================================================
   // PLATFORM PRODUCT OPERATIONS (Live Storefront <-> Admin Inventory Sync)
@@ -772,6 +804,185 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCustomers((prev) => prev.filter((c) => c.id !== id));
   };
 
+  // =========================================================================
+  // INQUIRY TICKETS & INSTANT QUOTE REQUEST LEADS
+  // =========================================================================
+
+  const raiseInquiryTicket = (
+    ticketData: Partial<ERPInquiryTicket> & {
+      productName: string;
+      quantity: number;
+      estimatedTotalKsh: number;
+    }
+  ): ERPInquiryTicket => {
+    const timestamp = new Date().toISOString();
+    const count = inquiryTickets.length + 1;
+    const ticketNumber = `INQ-2026-${String(count + 45).padStart(4, '0')}`;
+    const cleanPlatformPhone = '254728102929';
+    const displayPlatformPhone = '0728102929';
+
+    const customerName = ticketData.customerName || 'Storefront Client';
+    const organizationName = ticketData.organizationName || 'Direct Inquiry';
+    const productName = ticketData.productName;
+    const quantity = ticketData.quantity || 1;
+    const estimatedTotalKsh = ticketData.estimatedTotalKsh || 0;
+    const unitPrice = ticketData.unitPrice || (quantity > 0 ? Math.round(estimatedTotalKsh / quantity) : 0);
+
+    const waText = encodeURIComponent(
+      `Hello NASISI Uniforms, inquiry ticket #${ticketNumber} has been raised:\n` +
+      `• Item: ${productName}\n` +
+      `• Qty: ${quantity} units\n` +
+      `• Est. Total: Ksh ${estimatedTotalKsh.toLocaleString()}\n` +
+      (ticketData.selectedColor ? `• Color: ${ticketData.selectedColor}\n` : '') +
+      (ticketData.brandingType ? `• Branding: ${ticketData.brandingType}\n` : '') +
+      `Please confirm quote & delivery details.`
+    );
+
+    const newTicket: ERPInquiryTicket = {
+      id: `tkt-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      ticketNumber,
+      title: ticketData.title || `${productName} (${quantity} pcs) - Quote Inquiry`,
+      customerName,
+      organizationName,
+      phone: ticketData.phone || displayPlatformPhone,
+      email: ticketData.email || 'inquiries@nasisiuniforms.co.ke',
+      productName,
+      category: ticketData.category || 'general',
+      quantity,
+      selectedColor: ticketData.selectedColor,
+      brandingType: ticketData.brandingType,
+      logoPlacement: ticketData.logoPlacement,
+      unitPrice,
+      estimatedTotalKsh,
+      status: ticketData.status || 'new',
+      priority: ticketData.priority || 'high',
+      source: ticketData.source || 'storefront_quote_request',
+      notes: ticketData.notes || 'Instant lead submitted from storefront quote request modal.',
+      items: ticketData.items,
+      whatsappUrl: ticketData.whatsappUrl || `https://wa.me/${cleanPlatformPhone}?text=${waText}`,
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    };
+
+    setInquiryTickets((prev) => [newTicket, ...prev]);
+    return newTicket;
+  };
+
+  const updateInquiryTicket = (id: string, updates: Partial<ERPInquiryTicket>) => {
+    const timestamp = new Date().toISOString();
+    setInquiryTickets((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, ...updates, updatedAt: timestamp } : t))
+    );
+  };
+
+  const deleteInquiryTicket = (id: string) => {
+    setInquiryTickets((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const convertTicketToInvoice = (ticketId: string): ERPDocument | null => {
+    const ticket = inquiryTickets.find((t) => t.id === ticketId);
+    if (!ticket) return null;
+
+    const subtotal = ticket.estimatedTotalKsh;
+    const vatRate = 0.16;
+    const vatAmount = Math.round(subtotal * vatRate);
+    const totalAmount = subtotal + vatAmount;
+
+    const invDoc = createDocument({
+      docNumber: `INV-2026-${String(documents.filter((d) => d.type === 'invoice').length + 46).padStart(4, '0')}`,
+      type: 'invoice',
+      title: `Invoice for ${ticket.productName} (${ticket.quantity} units)`,
+      status: 'issued',
+      issueDate: new Date().toISOString().split('T')[0],
+      dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      customerName: ticket.organizationName || ticket.customerName,
+      contactPerson: ticket.customerName,
+      customerEmail: ticket.email || '',
+      customerPhone: ticket.phone || '0728102929',
+      customerKraPin: 'P050000000X',
+      customerAddress: 'Nairobi, Kenya',
+      customerCity: 'Nairobi',
+      items: [
+        {
+          id: `li-${Date.now()}`,
+          description: `${ticket.productName} - ${ticket.selectedColor || 'Custom'} (${ticket.brandingType || 'Branded'})`,
+          category: ticket.category,
+          size: 'Mixed Sizes (S-XXL)',
+          color: ticket.selectedColor || 'Standard',
+          branding: ticket.brandingType || 'Custom Crest',
+          quantity: ticket.quantity,
+          unitPrice: ticket.unitPrice,
+          total: subtotal,
+          taxRate: 0.16,
+        },
+      ],
+      subtotal,
+      vatRate,
+      vatAmount,
+      totalAmount,
+      amountPaid: 0,
+      balanceDue: totalAmount,
+      paymentTerms: '50% deposit upon order confirmation, balance on delivery inspection',
+      notes: `Converted directly from Client Inquiry Ticket #${ticket.ticketNumber}. Platform Hotline: 0728102929`,
+      relatedDocNumber: ticket.ticketNumber,
+    });
+
+    updateInquiryTicket(ticketId, { status: 'converted_invoice' });
+    return invDoc;
+  };
+
+  const convertTicketToQuotation = (ticketId: string): ERPDocument | null => {
+    const ticket = inquiryTickets.find((t) => t.id === ticketId);
+    if (!ticket) return null;
+
+    const subtotal = ticket.estimatedTotalKsh;
+    const vatRate = 0.16;
+    const vatAmount = Math.round(subtotal * vatRate);
+    const totalAmount = subtotal + vatAmount;
+
+    const qtnDoc = createDocument({
+      docNumber: `QTN-2026-${String(documents.filter((d) => d.type === 'quotation').length + 108).padStart(4, '0')}`,
+      type: 'quotation',
+      title: `Official Quotation - ${ticket.productName}`,
+      status: 'sent',
+      issueDate: new Date().toISOString().split('T')[0],
+      dueDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      customerName: ticket.organizationName || ticket.customerName,
+      contactPerson: ticket.customerName,
+      customerEmail: ticket.email || '',
+      customerPhone: ticket.phone || '0728102929',
+      customerKraPin: 'P050000000X',
+      customerAddress: 'Nairobi, Kenya',
+      customerCity: 'Nairobi',
+      items: [
+        {
+          id: `li-${Date.now()}`,
+          description: `${ticket.productName} - ${ticket.selectedColor || 'Custom'} (${ticket.brandingType || 'Branded'})`,
+          category: ticket.category,
+          size: 'Standard Sizes',
+          color: ticket.selectedColor || 'Standard',
+          branding: ticket.brandingType || 'Custom Crest',
+          quantity: ticket.quantity,
+          unitPrice: ticket.unitPrice,
+          total: subtotal,
+          taxRate: 0.16,
+        },
+      ],
+      subtotal,
+      vatRate,
+      vatAmount,
+      totalAmount,
+      amountPaid: 0,
+      balanceDue: totalAmount,
+      paymentTerms: 'Quotation valid for 30 calendar days. Includes digitized embroidery proof.',
+      notes: `Generated from Inquiry Ticket #${ticket.ticketNumber}. Platform WhatsApp: 0728102929`,
+      relatedDocNumber: ticket.ticketNumber,
+    });
+
+    updateInquiryTicket(ticketId, { status: 'quoted' });
+    return qtnDoc;
+  };
+
   // Production Orders
   const addProductionOrder = (
     orderData: Omit<ERPProductionOrder, 'id'>
@@ -805,6 +1016,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setProducts(INITIAL_SYNCHRONIZED_PRODUCTS);
     setInventory(INITIAL_INVENTORY);
     setProductionOrders(INITIAL_PRODUCTION_ORDERS);
+    setInquiryTickets(INITIAL_INQUIRY_TICKETS);
     localStorage.removeItem(STORAGE_KEYS.PROFILE);
     localStorage.removeItem(STORAGE_KEYS.CUSTOMERS);
     localStorage.removeItem(STORAGE_KEYS.DOCUMENTS);
@@ -812,6 +1024,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.removeItem(STORAGE_KEYS.PRODUCTS);
     localStorage.removeItem(STORAGE_KEYS.INVENTORY);
     localStorage.removeItem(STORAGE_KEYS.PRODUCTION);
+    localStorage.removeItem(STORAGE_KEYS.TICKETS);
   };
 
   return (
@@ -824,6 +1037,12 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         inventory,
         productionOrders,
         products,
+        inquiryTickets,
+        raiseInquiryTicket,
+        updateInquiryTicket,
+        deleteInquiryTicket,
+        convertTicketToInvoice,
+        convertTicketToQuotation,
         addProduct,
         updateProduct,
         deleteProduct,

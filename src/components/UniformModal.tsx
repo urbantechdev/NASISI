@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UniformProduct, QuoteItem } from '../types';
-import { X, Check, ShoppingBag, SlidersHorizontal, Sparkles, Shield, Tag, Layers, CheckCircle2 } from 'lucide-react';
+import { useERP } from '../context/ERPContext';
+import { X, Check, ShoppingBag, SlidersHorizontal, Sparkles, Shield, Tag, Layers, CheckCircle2, MessageSquare, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface UniformModalProps {
@@ -16,19 +17,34 @@ export const UniformModal: React.FC<UniformModalProps> = ({
   onAddToCart,
   onOpenCustomizerWithProduct,
 }) => {
-  if (!product) return null;
+  const { raiseInquiryTicket } = useERP();
 
-  const [selectedColor, setSelectedColor] = useState(product.availableColors[0]?.name || '');
+  const [selectedColor, setSelectedColor] = useState(product?.availableColors?.[0]?.name || '');
   const [brandingType, setBrandingType] = useState<'embroidery' | 'screen_printing' | 'both' | 'blank'>('embroidery');
   const [selectedPlacements, setSelectedPlacements] = useState<string[]>(['Left Chest']);
   const [logoNotes, setLogoNotes] = useState('');
+  const [ticketRaised, setTicketRaised] = useState<{ ticketNumber: string; whatsappUrl: string } | null>(null);
   const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
-    product.sizes.forEach((sz, idx) => {
-      initial[sz] = idx === 0 ? product.minOrder : 0;
-    });
+    if (product?.sizes) {
+      product.sizes.forEach((sz, idx) => {
+        initial[sz] = idx === 0 ? product.minOrder : 0;
+      });
+    }
     return initial;
   });
+
+  useEffect(() => {
+    if (product) {
+      setSelectedColor(product.availableColors?.[0]?.name || '');
+      const initial: Record<string, number> = {};
+      product.sizes.forEach((sz, idx) => {
+        initial[sz] = idx === 0 ? product.minOrder : 0;
+      });
+      setSizeQuantities(initial);
+      setTicketRaised(null);
+    }
+  }, [product]);
 
   const totalUnits: number = (Object.values(sizeQuantities) as number[]).reduce(
     (a: number, b: number) => a + b,
@@ -52,7 +68,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
   else if (brandingType === 'screen_printing') brandingAddon = 250;
   else if (brandingType === 'both') brandingAddon = 500;
 
-  const unitBase = (product.basePrice + brandingAddon) * (1 - discountPercent);
+  const unitBase = ((product?.basePrice || 0) + brandingAddon) * (1 - discountPercent);
   const calculatedUnitPrice = Math.round(unitBase);
   const calculatedTotal = Math.round(calculatedUnitPrice * Math.max(totalUnits, 1));
 
@@ -71,6 +87,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
   };
 
   const handleAdd = () => {
+    if (!product) return;
     if (totalUnits < product.minOrder) {
       alert(`Minimum order quantity for this item is ${product.minOrder} units.`);
       return;
@@ -91,50 +108,117 @@ export const UniformModal: React.FC<UniformModalProps> = ({
 
     onAddToCart(newItem);
 
+    // Instantly raise inquiry ticket on the Dashboard and WhatsApp
+    const raised = raiseInquiryTicket({
+      productName: product.name,
+      category: product.category,
+      quantity: totalUnits,
+      selectedColor,
+      brandingType,
+      logoPlacement: selectedPlacements,
+      unitPrice: calculatedUnitPrice,
+      estimatedTotalKsh: calculatedTotal,
+      notes: logoNotes ? `Customer Notes: ${logoNotes}` : `Direct quote request for ${totalUnits} units of ${product.name} (${selectedColor}).`,
+      customerName: logoNotes?.trim() || 'Storefront Client',
+      phone: '0728102929',
+      source: 'storefront_quote_request',
+    });
+
+    setTicketRaised({
+      ticketNumber: raised.ticketNumber,
+      whatsappUrl: raised.whatsappUrl,
+    });
+
     try {
       confetti({
-        particleCount: 50,
-        spread: 60,
-        origin: { y: 0.8 },
-        colors: ['#032345', '#38BDF8', '#FFFFFF'],
+        particleCount: 70,
+        spread: 70,
+        origin: { y: 0.7 },
+        colors: ['#032345', '#38BDF8', '#FFFFFF', '#10B981'],
       });
     } catch {
       // ignore
     }
-
-    onClose();
   };
+
+  if (!product) return null;
 
   const activeColorHex =
     product.availableColors.find((c) => c.name === selectedColor)?.hex || '#032345';
 
   return (
-    <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-900/70 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-fadeIn">
+    <div className="fixed inset-0 z-[100] bg-slate-900/75 backdrop-blur-md flex items-center justify-center p-0 sm:p-6 overflow-hidden sm:overflow-y-auto animate-fadeIn">
       <div
-        className="relative bg-white rounded-2xl max-w-4xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden"
+        className="relative bg-white w-full h-full sm:h-auto sm:max-h-[92vh] sm:max-w-4xl sm:rounded-2xl flex flex-col shadow-2xl border-0 sm:border sm:border-slate-200 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white sticky top-0 z-20">
-          <div className="flex items-center gap-3">
-            <span className="px-2.5 py-1 text-xs font-extrabold uppercase tracking-wider bg-blue-100 text-[#032345] rounded-md">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 bg-white sticky top-0 z-20 shrink-0 shadow-xs sm:shadow-none">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 pr-2">
+            <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-black uppercase tracking-wider bg-blue-100 text-[#032345] rounded-md shrink-0">
               {product.categoryLabel}
             </span>
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 font-['Outfit',sans-serif]">
+            <h3 className="text-base sm:text-xl font-bold text-slate-900 font-['Outfit',sans-serif] truncate">
               {product.name}
             </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-            aria-label="Close"
+            className="p-2 sm:p-1.5 rounded-xl sm:rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 active:bg-slate-200 transition-colors shrink-0 touch-manipulation"
+            aria-label="Close product popup"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5 sm:w-5 sm:h-5" />
           </button>
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="p-6 overflow-y-auto space-y-6">
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 sm:space-y-6 flex-1 overscroll-contain">
+          
+          {/* Instant Inquiry Ticket & WhatsApp Notification Banner */}
+          {ticketRaised && (
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-blue-50 border border-emerald-300 text-emerald-950 shadow-md space-y-3 animate-fadeIn">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-2.5">
+                  <div className="p-1.5 bg-emerald-600 text-white rounded-xl shadow-xs mt-0.5">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-extrabold text-sm text-emerald-900">
+                        Inquiry Ticket #{ticketRaised.ticketNumber} Raised Instantly!
+                      </span>
+                      <span className="px-2 py-0.5 bg-emerald-200 text-emerald-900 text-[10px] font-black rounded-full uppercase tracking-wider">
+                        Live on Admin ERP
+                      </span>
+                    </div>
+                    <p className="text-xs text-emerald-800 mt-1 leading-relaxed">
+                      Your inquiry for <strong className="text-slate-900">{product.name} ({totalUnits} pcs)</strong> is active on our production dashboard. Click below to continue directly on WhatsApp or submit additional items.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <a
+                  href={ticketRaised.whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-sm transition-all cursor-pointer"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Open on WhatsApp (0728102929)</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 shadow-xs transition-colors cursor-pointer"
+                >
+                  Continue Browsing
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             
             {/* Left: Product Image & Fabric Info */}
@@ -348,41 +432,41 @@ export const UniformModal: React.FC<UniformModalProps> = ({
         </div>
 
         {/* Modal Sticky Bottom Calculation Bar */}
-        <div className="p-4 sm:p-6 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 sticky bottom-0 z-20">
-          <div className="flex items-center gap-4">
+        <div className="p-3.5 sm:p-6 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 sticky bottom-0 z-20 shrink-0 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+          <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4">
             <div>
-              <span className="block text-[11px] text-slate-500 uppercase tracking-wider font-semibold">
-                Estimated Unit Price:
+              <span className="block text-[10px] sm:text-[11px] text-slate-500 uppercase tracking-wider font-bold">
+                Unit Price:
               </span>
-              <div className="flex items-baseline gap-2">
-                <span className="text-xl sm:text-2xl font-black text-[#032345] font-['Outfit',sans-serif]">
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-lg sm:text-2xl font-black text-[#032345] font-['Outfit',sans-serif]">
                   Ksh {calculatedUnitPrice.toLocaleString()}
                 </span>
                 {discountPercent > 0 && (
-                  <span className="text-xs bg-green-100 text-green-800 font-bold px-1.5 py-0.5 rounded">
-                    {Math.round(discountPercent * 100)}% Bulk Discount
+                  <span className="text-[10px] sm:text-xs bg-green-100 text-green-800 font-bold px-1.5 py-0.5 rounded">
+                    {Math.round(discountPercent * 100)}% Off
                   </span>
                 )}
               </div>
             </div>
 
-            <div className="h-8 w-px bg-slate-200 hidden sm:block"></div>
+            <div className="h-7 w-px bg-slate-200 block"></div>
 
-            <div>
-              <span className="block text-[11px] text-slate-500 uppercase tracking-wider font-semibold">
-                Total Estimate ({totalUnits} pcs):
+            <div className="text-right sm:text-left">
+              <span className="block text-[10px] sm:text-[11px] text-slate-500 uppercase tracking-wider font-bold">
+                Total ({totalUnits} pcs):
               </span>
-              <span className="text-base sm:text-lg font-bold text-slate-900 font-['Outfit',sans-serif]">
+              <span className="text-base sm:text-lg font-black text-slate-900 font-['Outfit',sans-serif]">
                 Ksh {calculatedTotal.toLocaleString()}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 text-xs font-semibold text-slate-600 hover:bg-slate-200 rounded-xl transition-colors"
+              className="px-3 sm:px-4 py-2.5 sm:py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-200 active:bg-slate-300 rounded-xl transition-colors shrink-0"
             >
               Cancel
             </button>
@@ -391,14 +475,14 @@ export const UniformModal: React.FC<UniformModalProps> = ({
               type="button"
               onClick={handleAdd}
               disabled={totalUnits < product.minOrder}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-xs font-bold text-white shadow-md transition-all ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl text-xs font-bold text-white shadow-md transition-all ${
                 totalUnits >= product.minOrder
-                  ? 'bg-[#032345] hover:bg-[#021a34] active:scale-95 cursor-pointer'
+                  ? 'bg-[#032345] hover:bg-[#021a34] active:scale-98 cursor-pointer'
                   : 'bg-slate-400 cursor-not-allowed opacity-70'
               }`}
             >
-              <ShoppingBag className="w-4 h-4" />
-              <span>Add to Quote Request</span>
+              <ShoppingBag className="w-4 h-4 shrink-0" />
+              <span className="truncate">Add to Quote Request</span>
             </button>
           </div>
         </div>

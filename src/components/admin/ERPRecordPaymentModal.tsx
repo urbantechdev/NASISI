@@ -85,7 +85,7 @@ export const ERPRecordPaymentModal: React.FC<ERPRecordPaymentModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl max-w-lg w-full border border-slate-200 shadow-2xl overflow-hidden animate-fadeIn">
         {/* Header */}
         <div className="bg-[#032345] text-white p-5 flex items-center justify-between">
