@@ -11,6 +11,7 @@ import {
   Receipt,
   UserPlus,
   Sparkles,
+  Image as ImageIcon,
   X,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -149,6 +150,19 @@ export const AdminERPBottomNav: React.FC<AdminERPBottomNavProps> = ({
         'bg-teal-50 hover:bg-teal-100 text-teal-900 border border-teal-200/90 hover:border-teal-300',
       iconClassName: 'text-teal-600',
     },
+    {
+      label: 'Hero Slides',
+      shortLabel: 'Hero',
+      description: 'Update storefront visual banner',
+      icon: ImageIcon,
+      onClick: () => {
+        setIsQuickActionsSheetOpen(false);
+        setActiveTab?.('hero');
+      },
+      className:
+        'bg-slate-50 hover:bg-slate-100 text-slate-900 border border-slate-200/90 hover:border-slate-300',
+      iconClassName: 'text-[#06163c]',
+    },
   ];
 
   return (
@@ -269,13 +283,13 @@ export const AdminERPBottomNav: React.FC<AdminERPBottomNavProps> = ({
             onClick={() => setActiveTab?.('overview')}
             className={`flex flex-col items-center justify-center py-1 transition-colors ${
               activeTab === 'overview'
-                ? 'text-[#032345] font-black'
+                ? 'text-[#06163c] font-black'
                 : 'text-slate-500 hover:text-slate-900'
             }`}
           >
             <LayoutDashboard
               className={`w-5 h-5 ${
-                activeTab === 'overview' ? 'text-[#032345] stroke-[2.5]' : 'text-slate-600'
+                activeTab === 'overview' ? 'text-[#06163c] stroke-[2.5]' : 'text-slate-600'
               }`}
             />
             <span className="text-[10px] font-bold mt-0.5 tracking-tight">Overview</span>
@@ -288,13 +302,13 @@ export const AdminERPBottomNav: React.FC<AdminERPBottomNavProps> = ({
             onClick={() => setActiveTab?.('billing')}
             className={`flex flex-col items-center justify-center py-1 transition-colors ${
               activeTab === 'billing'
-                ? 'text-[#032345] font-black'
+                ? 'text-[#06163c] font-black'
                 : 'text-slate-500 hover:text-slate-900'
             }`}
           >
             <FileSpreadsheet
               className={`w-5 h-5 ${
-                activeTab === 'billing' ? 'text-[#032345] stroke-[2.5]' : 'text-slate-600'
+                activeTab === 'billing' ? 'text-[#06163c] stroke-[2.5]' : 'text-slate-600'
               }`}
             />
             <span className="text-[10px] font-bold mt-0.5 tracking-tight">Billing</span>
@@ -310,12 +324,12 @@ export const AdminERPBottomNav: React.FC<AdminERPBottomNavProps> = ({
               whileTap={{ scale: 0.92 }}
               type="button"
               onClick={() => setIsQuickActionsSheetOpen((prev) => !prev)}
-              className="relative w-15 h-15 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#032345] via-blue-700 to-cyan-500 text-white flex flex-col items-center justify-center shadow-[0_10px_25px_rgba(37,99,235,0.55)] border-[3.5px] border-white focus:outline-none ring-4 ring-blue-500/30 cursor-pointer"
+              className="relative w-15 h-15 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#06163c] via-blue-700 to-cyan-500 text-white flex flex-col items-center justify-center shadow-[0_10px_25px_rgba(37,99,235,0.55)] border-[3.5px] border-white focus:outline-none ring-4 ring-blue-500/30 cursor-pointer"
               aria-label="Open Quick Actions Hub"
             >
               <Plus className="w-7 h-7 text-white stroke-[2.5]" />
             </motion.button>
-            <span className="text-[10px] font-black text-[#032345] mt-1 tracking-tight drop-shadow-xs">
+            <span className="text-[10px] font-black text-[#06163c] mt-1 tracking-tight drop-shadow-xs">
               Action
             </span>
           </div>
@@ -327,13 +341,13 @@ export const AdminERPBottomNav: React.FC<AdminERPBottomNavProps> = ({
             onClick={() => setActiveTab?.('inventory')}
             className={`flex flex-col items-center justify-center py-1 transition-colors ${
               activeTab === 'inventory'
-                ? 'text-[#032345] font-black'
+                ? 'text-[#06163c] font-black'
                 : 'text-slate-500 hover:text-slate-900'
             }`}
           >
             <Boxes
               className={`w-5 h-5 ${
-                activeTab === 'inventory' ? 'text-[#032345] stroke-[2.5]' : 'text-slate-600'
+                activeTab === 'inventory' ? 'text-[#06163c] stroke-[2.5]' : 'text-slate-600'
               }`}
             />
             <span className="text-[10px] font-bold mt-0.5 tracking-tight">Stock</span>
@@ -346,13 +360,13 @@ export const AdminERPBottomNav: React.FC<AdminERPBottomNavProps> = ({
             onClick={() => setActiveTab?.('customers')}
             className={`flex flex-col items-center justify-center py-1 transition-colors ${
               activeTab === 'customers'
-                ? 'text-[#032345] font-black'
+                ? 'text-[#06163c] font-black'
                 : 'text-slate-500 hover:text-slate-900'
             }`}
           >
             <Users
               className={`w-5 h-5 ${
-                activeTab === 'customers' ? 'text-[#032345] stroke-[2.5]' : 'text-slate-600'
+                activeTab === 'customers' ? 'text-[#06163c] stroke-[2.5]' : 'text-slate-600'
               }`}
             />
             <span className="text-[10px] font-bold mt-0.5 tracking-tight">Clients</span>

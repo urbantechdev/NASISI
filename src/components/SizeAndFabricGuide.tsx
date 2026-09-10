@@ -40,7 +40,7 @@ export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, 
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 bg-white sticky top-0 z-20 shrink-0">
           <div className="flex items-center gap-2.5 min-w-0 pr-2">
-            <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#032345] flex items-center justify-center font-bold shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#06163c] flex items-center justify-center font-bold shrink-0">
               <Ruler className="w-4 h-4" />
             </div>
             <div className="min-w-0">
@@ -66,7 +66,7 @@ export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, 
             onClick={() => setActiveTab('sizes')}
             className={`py-3 border-b-2 transition-colors ${
               activeTab === 'sizes'
-                ? 'border-[#032345] text-[#032345]'
+                ? 'border-[#06163c] text-[#06163c]'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
@@ -76,7 +76,7 @@ export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, 
             onClick={() => setActiveTab('fabrics')}
             className={`py-3 border-b-2 transition-colors ${
               activeTab === 'fabrics'
-                ? 'border-[#032345] text-[#032345]'
+                ? 'border-[#06163c] text-[#06163c]'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
@@ -86,7 +86,7 @@ export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, 
             onClick={() => setActiveTab('care')}
             className={`py-3 border-b-2 transition-colors ${
               activeTab === 'care'
-                ? 'border-[#032345] text-[#032345]'
+                ? 'border-[#06163c] text-[#06163c]'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
@@ -107,7 +107,7 @@ export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, 
                     onClick={() => setSizeCategory('school_junior')}
                     className={`px-3 py-1 rounded-lg text-xs font-bold ${
                       sizeCategory === 'school_junior'
-                        ? 'bg-[#032345] text-white'
+                        ? 'bg-[#06163c] text-white'
                         : 'bg-slate-100 text-slate-600'
                     }`}
                   >
@@ -117,7 +117,7 @@ export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, 
                     onClick={() => setSizeCategory('adult')}
                     className={`px-3 py-1 rounded-lg text-xs font-bold ${
                       sizeCategory === 'adult'
-                        ? 'bg-[#032345] text-white'
+                        ? 'bg-[#06163c] text-white'
                         : 'bg-slate-100 text-slate-600'
                     }`}
                   >
@@ -145,7 +145,7 @@ export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, 
                           <td className="p-3 text-slate-600">{row.chest}</td>
                           <td className="p-3 text-slate-600">{row.waist}</td>
                           <td className="p-3 text-slate-600">{row.length}</td>
-                          <td className="p-3 text-[#032345] font-semibold">{row.height}</td>
+                          <td className="p-3 text-[#06163c] font-semibold">{row.height}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -170,7 +170,7 @@ export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, 
                           <td className="p-3 text-slate-600">{row.chest}</td>
                           <td className="p-3 text-slate-600">{row.waist}</td>
                           <td className="p-3 text-slate-600">{row.neck}</td>
-                          <td className="p-3 text-[#032345] font-semibold">{row.length}</td>
+                          <td className="p-3 text-[#06163c] font-semibold">{row.length}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -188,7 +188,7 @@ export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, 
             <div className="space-y-4 text-xs">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-                  <h4 className="font-bold text-slate-900 text-sm text-[#032345]">
+                  <h4 className="font-bold text-slate-900 text-sm text-[#06163c]">
                     1. Heavyweight Poly-Cotton Pique (220 GSM)
                   </h4>
                   <p className="text-slate-600">
@@ -197,7 +197,7 @@ export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, 
                 </div>
 
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-                  <h4 className="font-bold text-slate-900 text-sm text-[#032345]">
+                  <h4 className="font-bold text-slate-900 text-sm text-[#06163c]">
                     2. Anti-Pill Acrylic / Cotton Knit (320 GSM)
                   </h4>
                   <p className="text-slate-600">
@@ -206,7 +206,7 @@ export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, 
                 </div>
 
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-                  <h4 className="font-bold text-slate-900 text-sm text-[#032345]">
+                  <h4 className="font-bold text-slate-900 text-sm text-[#06163c]">
                     3. Pro-Flex 4-Way Scrub Twill (200 GSM)
                   </h4>
                   <p className="text-slate-600">
@@ -215,7 +215,7 @@ export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, 
                 </div>
 
                 <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-                  <h4 className="font-bold text-slate-900 text-sm text-[#032345]">
+                  <h4 className="font-bold text-slate-900 text-sm text-[#06163c]">
                     4. Poly-Viscose Blazer Twill with Teflon Shield
                   </h4>
                   <p className="text-slate-600">
@@ -229,7 +229,7 @@ export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, 
           {activeTab === 'care' && (
             <div className="space-y-4 text-xs text-slate-700">
               <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 space-y-2">
-                <h4 className="font-bold text-[#032345] text-sm">
+                <h4 className="font-bold text-[#06163c] text-sm">
                   Recommended Washing & Care Instructions:
                 </h4>
                 <ul className="space-y-1.5 list-disc list-inside">
@@ -247,7 +247,7 @@ export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, 
         <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
           <button
             onClick={onClose}
-            className="px-5 py-2 bg-[#032345] text-white text-xs font-bold rounded-xl hover:bg-[#021a34]"
+            className="px-5 py-2 bg-[#06163c] text-white text-xs font-bold rounded-xl hover:bg-[#021a34]"
           >
             Close Guide
           </button>

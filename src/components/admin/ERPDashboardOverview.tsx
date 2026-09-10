@@ -96,7 +96,7 @@ export const ERPDashboardOverview: React.FC<ERPDashboardOverviewProps> = ({
         initial={{ opacity: 0, y: 15 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="relative overflow-hidden bg-gradient-to-r from-[#032345] via-[#053261] to-[#021c38] rounded-3xl p-6 sm:p-8 text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border border-blue-900/40"
+        className="relative overflow-hidden bg-gradient-to-r from-[#020a1c] via-[#06163c] to-[#030e28] rounded-3xl p-6 sm:p-8 text-white shadow-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-6 border border-blue-900/50"
       >
         <div className="absolute top-0 right-0 w-96 h-96 bg-blue-500/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-1/3 w-72 h-72 bg-cyan-400/10 rounded-full blur-3xl pointer-events-none" />
@@ -144,7 +144,7 @@ export const ERPDashboardOverview: React.FC<ERPDashboardOverviewProps> = ({
             <span className="text-xs font-bold uppercase tracking-wider text-slate-500 group-hover:text-blue-900 transition-colors">
               Total Invoiced Revenue
             </span>
-            <div className="p-2.5 bg-blue-50 text-[#032345] rounded-xl group-hover:bg-blue-600 group-hover:text-white group-hover:rotate-6 transition-all duration-300">
+            <div className="p-2.5 bg-blue-50 text-[#06163c] rounded-xl group-hover:bg-blue-600 group-hover:text-white group-hover:rotate-6 transition-all duration-300">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
@@ -275,7 +275,7 @@ export const ERPDashboardOverview: React.FC<ERPDashboardOverviewProps> = ({
                 onClick={() => setTicketFilter(f)}
                 className={`px-3 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer capitalize ${
                   ticketFilter === f
-                    ? 'bg-white text-[#032345] shadow-xs'
+                    ? 'bg-white text-[#06163c] shadow-xs'
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
@@ -307,7 +307,7 @@ export const ERPDashboardOverview: React.FC<ERPDashboardOverviewProps> = ({
                 {filteredTickets.map((ticket) => (
                   <tr key={ticket.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="py-3.5 px-2">
-                      <span className="font-mono font-bold text-[#032345] block">
+                      <span className="font-mono font-bold text-[#06163c] block">
                         #{ticket.ticketNumber}
                       </span>
                       <span className="text-[10px] text-slate-400 block font-mono">
@@ -400,7 +400,7 @@ export const ERPDashboardOverview: React.FC<ERPDashboardOverviewProps> = ({
                               onViewDoc(newInv);
                             }
                           }}
-                          className="px-2.5 py-1.5 bg-[#032345] hover:bg-[#021a34] text-white rounded-lg text-[11px] font-bold inline-flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
+                          className="px-2.5 py-1.5 bg-[#06163c] hover:bg-[#021a34] text-white rounded-lg text-[11px] font-bold inline-flex items-center gap-1 shadow-xs transition-colors cursor-pointer"
                           title="Generate Tax Invoice"
                         >
                           <FileText className="w-3.5 h-3.5" />
@@ -475,7 +475,7 @@ export const ERPDashboardOverview: React.FC<ERPDashboardOverviewProps> = ({
                 {documents.slice(0, 5).map((doc) => (
                   <tr key={doc.id} className="hover:bg-blue-50/40 transition-colors group">
                     <td className="py-3 px-2">
-                      <span className="font-mono font-bold text-[#032345] block group-hover:text-blue-700 transition-colors">
+                      <span className="font-mono font-bold text-[#06163c] block group-hover:text-blue-700 transition-colors">
                         {doc.docNumber}
                       </span>
                       <span className="text-[10px] uppercase font-bold text-slate-400">
@@ -631,7 +631,7 @@ export const ERPDashboardOverview: React.FC<ERPDashboardOverviewProps> = ({
         >
           <div className="flex items-center justify-between pb-2 border-b border-slate-100">
             <div className="flex items-center gap-2">
-              <div className="p-1.5 bg-blue-50 text-[#032345] rounded-lg">
+              <div className="p-1.5 bg-blue-50 text-[#06163c] rounded-lg">
                 <Factory className="w-4 h-4" />
               </div>
               <h3 className="text-base font-bold text-slate-900 font-['Outfit']">
@@ -676,7 +676,7 @@ export const ERPDashboardOverview: React.FC<ERPDashboardOverviewProps> = ({
                   </div>
                   <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
                     <div
-                      className="bg-gradient-to-r from-[#032345] to-blue-600 h-2 rounded-full transition-all duration-500"
+                      className="bg-gradient-to-r from-[#06163c] to-blue-600 h-2 rounded-full transition-all duration-500"
                       style={{ width: `${ord.stageProgress}%` }}
                     />
                   </div>
@@ -754,7 +754,7 @@ export const ERPDashboardOverview: React.FC<ERPDashboardOverviewProps> = ({
             whileHover={{ scale: 1.02, y: -1 }}
             whileTap={{ scale: 0.98 }}
             onClick={onOpenInventoryModal}
-            className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 text-[#032345] font-bold text-xs rounded-xl border border-slate-200 text-center transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs hover:shadow-sm"
+            className="w-full py-2.5 bg-slate-50 hover:bg-slate-100 text-[#06163c] font-bold text-xs rounded-xl border border-slate-200 text-center transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs hover:shadow-sm"
           >
             <Plus className="w-3.5 h-3.5 text-blue-600" />
             <span>+ Add New Stock Item or Raw Fabric</span>

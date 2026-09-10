@@ -302,7 +302,7 @@ export const ERPDocumentFormModal: React.FC<ERPDocumentFormModalProps> = ({
               <select
                 value={docType}
                 onChange={(e) => handleTypeChange(e.target.value as ERPDocumentType)}
-                className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold text-[#032345] focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full p-2.5 bg-white border border-slate-300 rounded-xl font-bold text-[#06163c] focus:ring-2 focus:ring-blue-500 focus:outline-none"
               >
                 <option value="invoice">Tax Invoice (INV)</option>
                 <option value="receipt">Official Receipt (RCT)</option>
@@ -372,7 +372,7 @@ export const ERPDocumentFormModal: React.FC<ERPDocumentFormModalProps> = ({
                   <select
                     value={selectedCustomerId}
                     onChange={(e) => handleCustomerSelect(e.target.value)}
-                    className="p-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-[#032345]"
+                    className="p-1.5 bg-white border border-slate-300 rounded-lg text-xs font-semibold text-[#06163c]"
                   >
                     <option value="">-- Select Saved Client --</option>
                     {customers.map((c) => (
@@ -571,28 +571,28 @@ export const ERPDocumentFormModal: React.FC<ERPDocumentFormModalProps> = ({
                 <button
                   type="button"
                   onClick={() => handleAddItem(UNIFORM_PRODUCTS[0])}
-                  className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#032345] font-bold rounded-lg border border-blue-200 text-[11px]"
+                  className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#06163c] font-bold rounded-lg border border-blue-200 text-[11px]"
                 >
                   + Blazer (Ksh 3,800)
                 </button>
                 <button
                   type="button"
                   onClick={() => handleAddItem(UNIFORM_PRODUCTS[1])}
-                  className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#032345] font-bold rounded-lg border border-blue-200 text-[11px]"
+                  className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#06163c] font-bold rounded-lg border border-blue-200 text-[11px]"
                 >
                   + Sweater (Ksh 2,200)
                 </button>
                 <button
                   type="button"
                   onClick={() => handleAddItem(UNIFORM_PRODUCTS[4])}
-                  className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#032345] font-bold rounded-lg border border-blue-200 text-[11px]"
+                  className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#06163c] font-bold rounded-lg border border-blue-200 text-[11px]"
                 >
                   + Scrub (Ksh 2,850)
                 </button>
                 <button
                   type="button"
                   onClick={() => handleAddItem()}
-                  className="px-3 py-1 bg-[#032345] text-white font-bold rounded-lg hover:bg-blue-900 text-[11px] inline-flex items-center gap-1"
+                  className="px-3 py-1 bg-[#06163c] text-white font-bold rounded-lg hover:bg-blue-900 text-[11px] inline-flex items-center gap-1"
                 >
                   <Plus className="w-3.5 h-3.5" />
                   <span>Custom Item</span>
@@ -760,7 +760,7 @@ export const ERPDocumentFormModal: React.FC<ERPDocumentFormModalProps> = ({
 
               <div className="pt-2 border-t-2 border-slate-900 flex justify-between items-center text-sm font-black text-slate-900 font-['Outfit',sans-serif]">
                 <span>GRAND TOTAL:</span>
-                <span className="text-base text-[#032345]">{formatKsh(totalAmount)}</span>
+                <span className="text-base text-[#06163c]">{formatKsh(totalAmount)}</span>
               </div>
 
               {docType !== 'receipt' && (
@@ -799,7 +799,7 @@ export const ERPDocumentFormModal: React.FC<ERPDocumentFormModalProps> = ({
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 bg-[#032345] hover:bg-blue-900 text-white font-bold rounded-xl shadow-md transition-all inline-flex items-center gap-2"
+              className="px-6 py-2.5 bg-[#06163c] hover:bg-blue-900 text-white font-bold rounded-xl shadow-md transition-all inline-flex items-center gap-2"
             >
               <Save className="w-4 h-4" />
               <span>{editDocument ? 'Save Changes' : `Issue & Save ${docType.toUpperCase()}`}</span>

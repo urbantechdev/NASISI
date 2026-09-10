@@ -16,6 +16,9 @@ import {
   AlertTriangle,
   FileText,
   Sparkles,
+  Image as ImageIcon,
+  LogOut,
+  User,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useERP } from '../../context/ERPContext';
@@ -27,6 +30,7 @@ export type ERPTabType =
   | 'inventory'
   | 'customers'
   | 'production'
+  | 'hero'
   | 'settings';
 
 interface AdminERPSidebarProps {
@@ -38,6 +42,8 @@ interface AdminERPSidebarProps {
   onSwitchToStorefront: () => void;
   isOpenMobile: boolean;
   onCloseMobile: () => void;
+  onOpenProfileModal?: () => void;
+  onLogout?: () => void;
 }
 
 export const AdminERPSidebar: React.FC<AdminERPSidebarProps> = ({
@@ -48,8 +54,10 @@ export const AdminERPSidebar: React.FC<AdminERPSidebarProps> = ({
   onOpenNewInventoryModal,
   isOpenMobile,
   onCloseMobile,
+  onOpenProfileModal,
+  onLogout,
 }) => {
-  const { documents, inventory, productionOrders } = useERP();
+  const { documents, inventory, productionOrders, currentUser } = useERP();
 
   // Metrics for live badges
   const unpaidInvoicesCount = documents.filter(
@@ -113,6 +121,12 @@ export const AdminERPSidebar: React.FC<AdminERPSidebarProps> = ({
       icon: Factory,
       badge: activeProductionCount > 0 ? activeProductionCount : undefined,
       badgeColor: 'bg-sky-500/20 text-sky-300 border border-sky-400/30',
+    },
+    {
+      id: 'hero',
+      label: 'Hero Banner & Slides',
+      description: 'Storefront banners, images & slides',
+      icon: ImageIcon,
     },
     {
       id: 'settings',
@@ -221,6 +235,53 @@ export const AdminERPSidebar: React.FC<AdminERPSidebarProps> = ({
             );
           })}
         </div>
+
+        {/* User Profile & Logout Bottom Card */}
+        {currentUser && (
+          <div className="relative z-10 p-3 border-t border-[#0d2342] bg-slate-950/70 backdrop-blur-md">
+            <div className="flex items-center justify-between gap-2 p-2 rounded-xl bg-white/5 border border-white/5 hover:border-sky-500/30 transition-all">
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenProfileModal?.();
+                  onCloseMobile();
+                }}
+                className="flex items-center gap-2.5 min-w-0 text-left hover:opacity-90 cursor-pointer group flex-1"
+                title="View & Edit Administrator Profile"
+              >
+                <div className="relative shrink-0">
+                  <img
+                    src={currentUser.avatar}
+                    alt={currentUser.name}
+                    className="w-8 h-8 rounded-full object-cover border border-sky-400/50"
+                  />
+                  <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-[#041429]" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-bold text-white truncate group-hover:text-sky-300 transition-colors">
+                    {currentUser.name}
+                  </div>
+                  <div className="text-[10px] font-mono text-slate-400 truncate">
+                    {currentUser.role}
+                  </div>
+                </div>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  onLogout?.();
+                  onCloseMobile();
+                }}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors cursor-pointer shrink-0"
+                title="Log Out of Admin Console"
+                aria-label="Log Out"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </aside>
     </>
   );

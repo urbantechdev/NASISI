@@ -1,8 +1,20 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UniformProduct, UniformCategory } from '../../types';
 import { useERP } from '../../context/ERPContext';
 import { formatKsh } from '../../utils/currency';
 import { motion, AnimatePresence } from 'motion/react';
+import academicSchoolBlazerImg from '../../assets/images/academic_school_blazer_1787666599640.jpg';
+import schoolKnitSweaterImg from '../../assets/images/school_knit_sweater_1787666624927.jpg';
+import schoolPiquePoloImg from '../../assets/images/school_pique_polo_1787666646059.jpg';
+import schoolTracksuitJacketImg from '../../assets/images/school_tracksuit_jacket_1787666665335.jpg';
+import medicalScrubSetImg from '../../assets/images/medical_scrub_set_1787666693362.jpg';
+import chefJacketExecutiveImg from '../../assets/images/chef_jacket_executive_1787666710074.jpg';
+import canvasBaristaApronImg from '../../assets/images/canvas_barista_apron_1787666742156.jpg';
+import corporateServicePoloImg from '../../assets/images/corporate_service_polo_1787666794018.jpg';
+import highVisSafetyVestImg from '../../assets/images/high_vis_safety_vest_1787666856898.jpg';
+import industrialWorkwearOverallImg from '../../assets/images/industrial_workwear_overall_1787666910504.jpg';
+import varsityLettermanJacketImg from '../../assets/images/varsity_letterman_jacket_1787666981298.jpg';
+import fleecePulloverHoodieImg from '../../assets/images/fleece_pullover_hoodie_1787666996711.jpg';
 import {
   X,
   Plus,
@@ -22,6 +34,10 @@ import {
   AlertCircle,
   Image as ImageIcon,
   Building2,
+  Upload,
+  UploadCloud,
+  FileImage,
+  Link as LinkIcon,
 } from 'lucide-react';
 
 interface ERPProductEditModalProps {
@@ -41,49 +57,57 @@ const CATEGORY_OPTIONS: { id: UniformCategory; label: string }[] = [
 
 const PRESET_GARMENT_IMAGES = [
   {
-    name: 'Academic Blazer',
-    url: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&q=80&w=800',
+    name: 'Tailored Academic Blazer',
+    url: academicSchoolBlazerImg,
   },
   {
-    name: 'School Polo Shirt',
-    url: 'https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&q=80&w=800',
+    name: 'School Knit Sweater',
+    url: schoolKnitSweaterImg,
   },
   {
-    name: 'V-Neck Knit Sweater',
-    url: 'https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?auto=format&fit=crop&q=80&w=800',
+    name: 'School Pique Polo',
+    url: schoolPiquePoloImg,
   },
   {
-    name: 'Medical Scrubs Set',
-    url: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&q=80&w=800',
+    name: 'School Sports Tracksuit',
+    url: schoolTracksuitJacketImg,
   },
   {
-    name: 'Executive Chef Coat',
-    url: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&q=80&w=800',
+    name: 'Pro-Flex Medical Scrubs Set',
+    url: medicalScrubSetImg,
   },
   {
-    name: 'Industrial Hi-Vis Vest',
-    url: 'https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?auto=format&fit=crop&q=80&w=800',
+    name: 'Executive Master Chef Jacket',
+    url: chefJacketExecutiveImg,
   },
   {
-    name: 'Heavyweight Fleece Hoodie',
-    url: 'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&q=80&w=800',
+    name: 'Bistro Canvas Barista Apron',
+    url: canvasBaristaApronImg,
   },
   {
-    name: 'Varsity Bomber Jacket',
-    url: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&q=80&w=800',
+    name: 'Corporate Performance Polo',
+    url: corporateServicePoloImg,
   },
   {
-    name: 'Corporate Oxford Shirt',
-    url: 'https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?auto=format&fit=crop&q=80&w=800',
+    name: 'High-Vis Safety Utility Vest',
+    url: highVisSafetyVestImg,
   },
   {
-    name: 'Industrial Boiler Suit',
-    url: 'https://images.unsplash.com/photo-1617137984095-74e4e5e3613f?auto=format&fit=crop&q=80&w=800',
+    name: 'Heavy-Duty Workwear Boiler Suit',
+    url: industrialWorkwearOverallImg,
+  },
+  {
+    name: 'Custom Varsity Letterman Jacket',
+    url: varsityLettermanJacketImg,
+  },
+  {
+    name: 'Heritage Fleece Pullover Hoodie',
+    url: fleecePulloverHoodieImg,
   },
 ];
 
 const PRESET_COLORS = [
-  { name: 'Royal Blue', hex: '#032345', bgClass: 'bg-[#032345]' },
+  { name: 'Royal Blue', hex: '#06163c', bgClass: 'bg-[#06163c]' },
   { name: 'Deep Navy', hex: '#0F172A', bgClass: 'bg-[#0F172A]' },
   { name: 'Crisp White', hex: '#F8FAFC', bgClass: 'bg-[#F8FAFC]' },
   { name: 'Heather Grey', hex: '#94A3B8', bgClass: 'bg-[#94A3B8]' },
@@ -120,11 +144,15 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
   const [badge, setBadge] = useState<string>('');
   const [popular, setPopular] = useState<boolean>(false);
   const [image, setImage] = useState<string>(PRESET_GARMENT_IMAGES[0].url);
+  const [imageSourceMode, setImageSourceMode] = useState<'upload' | 'url' | 'presets'>('upload');
+  const [uploadedFileName, setUploadedFileName] = useState<string>('');
+  const [isImageDragging, setIsImageDragging] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [description, setDescription] = useState('');
 
   // Complex specs
   const [colors, setColors] = useState<{ name: string; hex: string; bgClass: string }[]>([
-    { name: 'Royal Blue', hex: '#032345', bgClass: 'bg-[#032345]' },
+    { name: 'Royal Blue', hex: '#06163c', bgClass: 'bg-[#06163c]' },
     { name: 'Deep Navy', hex: '#0F172A', bgClass: 'bg-[#0F172A]' },
   ]);
 
@@ -164,7 +192,7 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
 
   // Input helpers
   const [newColorName, setNewColorName] = useState('');
-  const [newColorHex, setNewColorHex] = useState('#032345');
+  const [newColorHex, setNewColorHex] = useState('#06163c');
   const [newSizeInput, setNewSizeInput] = useState('');
   const [newFeatureInput, setNewFeatureInput] = useState('');
   const [newIdealInput, setNewIdealInput] = useState('');
@@ -173,19 +201,19 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
   // Populate when editing or reset when creating
   useEffect(() => {
     if (productToEdit) {
-      setName(productToEdit.name);
-      setTagline(productToEdit.tagline);
-      setCategory(productToEdit.category);
-      setCategoryLabel(productToEdit.categoryLabel);
+      setName(productToEdit.name || '');
+      setTagline(productToEdit.tagline || '');
+      setCategory(productToEdit.category || 'school');
+      setCategoryLabel(productToEdit.categoryLabel || 'School Uniforms');
       setSku(
         productToEdit.sku ||
-          `SKU-GAR-${productToEdit.category.substring(0, 3).toUpperCase()}-${Math.floor(
+          `SKU-GAR-${(productToEdit.category || 'SCH').substring(0, 3).toUpperCase()}-${Math.floor(
             100 + Math.random() * 900
           )}`
       );
-      setBasePrice(productToEdit.basePrice);
-      setUnitCost(productToEdit.unitCost || Math.round(productToEdit.basePrice * 0.58));
-      setMinOrder(productToEdit.minOrder);
+      setBasePrice(productToEdit.basePrice || 0);
+      setUnitCost(productToEdit.unitCost || Math.round((productToEdit.basePrice || 0) * 0.58));
+      setMinOrder(productToEdit.minOrder || 10);
       setStockOnHand(productToEdit.stockOnHand ?? 75);
       setStockReserved(productToEdit.stockReserved ?? 10);
       setLocation(productToEdit.location || 'Warehouse Bay A');
@@ -193,8 +221,8 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
       setPublished(productToEdit.published !== false);
       setBadge(productToEdit.badge || '');
       setPopular(!!productToEdit.popular);
-      setImage(productToEdit.image);
-      setDescription(productToEdit.description);
+      setImage(productToEdit.image || '');
+      setDescription(productToEdit.description || '');
       setColors(productToEdit.availableColors || []);
       setSizes(productToEdit.sizes || []);
       setFabricComp(productToEdit.fabric?.composition || '');
@@ -230,7 +258,7 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
         'Precision engineered uniform garment manufactured in Kenya with reinforced stress points, anti-shrink dyes, and commercial laundering endurance.'
       );
       setColors([
-        { name: 'Royal Blue', hex: '#032345', bgClass: 'bg-[#032345]' },
+        { name: 'Royal Blue', hex: '#06163c', bgClass: 'bg-[#06163c]' },
         { name: 'Deep Navy', hex: '#0F172A', bgClass: 'bg-[#0F172A]' },
       ]);
       setSizes(['Youth S', 'Youth M', 'Youth L', 'Adult S', 'Adult M', 'Adult L']);
@@ -363,7 +391,7 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
           className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-4xl max-h-[92vh] flex flex-col overflow-hidden text-slate-800"
         >
           {/* Modal Header */}
-          <div className="px-6 py-4 bg-[#032345] text-white flex items-center justify-between border-b border-blue-950">
+          <div className="px-6 py-4 bg-[#06163c] text-white flex items-center justify-between border-b border-blue-950">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-400/30 flex items-center justify-center">
                 <Package className="w-5 h-5 text-sky-400" />
@@ -400,7 +428,7 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all flex items-center gap-2 border-b-2 ${
                     activeTab === tab.id
-                      ? 'bg-white text-[#032345] border-[#032345] shadow-xs'
+                      ? 'bg-white text-[#06163c] border-[#06163c] shadow-xs'
                       : 'text-slate-500 hover:text-slate-900 border-transparent'
                   }`}
                 >
@@ -524,56 +552,209 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                   </div>
                 </div>
 
-                {/* Garment Image Presets & Custom URL */}
+                {/* Garment Image: File Upload, Custom URL, and Presets */}
                 <div className="space-y-3 pt-2">
-                  <label className="block text-xs font-bold text-slate-700 uppercase">
-                    Garment Product Image
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-slate-700 uppercase">
+                      Garment Product Image
+                    </label>
+                    <div className="inline-flex p-0.5 bg-slate-200/80 rounded-lg text-[11px] font-semibold">
+                      <button
+                        type="button"
+                        onClick={() => setImageSourceMode('upload')}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all ${
+                          imageSourceMode === 'upload'
+                            ? 'bg-white text-[#06163c] shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload File</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setImageSourceMode('url')}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all ${
+                          imageSourceMode === 'url'
+                            ? 'bg-white text-[#06163c] shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        <LinkIcon className="w-3.5 h-3.5" />
+                        <span>Image URL</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setImageSourceMode('presets')}
+                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all ${
+                          imageSourceMode === 'presets'
+                            ? 'bg-white text-[#06163c] shadow-xs'
+                            : 'text-slate-600 hover:text-slate-900'
+                        }`}
+                      >
+                        <FileImage className="w-3.5 h-3.5" />
+                        <span>Presets</span>
+                      </button>
+                    </div>
+                  </div>
 
-                  <div className="flex flex-col sm:flex-row gap-4 items-start">
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-slate-300 shadow-inner flex-shrink-0 bg-slate-100 relative group">
+                  <div className="flex flex-col sm:flex-row gap-4 items-start bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200">
+                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-[#D1E0FF] shadow-[0_4px_16px_rgba(209,224,255,0.45)] flex-shrink-0 bg-slate-100 relative group">
                       <img
                         src={image}
-                        alt="Preview"
+                        alt="Garment Preview"
                         className="w-full h-full object-cover"
                         referrerPolicy="no-referrer"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = PRESET_GARMENT_IMAGES[0].url;
                         }}
                       />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-[10px] font-bold">
-                        Preview
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-bold p-1 text-center">
+                        <span>Ready</span>
+                        {uploadedFileName && <span className="text-[8px] truncate max-w-full font-normal opacity-90">{uploadedFileName}</span>}
                       </div>
                     </div>
 
-                    <div className="flex-1 space-y-2 w-full">
-                      <input
-                        type="url"
-                        placeholder="Paste image URL (Unsplash, Cloud CDN, or Direct Image Link)..."
-                        value={image}
-                        onChange={(e) => setImage(e.target.value)}
-                        className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                      />
+                    <div className="flex-1 space-y-2.5 w-full">
+                      {/* Mode 1: File Upload */}
+                      {imageSourceMode === 'upload' && (
+                        <div className="space-y-2">
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept="image/png, image/jpeg, image/webp, image/svg+xml, image/gif"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                if (file.size > 10 * 1024 * 1024) {
+                                  alert('Image size exceeds 10MB limit. Please choose a smaller image.');
+                                  return;
+                                }
+                                setUploadedFileName(file.name);
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                  if (event.target?.result) {
+                                    setImage(event.target.result as string);
+                                  }
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
 
-                      <span className="text-[11px] text-slate-500 block font-semibold">
-                        Or select from curated factory presets:
-                      </span>
-                      <div className="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto pr-1">
-                        {PRESET_GARMENT_IMAGES.map((preset, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => setImage(preset.url)}
-                            className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
-                              image === preset.url
-                                ? 'bg-[#032345] text-white shadow-xs'
-                                : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                          <div
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              setIsImageDragging(true);
+                            }}
+                            onDragLeave={() => setIsImageDragging(false)}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              setIsImageDragging(false);
+                              const file = e.dataTransfer.files?.[0];
+                              if (file && file.type.startsWith('image/')) {
+                                if (file.size > 10 * 1024 * 1024) {
+                                  alert('Image size exceeds 10MB limit. Please choose a smaller image.');
+                                  return;
+                                }
+                                setUploadedFileName(file.name);
+                                const reader = new FileReader();
+                                reader.onload = (event) => {
+                                  if (event.target?.result) {
+                                    setImage(event.target.result as string);
+                                  }
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                            onClick={() => fileInputRef.current?.click()}
+                            className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 ${
+                              isImageDragging
+                                ? 'border-[#06163c] bg-blue-100/50 scale-[1.01]'
+                                : 'border-slate-300 hover:border-[#06163c] bg-white hover:bg-blue-50/30'
                             }`}
                           >
-                            {preset.name}
-                          </button>
-                        ))}
-                      </div>
+                            <div className="p-2 bg-blue-50 rounded-full text-[#06163c]">
+                              <UploadCloud className="w-5 h-5 text-[#06163c]" />
+                            </div>
+                            <div className="text-xs">
+                              <span className="font-bold text-[#06163c]">Click to upload product image</span> or drag and drop
+                            </div>
+                            <p className="text-[10px] text-slate-500">
+                              Supports high-res PNG, JPG, WebP or SVG (up to 10MB)
+                            </p>
+                          </div>
+
+                          {uploadedFileName && (
+                            <div className="flex items-center justify-between px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-900 text-xs">
+                              <div className="flex items-center gap-2 truncate">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                <span className="font-semibold truncate">Uploaded: {uploadedFileName}</span>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setUploadedFileName('');
+                                  setImage(PRESET_GARMENT_IMAGES[0].url);
+                                  if (fileInputRef.current) fileInputRef.current.value = '';
+                                }}
+                                className="text-slate-400 hover:text-red-600 font-bold ml-2"
+                              >
+                                Clear
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Mode 2: Direct Image URL */}
+                      {imageSourceMode === 'url' && (
+                        <div className="space-y-1.5">
+                          <input
+                            type="url"
+                            placeholder="Paste image URL (Unsplash, Cloud CDN, or Direct Image Link)..."
+                            value={image}
+                            onChange={(e) => {
+                              setImage(e.target.value);
+                              setUploadedFileName('');
+                            }}
+                            className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          />
+                          <p className="text-[10px] text-slate-500">
+                            Enter any direct image web link (HTTPS recommended)
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Mode 3: Presets */}
+                      {imageSourceMode === 'presets' && (
+                        <div className="space-y-1.5">
+                          <span className="text-[11px] text-slate-600 block font-semibold">
+                            Select from curated factory photography:
+                          </span>
+                          <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
+                            {PRESET_GARMENT_IMAGES.map((preset, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => {
+                                  setImage(preset.url);
+                                  setUploadedFileName('');
+                                }}
+                                className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
+                                  image === preset.url
+                                    ? 'bg-[#06163c] text-white shadow-xs'
+                                    : 'bg-white hover:bg-slate-200 text-slate-700 border border-slate-200'
+                                }`}
+                              >
+                                {preset.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -791,7 +972,7 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                     <button
                       type="button"
                       onClick={handleAddColor}
-                      className="px-3 py-1.5 bg-[#032345] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-xs"
+                      className="px-3 py-1.5 bg-[#06163c] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-xs"
                     >
                       + Add Color
                     </button>
@@ -992,7 +1173,7 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-[#032345] hover:bg-blue-900 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                  className="w-full sm:w-auto px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-[#06163c] hover:bg-blue-900 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
                 >
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                   <span>{productToEdit ? 'Update Garment & Sync Inventory' : 'Publish New SKU & Save'}</span>

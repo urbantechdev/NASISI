@@ -62,7 +62,7 @@ export const ContactSection: React.FC = () => {
         particleCount: 70,
         spread: 70,
         origin: { y: 0.8 },
-        colors: ['#032345', '#38BDF8', '#FFFFFF', '#10B981'],
+        colors: ['#06163c', '#38BDF8', '#FFFFFF', '#10B981'],
       });
     } catch {
       // ignore
@@ -75,7 +75,7 @@ export const ContactSection: React.FC = () => {
         
         {/* Section Title */}
         <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#032345] text-xs font-bold tracking-wide">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#06163c] text-xs font-bold tracking-wide">
             <MessageSquare className="w-3.5 h-3.5" />
             <span>Direct Inquiries & Workshop Consultation</span>
           </div>
@@ -99,7 +99,7 @@ export const ContactSection: React.FC = () => {
 
               <div className="space-y-3 text-xs text-slate-700">
                 <div className="flex items-start gap-3">
-                  <MapPin className="w-4 h-4 text-[#032345] flex-shrink-0 mt-0.5" />
+                  <MapPin className="w-4 h-4 text-[#06163c] flex-shrink-0 mt-0.5" />
                   <div>
                     <strong className="block text-slate-900">Factory & Design Studio:</strong>
                     <span>Commercial Industrial Park, Uniforms & Knitwear Wing</span>
@@ -107,27 +107,27 @@ export const ContactSection: React.FC = () => {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <Phone className="w-4 h-4 text-[#032345] flex-shrink-0" />
+                  <Phone className="w-4 h-4 text-[#06163c] flex-shrink-0" />
                   <div>
                     <strong className="block text-slate-900">Direct Hotline:</strong>
-                    <a href="tel:0728102929" className="text-[#032345] hover:underline font-semibold font-mono">
+                    <a href="tel:0728102929" className="text-[#06163c] hover:underline font-semibold font-mono">
                       0728102929 / +254 728 102 929
                     </a>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <Mail className="w-4 h-4 text-[#032345] flex-shrink-0" />
+                  <Mail className="w-4 h-4 text-[#06163c] flex-shrink-0" />
                   <div>
                     <strong className="block text-slate-900">Email Inquiries:</strong>
-                    <a href="mailto:info@nasisiuniforms.com" className="text-[#032345] hover:underline">
+                    <a href="mailto:info@nasisiuniforms.com" className="text-[#06163c] hover:underline">
                       orders@nasisiuniforms.com • info@nasisiuniforms.com
                     </a>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <Clock className="w-4 h-4 text-[#032345] flex-shrink-0" />
+                  <Clock className="w-4 h-4 text-[#06163c] flex-shrink-0" />
                   <div>
                     <strong className="block text-slate-900">Working Hours:</strong>
                     <span>Mon - Fri: 8:00 AM – 6:00 PM • Sat: 9:00 AM – 2:00 PM</span>
@@ -167,7 +167,7 @@ export const ContactSection: React.FC = () => {
                     >
                       <span>{faq.q}</span>
                       <ChevronDown
-                        className={`w-4 h-4 text-[#032345] flex-shrink-0 transition-transform ${
+                        className={`w-4 h-4 text-[#06163c] flex-shrink-0 transition-transform ${
                           openFaq === idx ? 'rotate-180' : ''
                         }`}
                       />
@@ -220,7 +220,7 @@ export const ContactSection: React.FC = () => {
                     </a>
                     <button
                       onClick={() => setSent(false)}
-                      className="text-xs font-bold text-[#032345] hover:underline px-3 py-2"
+                      className="text-xs font-bold text-[#06163c] hover:underline px-3 py-2"
                     >
                       Send Another
                     </button>
@@ -239,7 +239,7 @@ export const ContactSection: React.FC = () => {
                         placeholder="e.g. John Doe"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#032345] focus:outline-none"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#06163c] focus:outline-none"
                       />
                     </div>
 
@@ -253,7 +253,7 @@ export const ContactSection: React.FC = () => {
                         placeholder="e.g. St. Jude Academy"
                         value={organization}
                         onChange={(e) => setOrganization(e.target.value)}
-                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#032345] focus:outline-none"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#06163c] focus:outline-none"
                       />
                     </div>
 
@@ -267,7 +267,7 @@ export const ContactSection: React.FC = () => {
                         placeholder="0728102929 or +254 700 000 000"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#032345] focus:outline-none"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#06163c] focus:outline-none"
                       />
                     </div>
 
@@ -280,7 +280,7 @@ export const ContactSection: React.FC = () => {
                         placeholder="procurement@school.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#032345] focus:outline-none"
+                        className="w-full p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#06163c] focus:outline-none"
                       />
                     </div>
                   </div>
@@ -292,7 +292,7 @@ export const ContactSection: React.FC = () => {
                     <select
                       value={serviceNeeded}
                       onChange={(e) => setServiceNeeded(e.target.value)}
-                      className="w-full p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#032345] focus:outline-none"
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#06163c] focus:outline-none"
                     >
                       <option value="School Uniforms">School Uniforms & Academic Blazers</option>
                       <option value="Custom Knitwear">Custom Knitwear Sweaters & Cardigans</option>
@@ -314,13 +314,13 @@ export const ContactSection: React.FC = () => {
                       placeholder="e.g. We need 150 royal blue pique polo shirts with our school crest embroidered on left chest, and 80 V-neck sweaters for term 1 intake."
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      className="w-full p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#032345] focus:outline-none"
+                      className="w-full p-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-[#06163c] focus:outline-none"
                     ></textarea>
                   </div>
 
                   <button
                     type="submit"
-                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#032345] hover:bg-[#021a34] text-white font-extrabold text-xs rounded-xl shadow-md transition-all active:scale-[0.98] cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-[#020a1c] via-[#06163c] to-[#030e28] hover:from-[#010612] hover:via-[#040f28] hover:to-[#010612] text-white font-extrabold text-xs rounded-xl shadow-lg border border-blue-900/40 transition-all active:scale-[0.98] cursor-pointer"
                   >
                     <Send className="w-4 h-4" />
                     <span>Submit Inquiry & Raise ERP Ticket</span>

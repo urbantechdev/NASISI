@@ -95,7 +95,7 @@ export const ERPCustomerManager: React.FC<ERPCustomerManagerProps> = ({
 
           <button
             onClick={onOpenAddCustomerModal}
-            className="px-4 py-2.5 bg-[#032345] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow transition-all inline-flex items-center gap-1.5"
+            className="px-4 py-2.5 bg-[#06163c] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow transition-all inline-flex items-center gap-1.5"
           >
             <Plus className="w-4 h-4" />
             <span>+ Add New Institutional Client</span>
@@ -130,7 +130,7 @@ export const ERPCustomerManager: React.FC<ERPCustomerManagerProps> = ({
                 onClick={() => setCategoryFilter(cat.id)}
                 className={`px-3 py-2 rounded-xl font-bold whitespace-nowrap transition-all ${
                   categoryFilter === cat.id
-                    ? 'bg-[#032345] text-white shadow-sm'
+                    ? 'bg-[#06163c] text-white shadow-sm'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
@@ -149,7 +149,7 @@ export const ERPCustomerManager: React.FC<ERPCustomerManagerProps> = ({
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <span className="px-2 py-0.5 bg-blue-100 text-[#032345] rounded-full text-[10px] font-bold uppercase">
+                  <span className="px-2 py-0.5 bg-blue-100 text-[#06163c] rounded-full text-[10px] font-bold uppercase">
                     {cust.category}
                   </span>
                   <h4 className="text-sm font-bold text-slate-900 font-['Outfit'] mt-1">
@@ -210,13 +210,13 @@ export const ERPCustomerManager: React.FC<ERPCustomerManagerProps> = ({
               <div className="pt-2 flex items-center gap-2">
                 <button
                   onClick={() => onOpenCreateDocForCustomer(cust, 'invoice')}
-                  className="flex-1 py-1.5 bg-[#032345] hover:bg-blue-900 text-white font-bold text-[11px] rounded-lg text-center transition-colors"
+                  className="flex-1 py-1.5 bg-[#06163c] hover:bg-blue-900 text-white font-bold text-[11px] rounded-lg text-center transition-colors"
                 >
                   + Invoice
                 </button>
                 <button
                   onClick={() => onOpenCreateDocForCustomer(cust, 'quotation')}
-                  className="flex-1 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-[#032345] font-bold text-[11px] rounded-lg text-center transition-colors"
+                  className="flex-1 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-[#06163c] font-bold text-[11px] rounded-lg text-center transition-colors"
                 >
                   + Quote
                 </button>

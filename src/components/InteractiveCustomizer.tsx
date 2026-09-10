@@ -33,9 +33,9 @@ const SAMPLE_LOGOS = [
     type: 'Academic Crest',
     svg: (
       <svg viewBox="0 0 100 100" className="w-full h-full">
-        <path d="M 50 10 L 85 25 L 85 60 C 85 80, 50 95, 50 95 C 50 95, 15 80, 15 60 L 15 25 Z" fill="#032345" stroke="#FFFFFF" strokeWidth="3" />
+        <path d="M 50 10 L 85 25 L 85 60 C 85 80, 50 95, 50 95 C 50 95, 15 80, 15 60 L 15 25 Z" fill="#06163c" stroke="#FFFFFF" strokeWidth="3" />
         <circle cx="50" cy="45" r="18" fill="#FFFFFF" />
-        <path d="M 50 32 L 54 42 L 64 42 L 56 48 L 59 58 L 50 52 L 41 58 L 44 48 L 36 42 L 46 42 Z" fill="#032345" />
+        <path d="M 50 32 L 54 42 L 64 42 L 56 48 L 59 58 L 50 52 L 41 58 L 44 48 L 36 42 L 46 42 Z" fill="#06163c" />
         <text x="50" y="80" textAnchor="middle" fill="#FFFFFF" fontSize="9" fontWeight="bold" fontFamily="sans-serif">ST. JUDE</text>
       </svg>
     ),
@@ -46,8 +46,8 @@ const SAMPLE_LOGOS = [
     type: 'Monogram Emblem',
     svg: (
       <svg viewBox="0 0 100 100" className="w-full h-full">
-        <circle cx="50" cy="50" r="42" fill="#FFFFFF" stroke="#032345" strokeWidth="4" />
-        <circle cx="50" cy="50" r="36" fill="#032345" />
+        <circle cx="50" cy="50" r="42" fill="#FFFFFF" stroke="#06163c" strokeWidth="4" />
+        <circle cx="50" cy="50" r="36" fill="#06163c" />
         <text x="50" y="60" textAnchor="middle" fill="#FFFFFF" fontSize="30" fontWeight="900" fontFamily="serif">OA</text>
       </svg>
     ),
@@ -58,7 +58,7 @@ const SAMPLE_LOGOS = [
     type: 'Corporate Shield',
     svg: (
       <svg viewBox="0 0 100 100" className="w-full h-full">
-        <rect x="15" y="20" width="70" height="60" rx="8" fill="#032345" stroke="#FFFFFF" strokeWidth="2.5" />
+        <rect x="15" y="20" width="70" height="60" rx="8" fill="#06163c" stroke="#FFFFFF" strokeWidth="2.5" />
         <path d="M 30 55 L 50 35 L 70 55 L 58 55 L 58 70 L 42 70 L 42 55 Z" fill="#FFFFFF" />
         <text x="50" y="30" textAnchor="middle" fill="#FFFFFF" fontSize="8" fontWeight="bold" letterSpacing="2">APEX</text>
       </svg>
@@ -70,10 +70,10 @@ const SAMPLE_LOGOS = [
     type: 'Medical Cross',
     svg: (
       <svg viewBox="0 0 100 100" className="w-full h-full">
-        <circle cx="50" cy="50" r="44" fill="#032345" />
+        <circle cx="50" cy="50" r="44" fill="#06163c" />
         <rect x="42" y="22" width="16" height="56" rx="4" fill="#FFFFFF" />
         <rect x="22" y="42" width="56" height="16" rx="4" fill="#FFFFFF" />
-        <circle cx="50" cy="50" r="6" fill="#032345" />
+        <circle cx="50" cy="50" r="6" fill="#06163c" />
       </svg>
     ),
   },
@@ -83,10 +83,10 @@ const SAMPLE_LOGOS = [
     type: 'Hospitality Emblem',
     svg: (
       <svg viewBox="0 0 100 100" className="w-full h-full">
-        <circle cx="50" cy="50" r="42" fill="#FFFFFF" stroke="#032345" strokeWidth="3" />
-        <path d="M 38 35 C 38 25, 62 25, 62 35 C 68 35, 70 42, 65 48 C 65 55, 35 55, 35 48 C 30 42, 32 35, 38 35 Z" fill="#032345" />
-        <rect x="40" y="55" width="20" height="6" rx="1" fill="#032345" />
-        <text x="50" y="78" textAnchor="middle" fill="#032345" fontSize="8" fontWeight="bold">BISTRO</text>
+        <circle cx="50" cy="50" r="42" fill="#FFFFFF" stroke="#06163c" strokeWidth="3" />
+        <path d="M 38 35 C 38 25, 62 25, 62 35 C 68 35, 70 42, 65 48 C 65 55, 35 55, 35 48 C 30 42, 32 35, 38 35 Z" fill="#06163c" />
+        <rect x="40" y="55" width="20" height="6" rx="1" fill="#06163c" />
+        <text x="50" y="78" textAnchor="middle" fill="#06163c" fontSize="8" fontWeight="bold">BISTRO</text>
       </svg>
     ),
   },
@@ -104,9 +104,9 @@ const GARMENT_OPTIONS = [
 ];
 
 const COLOR_PALETTES = [
-  { name: 'Royal Blue', hex: '#032345', contrastColor: '#FFFFFF' },
+  { name: 'Royal Blue', hex: '#06163c', contrastColor: '#FFFFFF' },
   { name: 'Deep Navy', hex: '#0F172A', contrastColor: '#FFFFFF' },
-  { name: 'Crisp White', hex: '#F8FAFC', contrastColor: '#032345' },
+  { name: 'Crisp White', hex: '#F8FAFC', contrastColor: '#06163c' },
   { name: 'Heather Grey', hex: '#94A3B8', contrastColor: '#0F172A' },
   { name: 'Bottle Green', hex: '#14532D', contrastColor: '#FFFFFF' },
   { name: 'Burgundy', hex: '#881337', contrastColor: '#FFFFFF' },
@@ -277,7 +277,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
         particleCount: 80,
         spread: 80,
         origin: { y: 0.6 },
-        colors: ['#032345', '#38BDF8', '#FFFFFF', '#F59E0B'],
+        colors: ['#06163c', '#38BDF8', '#FFFFFF', '#F59E0B'],
       });
     } catch {
       // ignore
@@ -330,7 +330,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
       <div className="relative w-full h-full sm:h-auto max-w-6xl bg-white rounded-none sm:rounded-3xl shadow-2xl border-0 sm:border sm:border-slate-200 overflow-hidden z-10 flex flex-col sm:max-h-[92vh]">
         
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 bg-[#032345] text-white border-b border-blue-950 flex-shrink-0">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 bg-gradient-to-r from-[#020a1c] via-[#06163c] to-[#030e28] text-white border-b border-blue-900/60 flex-shrink-0 shadow-sm">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 pr-2">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-white/10 flex items-center justify-center text-blue-200 border border-white/10 shrink-0">
               <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-blue-300" />
@@ -396,7 +396,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                       onClose();
                       onOpenQuoteModal();
                     }}
-                    className="px-3.5 py-1.5 rounded-lg bg-[#032345] text-white text-xs font-bold hover:bg-[#021a34] transition-colors"
+                    className="px-3.5 py-1.5 rounded-lg bg-[#06163c] text-white text-xs font-bold hover:bg-[#021a34] transition-colors"
                   >
                     View Quote Cart
                   </button>
@@ -425,13 +425,13 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                     {selectedGarment.name} • {garmentColor.name}
                   </span>
                 </div>
-                <span className="font-bold text-[#032345] bg-blue-100/70 px-2.5 py-1 rounded-md text-[11px]">
+                <span className="font-bold text-[#06163c] bg-blue-100/70 px-2.5 py-1 rounded-md text-[11px]">
                   {brandingTechnique === 'embroidery' ? '🧵 Industrial Embroidery' : '🖨️ Silkscreen / DTF'}
                 </span>
               </div>
 
               {/* Garment Mockup Canvas */}
-              <div className="relative w-full aspect-square max-h-[380px] mx-auto rounded-2xl flex items-center justify-center p-4 bg-white border border-slate-200 overflow-hidden shadow-inner select-none">
+              <div className="relative w-full aspect-square max-h-[380px] mx-auto rounded-2xl flex items-center justify-center p-4 bg-white border border-[#D1E0FF] overflow-hidden shadow-[0_10px_28px_rgba(209,224,255,0.45)] select-none">
                 
                 {/* Dynamic SVG Garment Render */}
                 <svg
@@ -459,7 +459,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                       <path d="M 140 70 L 200 240 L 150 160 L 120 70 Z" fill="#000000" fillOpacity="0.18" />
                       <path d="M 260 70 L 200 240 L 250 160 L 280 70 Z" fill="#000000" fillOpacity="0.18" />
                       <polygon points="165,70 235,70 200,160" fill="#FFFFFF" />
-                      <polygon points="194,100 206,100 204,190 200,200 196,190" fill="#032345" />
+                      <polygon points="194,100 206,100 204,190 200,200 196,190" fill="#06163c" />
                       <rect x="235" y="160" width="38" height="6" rx="1" fill="#000000" fillOpacity="0.3" />
                       <circle cx="200" cy="275" r="4" fill="#E2E8F0" stroke="#64748B" strokeWidth="1" />
                       <circle cx="200" cy="315" r="4" fill="#E2E8F0" stroke="#64748B" strokeWidth="1" />
@@ -471,7 +471,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                         fill={garmentColor.hex}
                       />
                       <polygon points="150,65 250,65 200,150" fill="#FFFFFF" />
-                      <path d="M 148 65 L 200 152 L 252 65 L 242 65 L 200 138 L 158 65 Z" fill="#032345" />
+                      <path d="M 148 65 L 200 152 L 252 65 L 242 65 L 200 138 L 158 65 Z" fill="#06163c" />
                       <rect x="115" y="348" width="170" height="17" fill="#000000" fillOpacity="0.15" />
                       <line x1="115" y1="348" x2="285" y2="348" stroke="#FFFFFF" strokeWidth="1" strokeDasharray="3 3" opacity="0.3" />
                     </g>
@@ -484,8 +484,8 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                       <rect x="160" y="58" width="80" height="18" rx="4" fill={garmentColor.hex} stroke="#000000" strokeOpacity="0.2" />
                       {[130, 170, 210, 250, 290].map((y) => (
                         <g key={y}>
-                          <circle cx="175" cy={y} r="4" fill="#032345" />
-                          <circle cx="215" cy={y} r="4" fill="#032345" />
+                          <circle cx="175" cy={y} r="4" fill="#06163c" />
+                          <circle cx="215" cy={y} r="4" fill="#06163c" />
                         </g>
                       ))}
                     </g>
@@ -564,13 +564,13 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
               <div className="bg-white p-3 rounded-2xl border border-slate-200 space-y-2 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-slate-700 flex items-center gap-1.5">
-                    <Move className="w-3.5 h-3.5 text-[#032345]" />
+                    <Move className="w-3.5 h-3.5 text-[#06163c]" />
                     <span>Logo Scale & Position:</span>
                   </span>
                   <button
                     type="button"
                     onClick={handleResetPosition}
-                    className="flex items-center gap-1 text-[11px] text-[#032345] hover:underline font-semibold"
+                    className="flex items-center gap-1 text-[11px] text-[#06163c] hover:underline font-semibold"
                   >
                     <RotateCcw className="w-3 h-3" />
                     <span>Reset</span>
@@ -589,7 +589,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                       max="140"
                       value={logoScale}
                       onChange={(e) => setLogoScale(Number(e.target.value))}
-                      className="w-full accent-[#032345] cursor-pointer"
+                      className="w-full accent-[#06163c] cursor-pointer"
                     />
                   </div>
 
@@ -604,7 +604,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                       max="15"
                       value={logoOffsetX}
                       onChange={(e) => setLogoOffsetX(Number(e.target.value))}
-                      className="w-full accent-[#032345] cursor-pointer"
+                      className="w-full accent-[#06163c] cursor-pointer"
                     />
                   </div>
                 </div>
@@ -628,7 +628,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                       onClick={() => setSelectedGarment(g)}
                       className={`p-2 rounded-xl text-left border transition-all ${
                         selectedGarment.id === g.id
-                          ? 'border-[#032345] bg-blue-50/80 ring-2 ring-blue-500/10 text-[#032345] font-bold'
+                          ? 'border-[#06163c] bg-blue-50/80 ring-2 ring-blue-500/10 text-[#06163c] font-bold'
                           : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'
                       }`}
                     >
@@ -642,7 +642,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
               {/* 2. Fabric Color Palette */}
               <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2.5">
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
-                  2. Fabric Color: <span className="text-[#032345] font-extrabold">{garmentColor.name}</span>
+                  2. Fabric Color: <span className="text-[#06163c] font-extrabold">{garmentColor.name}</span>
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {COLOR_PALETTES.map((col) => (
@@ -652,7 +652,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                       onClick={() => setGarmentColor(col)}
                       className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
                         garmentColor.name === col.name
-                          ? 'border-[#032345] ring-2 ring-blue-500/20 bg-blue-50 text-[#032345]'
+                          ? 'border-[#06163c] ring-2 ring-blue-500/20 bg-blue-50 text-[#06163c]'
                           : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'
                       }`}
                     >
@@ -661,7 +661,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                         style={{ backgroundColor: col.hex }}
                       />
                       <span>{col.name}</span>
-                      {garmentColor.name === col.name && <Check className="w-3 h-3 text-[#032345]" />}
+                      {garmentColor.name === col.name && <Check className="w-3 h-3 text-[#06163c]" />}
                     </button>
                   ))}
                 </div>
@@ -675,7 +675,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                     onClick={() => setBrandingTechnique('embroidery')}
                     className={`p-2.5 rounded-xl text-left border transition-all ${
                       brandingTechnique === 'embroidery'
-                        ? 'border-[#032345] bg-blue-50/80 text-[#032345] ring-2 ring-blue-500/10'
+                        ? 'border-[#06163c] bg-blue-50/80 text-[#06163c] ring-2 ring-blue-500/10'
                         : 'border-slate-200 text-slate-700 bg-white hover:border-slate-300'
                     }`}
                   >
@@ -688,7 +688,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                     onClick={() => setBrandingTechnique('screen_print')}
                     className={`p-2.5 rounded-xl text-left border transition-all ${
                       brandingTechnique === 'screen_print'
-                        ? 'border-[#032345] bg-blue-50/80 text-[#032345] ring-2 ring-blue-500/10'
+                        ? 'border-[#06163c] bg-blue-50/80 text-[#06163c] ring-2 ring-blue-500/10'
                         : 'border-slate-200 text-slate-700 bg-white hover:border-slate-300'
                     }`}
                   >
@@ -715,7 +715,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                         onClick={() => setActivePlacement(pos.id as any)}
                         className={`py-1.5 px-2 rounded-lg text-xs font-bold text-center border transition-all ${
                           activePlacement === pos.id
-                            ? 'bg-[#032345] text-white border-[#032345] shadow-sm'
+                            ? 'bg-[#06163c] text-white border-[#06163c] shadow-sm'
                             : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                         }`}
                       >
@@ -741,7 +741,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                         }}
                         className={`flex-shrink-0 w-10 h-10 p-1 rounded-xl border transition-all ${
                           !customLogoUrl && selectedSampleLogo.id === sample.id
-                            ? 'border-[#032345] bg-blue-50 ring-2 ring-blue-500/20'
+                            ? 'border-[#06163c] bg-blue-50 ring-2 ring-blue-500/20'
                             : 'border-slate-200 bg-white hover:border-slate-300'
                         }`}
                         title={sample.name}
@@ -753,7 +753,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex-shrink-0 flex items-center justify-center gap-1 w-24 h-10 rounded-xl border border-dashed border-[#032345] bg-blue-50/50 hover:bg-blue-100 text-[#032345] text-[10px] font-bold px-2 transition-colors cursor-pointer"
+                      className="flex-shrink-0 flex items-center justify-center gap-1 w-24 h-10 rounded-xl border border-dashed border-[#06163c] bg-blue-50/50 hover:bg-blue-100 text-[#06163c] text-[10px] font-bold px-2 transition-colors cursor-pointer"
                     >
                       <Upload className="w-3 h-3" />
                       <span>Upload</span>
@@ -770,7 +770,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
               </div>
 
               {/* 4. Instant Bulk Pricing Engine & Action */}
-              <div className="bg-[#032345] text-white p-5 rounded-2xl shadow-xl space-y-3.5">
+              <div className="bg-gradient-to-br from-[#020a1c] via-[#06163c] to-[#030e28] text-white p-5 rounded-2xl shadow-2xl border border-blue-900/50 space-y-3.5">
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-[10px] font-bold uppercase tracking-widest text-blue-200">
@@ -797,7 +797,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                       onClick={() => setOrderQuantity(qty)}
                       className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                         orderQuantity === qty
-                          ? 'bg-white text-[#032345] shadow-md'
+                          ? 'bg-white text-[#06163c] shadow-md'
                           : 'bg-[#021a34] text-blue-100 hover:bg-[#01152a]'
                       }`}
                     >
@@ -819,9 +819,9 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                 <button
                   type="button"
                   onClick={handleSendToCart}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-white text-[#032345] font-black text-xs sm:text-sm hover:bg-blue-50 shadow-md transition-all active:scale-[0.98] cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-white text-[#06163c] font-black text-xs sm:text-sm hover:bg-blue-50 shadow-md transition-all active:scale-[0.98] cursor-pointer"
                 >
-                  <ShoppingBag className="w-4 h-4 text-[#032345]" />
+                  <ShoppingBag className="w-4 h-4 text-[#06163c]" />
                   <span>Add Design to Quote Cart (Ksh {totalEstimate.toLocaleString()})</span>
                 </button>
               </div>

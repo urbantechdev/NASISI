@@ -13,11 +13,14 @@ import { ERPInventoryManager } from './ERPInventoryManager';
 import { ERPCustomerManager } from './ERPCustomerManager';
 import { ERPProductionTracker } from './ERPProductionTracker';
 import { ERPCompanySettings } from './ERPCompanySettings';
+import { ERPHeroManager } from './ERPHeroManager';
 import { ERPDocumentFormModal } from './ERPDocumentFormModal';
 import { ERPDocumentPrintModal } from './ERPDocumentPrintModal';
 import { ERPAddCustomerModal } from './ERPAddCustomerModal';
 import { ERPRecordPaymentModal } from './ERPRecordPaymentModal';
 import { ERPAddStockModal } from './ERPAddStockModal';
+import { AdminLoginPage } from './AdminLoginPage';
+import { AdminUserProfileModal } from './AdminUserProfileModal';
 import { ERPCustomer, ERPDocument, ERPDocumentType } from '../../types';
 
 interface AdminERPSuiteProps {
@@ -27,10 +30,21 @@ interface AdminERPSuiteProps {
 export const AdminERPSuite: React.FC<AdminERPSuiteProps> = ({
   onSwitchToStorefront,
 }) => {
-  const { documents, customers, createDocument, updateDocument } = useERP();
+  const {
+    documents,
+    customers,
+    createDocument,
+    updateDocument,
+    businessProfile,
+    isAuthenticated,
+    logout,
+  } = useERP();
 
   const [activeTab, setActiveTab] = useState<ERPTabType>('overview');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Profile Modal State
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   // Modals state
   const [isDocFormOpen, setIsDocFormOpen] = useState(false);
@@ -43,6 +57,16 @@ export const AdminERPSuite: React.FC<AdminERPSuiteProps> = ({
   const [isAddCustomerModalOpen, setIsAddCustomerModalOpen] = useState(false);
   const [isRecordPaymentModalOpen, setIsRecordPaymentModalOpen] = useState(false);
   const [isAddStockModalOpen, setIsAddStockModalOpen] = useState(false);
+
+  const handleLogout = () => {
+    setIsProfileModalOpen(false);
+    logout();
+  };
+
+  // If not authenticated, show the secure Enterprise Admin Login portal!
+  if (!isAuthenticated) {
+    return <AdminLoginPage onBackToStorefront={onSwitchToStorefront} />;
+  }
 
   // Document actions
   const handleOpenCreateDoc = (type: ERPDocumentType = 'invoice') => {
@@ -94,6 +118,8 @@ export const AdminERPSuite: React.FC<AdminERPSuiteProps> = ({
         onOpenNewPaymentModal={() => setIsRecordPaymentModalOpen(true)}
         onOpenNewInventoryModal={() => setIsAddStockModalOpen(true)}
         onSwitchToStorefront={onSwitchToStorefront}
+        onOpenProfileModal={() => setIsProfileModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* 2. Persistent Left Sidebar (Stays directly below the full-width header) */}
@@ -106,6 +132,8 @@ export const AdminERPSuite: React.FC<AdminERPSuiteProps> = ({
         onSwitchToStorefront={onSwitchToStorefront}
         isOpenMobile={isMobileMenuOpen}
         onCloseMobile={() => setIsMobileMenuOpen(false)}
+        onOpenProfileModal={() => setIsProfileModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* 3. Main Workspace Area (padded top for doubled header + wave, padded left for sidebar, padded bottom for 96px bottom action dock + wave) */}
@@ -165,6 +193,8 @@ export const AdminERPSuite: React.FC<AdminERPSuiteProps> = ({
           )}
 
           {activeTab === 'production' && <ERPProductionTracker />}
+
+          {activeTab === 'hero' && <ERPHeroManager />}
 
           {activeTab === 'settings' && <ERPCompanySettings />}
         </main>
@@ -255,6 +285,7 @@ export const AdminERPSuite: React.FC<AdminERPSuiteProps> = ({
         isOpen={isPrintModalOpen}
         onClose={() => setIsPrintModalOpen(false)}
         document={viewingDoc}
+        businessProfile={businessProfile}
       />
 
       {/* 3. Add Customer Modal */}
@@ -273,6 +304,13 @@ export const AdminERPSuite: React.FC<AdminERPSuiteProps> = ({
       <ERPAddStockModal
         isOpen={isAddStockModalOpen}
         onClose={() => setIsAddStockModalOpen(false)}
+      />
+
+      {/* 6. Admin User Profile & Settings Modal */}
+      <AdminUserProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        onConfirmLogout={handleLogout}
       />
     </div>
   );

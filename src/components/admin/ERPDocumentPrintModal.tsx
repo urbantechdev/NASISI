@@ -1,6 +1,8 @@
 import React, { useRef } from 'react';
 import { ERPBusinessProfile, ERPDocument } from '../../types';
 import { formatKsh } from '../../utils/currency';
+import { useERP } from '../../context/ERPContext';
+import { INITIAL_BUSINESS_PROFILE } from '../../data/erpInitialData';
 import {
   Printer,
   X,
@@ -19,18 +21,21 @@ interface ERPDocumentPrintModalProps {
   isOpen: boolean;
   onClose: () => void;
   document: ERPDocument | null;
-  businessProfile: ERPBusinessProfile;
+  businessProfile?: ERPBusinessProfile;
 }
 
 export const ERPDocumentPrintModal: React.FC<ERPDocumentPrintModalProps> = ({
   isOpen,
   onClose,
   document: doc,
-  businessProfile: bp,
+  businessProfile: propBp,
 }) => {
+  const { businessProfile: contextBp } = useERP();
   const printRef = useRef<HTMLDivElement>(null);
 
   if (!isOpen || !doc) return null;
+
+  const bp = propBp || contextBp || INITIAL_BUSINESS_PROFILE;
 
   const handlePrint = () => {
     window.print();
@@ -41,7 +46,7 @@ export const ERPDocumentPrintModal: React.FC<ERPDocumentPrintModalProps> = ({
       case 'invoice':
         return {
           title: 'TAX INVOICE',
-          color: 'bg-[#032345] text-white',
+          color: 'bg-[#06163c] text-white',
           badge: 'TAX COMPLIANT INVOICE',
           refLabel: 'Invoice No:',
           dateLabel: 'Invoice Date:',
@@ -86,7 +91,7 @@ export const ERPDocumentPrintModal: React.FC<ERPDocumentPrintModalProps> = ({
       default:
         return {
           title: 'COMMERCIAL DOCUMENT',
-          color: 'bg-[#032345] text-white',
+          color: 'bg-[#06163c] text-white',
           badge: 'OFFICIAL DOCUMENT',
           refLabel: 'Doc No:',
           dateLabel: 'Date:',
@@ -240,7 +245,7 @@ export const ERPDocumentPrintModal: React.FC<ERPDocumentPrintModalProps> = ({
               </div>
               <p className="text-[11px] text-slate-500">VAT Status: Standard Rated (16% VAT)</p>
               {doc.vehicleRegistration && (
-                <p className="font-bold text-[#032345] pt-1">
+                <p className="font-bold text-[#06163c] pt-1">
                   Vehicle No: {doc.vehicleRegistration} (Driver: {doc.driverName})
                 </p>
               )}
@@ -306,7 +311,7 @@ export const ERPDocumentPrintModal: React.FC<ERPDocumentPrintModalProps> = ({
             {/* Payment & Banking Channels for Kenya */}
             {doc.type !== 'delivery_note' ? (
               <div className="bg-blue-50/70 p-4 rounded-xl border border-blue-200 space-y-2">
-                <h5 className="text-[11px] font-extrabold uppercase text-[#032345] tracking-wider">
+                <h5 className="text-[11px] font-extrabold uppercase text-[#06163c] tracking-wider">
                   Official Kenyan Payment Options:
                 </h5>
                 <div className="space-y-1.5 text-xs text-slate-700">
@@ -380,7 +385,7 @@ export const ERPDocumentPrintModal: React.FC<ERPDocumentPrintModalProps> = ({
 
                   <div className="pt-2 border-t-2 border-slate-900 flex justify-between text-sm font-black text-slate-900 font-['Outfit',sans-serif]">
                     <span>GRAND TOTAL:</span>
-                    <span className="text-base text-[#032345]">{formatKsh(doc.totalAmount)}</span>
+                    <span className="text-base text-[#06163c]">{formatKsh(doc.totalAmount)}</span>
                   </div>
 
                   {doc.amountPaid > 0 && (
@@ -457,7 +462,7 @@ export const ERPDocumentPrintModal: React.FC<ERPDocumentPrintModalProps> = ({
                   Official Company Seal & Signatory
                 </span>
                 <div className="h-10 flex items-center justify-center">
-                  <span className="font-serif italic font-bold text-[#032345] text-sm">
+                  <span className="font-serif italic font-bold text-[#06163c] text-sm">
                     Nasisi Authorised Signatory
                   </span>
                 </div>

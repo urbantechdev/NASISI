@@ -90,7 +90,7 @@ export const MobileStorefrontBottomNav: React.FC<MobileStorefrontBottomNavProps>
           whileTap={{ scale: 0.9 }}
           type="button"
           onClick={() => scrollToSection('catalog')}
-          className="flex flex-col items-center justify-center py-1 text-slate-600 hover:text-[#032345] transition-colors"
+          className="flex flex-col items-center justify-center py-1 text-slate-600 hover:text-[#06163c] transition-colors"
         >
           <LayoutGrid className="w-5 h-5 text-slate-700" />
           <span className="text-[10px] font-bold mt-0.5 tracking-tight">Catalog</span>
@@ -101,7 +101,7 @@ export const MobileStorefrontBottomNav: React.FC<MobileStorefrontBottomNavProps>
           whileTap={{ scale: 0.9 }}
           type="button"
           onClick={() => scrollToSection('catalog')}
-          className="flex flex-col items-center justify-center py-1 text-slate-600 hover:text-[#032345] transition-colors"
+          className="flex flex-col items-center justify-center py-1 text-slate-600 hover:text-[#06163c] transition-colors"
         >
           <Layers className="w-5 h-5 text-slate-700" />
           <span className="text-[10px] font-bold mt-0.5 tracking-tight">Categories</span>
@@ -117,13 +117,13 @@ export const MobileStorefrontBottomNav: React.FC<MobileStorefrontBottomNavProps>
             whileTap={{ scale: 0.92 }}
             type="button"
             onClick={onOpenCustomizer}
-            className="relative w-15 h-15 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#032345] via-[#023e7d] to-[#0ea5e9] text-white flex flex-col items-center justify-center shadow-[0_12px_28px_rgba(14,165,233,0.65)] border-[3.5px] border-white focus:outline-none ring-4 ring-sky-400/40 cursor-pointer"
+            className="relative w-15 h-15 sm:w-16 sm:h-16 rounded-full bg-gradient-to-tr from-[#06163c] via-[#023e7d] to-[#0ea5e9] text-white flex flex-col items-center justify-center shadow-[0_12px_28px_rgba(14,165,233,0.65)] border-[3.5px] border-white focus:outline-none ring-4 ring-sky-400/40 cursor-pointer"
             aria-label="Open Uniform Customizer Studio"
           >
             <SlidersHorizontal className="w-6 h-6 text-white" />
             <Sparkles className="w-3.5 h-3.5 text-cyan-300 absolute top-2 right-2 animate-bounce" />
           </motion.button>
-          <span className="text-[10px] font-black text-[#032345] mt-1 tracking-tight drop-shadow-sm bg-white/90 px-2 py-0.5 rounded-full border border-slate-200/60 shadow-2xs">
+          <span className="text-[10px] font-black text-[#06163c] mt-1 tracking-tight drop-shadow-sm bg-white/90 px-2 py-0.5 rounded-full border border-slate-200/60 shadow-2xs">
             Studio
           </span>
         </div>
@@ -133,7 +133,7 @@ export const MobileStorefrontBottomNav: React.FC<MobileStorefrontBottomNavProps>
           whileTap={{ scale: 0.9 }}
           type="button"
           onClick={onOpenSizeGuide}
-          className="flex flex-col items-center justify-center py-1 text-slate-600 hover:text-[#032345] transition-colors"
+          className="flex flex-col items-center justify-center py-1 text-slate-600 hover:text-[#06163c] transition-colors"
         >
           <Ruler className="w-5 h-5 text-slate-700" />
           <span className="text-[10px] font-bold mt-0.5 tracking-tight">Size Guide</span>
@@ -144,7 +144,7 @@ export const MobileStorefrontBottomNav: React.FC<MobileStorefrontBottomNavProps>
           whileTap={{ scale: 0.9 }}
           type="button"
           onClick={onOpenQuoteModal}
-          className="relative flex flex-col items-center justify-center py-1 text-slate-600 hover:text-[#032345] transition-colors"
+          className="relative flex flex-col items-center justify-center py-1 text-slate-600 hover:text-[#06163c] transition-colors"
         >
           <div className="relative">
             <ShoppingBag className="w-5 h-5 text-slate-700" />

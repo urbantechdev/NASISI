@@ -15,6 +15,8 @@ import {
   Sparkles,
   Phone,
   ArrowUpRight,
+  User,
+  LogOut,
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ERPTabType } from './AdminERPSidebar';
@@ -28,6 +30,8 @@ interface AdminERPTopbarProps {
   onOpenNewPaymentModal: () => void;
   onOpenNewInventoryModal: () => void;
   onSwitchToStorefront: () => void;
+  onOpenProfileModal?: () => void;
+  onLogout?: () => void;
 }
 
 export const AdminERPTopbar: React.FC<AdminERPTopbarProps> = ({
@@ -37,8 +41,10 @@ export const AdminERPTopbar: React.FC<AdminERPTopbarProps> = ({
   onOpenNewPaymentModal,
   onOpenNewInventoryModal,
   onSwitchToStorefront,
+  onOpenProfileModal,
+  onLogout,
 }) => {
-  const { businessProfile } = useERP();
+  const { businessProfile, currentUser } = useERP();
 
   return (
     <header className="fixed top-0 left-0 right-0 h-32 bg-white text-slate-900 z-40 select-none">
@@ -62,7 +68,7 @@ export const AdminERPTopbar: React.FC<AdminERPTopbarProps> = ({
             <NasisiLogo size="2xl" className="scale-100 origin-left" />
             <div className="hidden sm:flex flex-col border-l-2 border-slate-200 pl-4 py-1">
               <div className="flex items-center gap-2">
-                <span className="text-sm sm:text-base font-black tracking-wider uppercase text-[#032345] leading-tight font-['Outfit']">
+                <span className="text-sm sm:text-base font-black tracking-wider uppercase text-[#06163c] leading-tight font-['Outfit']">
                   Enterprise ERP
                 </span>
                 <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/80">
@@ -102,10 +108,55 @@ export const AdminERPTopbar: React.FC<AdminERPTopbarProps> = ({
               className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300/80 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer"
               title="Switch to Customer Storefront Catalog & Design Studio"
             >
-              <Store className="w-4 h-4 text-[#032345]" />
-              <span>Customer Storefront</span>
+              <Store className="w-4 h-4 text-[#06163c]" />
+              <span className="hidden sm:inline">Storefront</span>
               <ArrowUpRight className="w-3.5 h-3.5 text-slate-500" />
             </motion.button>
+
+            {/* Admin User Profile & Logout Widget */}
+            {currentUser && (
+              <div className="flex items-center gap-1.5 pl-1 sm:pl-2 border-l border-slate-200">
+                {/* Profile Pill */}
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  type="button"
+                  onClick={onOpenProfileModal}
+                  className="inline-flex items-center gap-2 px-2.5 py-1 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-xl text-xs transition-all cursor-pointer shadow-2xs group"
+                  title="View & Edit Administrator Profile"
+                >
+                  <div className="relative">
+                    <img
+                      src={currentUser.avatar}
+                      alt={currentUser.name}
+                      className="w-6 h-6 rounded-full object-cover border border-slate-300 shrink-0"
+                    />
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 border border-white" />
+                  </div>
+                  <div className="text-left hidden md:block">
+                    <span className="font-bold text-slate-800 text-[11px] block leading-tight group-hover:text-blue-600 transition-colors">
+                      {currentUser.name}
+                    </span>
+                    <span className="text-[9px] text-slate-500 font-mono block leading-tight">
+                      {currentUser.role}
+                    </span>
+                  </div>
+                </motion.button>
+
+                {/* Direct Logout Button */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  type="button"
+                  onClick={onLogout}
+                  className="p-1.5 rounded-xl bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200 hover:border-red-200 transition-all cursor-pointer"
+                  title="Log out of Enterprise Admin"
+                  aria-label="Log Out"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </motion.button>
+              </div>
+            )}
           </div>
 
           {/* Bottom Tier: Fast-Action CTAs */}

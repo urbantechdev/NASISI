@@ -332,3 +332,63 @@ export interface ERPBusinessProfile {
   bankAccountNumber: string;
   bankSwiftCode: string;
 }
+
+export interface HeroSlide {
+  id: string;
+  src: string;
+  title: string;
+  subtitle: string;
+  badge: string;
+  alt: string;
+  isActive: boolean;
+  order: number;
+}
+
+export interface HeroConfig {
+  autoPlay: boolean;
+  autoPlayIntervalMs: number; // e.g. 5500
+  showWaveDivider: boolean;
+  showOverlayGradients: boolean;
+  heightPreset: 'compact' | 'standard' | 'tall';
+}
+
+export type AdminRole = 
+  | 'Super Admin' 
+  | 'Managing Director' 
+  | 'Operations Manager' 
+  | 'Finance Controller' 
+  | 'Production Supervisor';
+
+export interface AdminUserActivity {
+  id: string;
+  action: string;
+  timestamp: string;
+  category: 'auth' | 'document' | 'finance' | 'inventory' | 'production' | 'security';
+  details?: string;
+  ipAddress?: string;
+}
+
+export interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+  role: AdminRole;
+  staffId: string;
+  phone: string;
+  department: string;
+  avatar?: string;
+  bio?: string;
+  location?: string;
+  status: 'active' | 'away' | 'offline';
+  lastLogin?: string;
+  joinedDate: string;
+  twoFactorEnabled: boolean;
+  notificationPreferences?: {
+    emailAlerts: boolean;
+    smsAlerts: boolean;
+    newOrders: boolean;
+    mpesaReconciliations: boolean;
+  };
+  recentActivities?: AdminUserActivity[];
+}
+

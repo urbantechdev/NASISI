@@ -302,7 +302,7 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
             whileHover={{ scale: 1.04, y: -1 }}
             whileTap={{ scale: 0.96 }}
             onClick={onOpenRecordPayment}
-            className="px-4 py-2 bg-[#032345] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow transition-all inline-flex items-center gap-1.5 cursor-pointer group"
+            className="px-4 py-2 bg-[#06163c] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow transition-all inline-flex items-center gap-1.5 cursor-pointer group"
           >
             <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
             <span>+ Record Manual Payment</span>
@@ -337,7 +337,7 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
                 onClick={() => setMethodFilter(method.id as any)}
                 className={`px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                   methodFilter === method.id
-                    ? 'bg-[#032345] text-white shadow-sm'
+                    ? 'bg-[#06163c] text-white shadow-sm'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
                 }`}
               >
@@ -415,7 +415,7 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
                       )}
                     </td>
 
-                    <td className="py-3 px-4 font-mono font-semibold text-[#032345]">
+                    <td className="py-3 px-4 font-mono font-semibold text-[#06163c]">
                       {txn.documentNumber || 'General Deposit'}
                     </td>
 

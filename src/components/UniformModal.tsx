@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { UniformProduct, QuoteItem } from '../types';
 import { useERP } from '../context/ERPContext';
-import { X, Check, ShoppingBag, SlidersHorizontal, Sparkles, Shield, Tag, Layers, CheckCircle2, MessageSquare, ArrowRight } from 'lucide-react';
+import { X, Check, ShoppingBag, SlidersHorizontal, Sparkles, Shield, Tag, Layers, CheckCircle2, MessageSquare, ArrowRight, UploadCloud, FileImage, Image as ImageIcon } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface UniformModalProps {
@@ -23,6 +23,10 @@ export const UniformModal: React.FC<UniformModalProps> = ({
   const [brandingType, setBrandingType] = useState<'embroidery' | 'screen_printing' | 'both' | 'blank'>('embroidery');
   const [selectedPlacements, setSelectedPlacements] = useState<string[]>(['Left Chest']);
   const [logoNotes, setLogoNotes] = useState('');
+  const [uploadedArtworkUrl, setUploadedArtworkUrl] = useState<string>('');
+  const [uploadedArtworkName, setUploadedArtworkName] = useState<string>('');
+  const [isArtworkDragging, setIsArtworkDragging] = useState<boolean>(false);
+  const artworkInputRef = useRef<HTMLInputElement>(null);
   const [ticketRaised, setTicketRaised] = useState<{ ticketNumber: string; whatsappUrl: string } | null>(null);
   const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
@@ -93,6 +97,11 @@ export const UniformModal: React.FC<UniformModalProps> = ({
       return;
     }
 
+    const finalNotes = [
+      logoNotes,
+      uploadedArtworkName ? `[Attached Artwork Image: ${uploadedArtworkName}]` : '',
+    ].filter(Boolean).join(' | ');
+
     const newItem: QuoteItem = {
       id: `${product.id}-${Date.now()}`,
       product,
@@ -101,7 +110,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
       totalQuantity: totalUnits,
       brandingType,
       logoPlacement: selectedPlacements,
-      logoNotes,
+      logoNotes: finalNotes,
       unitPrice: calculatedUnitPrice,
       totalPrice: calculatedTotal,
     };
@@ -118,7 +127,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
       logoPlacement: selectedPlacements,
       unitPrice: calculatedUnitPrice,
       estimatedTotalKsh: calculatedTotal,
-      notes: logoNotes ? `Customer Notes: ${logoNotes}` : `Direct quote request for ${totalUnits} units of ${product.name} (${selectedColor}).`,
+      notes: finalNotes ? `Customer Notes: ${finalNotes}` : `Direct quote request for ${totalUnits} units of ${product.name} (${selectedColor}).`,
       customerName: logoNotes?.trim() || 'Storefront Client',
       phone: '0728102929',
       source: 'storefront_quote_request',
@@ -134,7 +143,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
         particleCount: 70,
         spread: 70,
         origin: { y: 0.7 },
-        colors: ['#032345', '#38BDF8', '#FFFFFF', '#10B981'],
+        colors: ['#06163c', '#38BDF8', '#FFFFFF', '#10B981'],
       });
     } catch {
       // ignore
@@ -144,7 +153,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
   if (!product) return null;
 
   const activeColorHex =
-    product.availableColors.find((c) => c.name === selectedColor)?.hex || '#032345';
+    product.availableColors.find((c) => c.name === selectedColor)?.hex || '#06163c';
 
   return (
     <div className="fixed inset-0 z-[100] bg-slate-900/75 backdrop-blur-md flex items-center justify-center p-0 sm:p-6 overflow-hidden sm:overflow-y-auto animate-fadeIn">
@@ -155,7 +164,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
         {/* Modal Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 bg-white sticky top-0 z-20 shrink-0 shadow-xs sm:shadow-none">
           <div className="flex items-center gap-2 sm:gap-3 min-w-0 pr-2">
-            <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-black uppercase tracking-wider bg-blue-100 text-[#032345] rounded-md shrink-0">
+            <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-black uppercase tracking-wider bg-blue-100 text-[#06163c] rounded-md shrink-0">
               {product.categoryLabel}
             </span>
             <h3 className="text-base sm:text-xl font-bold text-slate-900 font-['Outfit',sans-serif] truncate">
@@ -223,7 +232,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
             
             {/* Left: Product Image & Fabric Info */}
             <div className="md:col-span-5 space-y-4">
-              <div className="relative rounded-xl overflow-hidden bg-slate-100 border border-slate-200 aspect-[4/3]">
+              <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-[#D1E0FF]/30 via-slate-50 to-[#D1E0FF]/15 border border-[#D1E0FF] shadow-[0_8px_25px_rgba(209,224,255,0.4)] aspect-[4/3]">
                 <img
                   src={product.image}
                   alt={product.name}
@@ -235,19 +244,19 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                   }}
                 />
                 {product.badge && (
-                  <span className="absolute top-3 left-3 bg-[#032345] text-white text-xs font-bold px-2.5 py-1 rounded shadow-sm">
+                  <span className="absolute top-3 left-3 bg-[#06163c] text-white text-xs font-bold px-2.5 py-1 rounded shadow-sm">
                     {product.badge}
                   </span>
                 )}
                 <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm p-2 rounded-lg text-xs flex justify-between items-center shadow-sm">
                   <span className="font-semibold text-slate-700">Min. Order (MOQ):</span>
-                  <span className="font-bold text-[#032345]">{product.minOrder} units</span>
+                  <span className="font-bold text-[#06163c]">{product.minOrder} units</span>
                 </div>
               </div>
 
               {/* Fabric Specs */}
               <div className="bg-blue-50/60 rounded-xl p-4 border border-blue-100 space-y-2 text-xs">
-                <div className="flex items-center gap-1.5 font-bold text-[#032345]">
+                <div className="flex items-center gap-1.5 font-bold text-[#06163c]">
                   <Layers className="w-4 h-4" />
                   <span>Fabric Specifications</span>
                 </div>
@@ -283,7 +292,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                   onOpenCustomizerWithProduct(product, activeColorHex);
                   onClose();
                 }}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold text-[#032345] bg-white hover:bg-blue-50 border-2 border-[#032345] shadow-sm transition-all"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold text-[#06163c] bg-white hover:bg-blue-50 border-2 border-[#06163c] shadow-sm transition-all"
               >
                 <SlidersHorizontal className="w-4 h-4" />
                 <span>Open in Live Mockup Studio</span>
@@ -299,7 +308,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
               {/* 1. Color Selector */}
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
-                  1. Select Garment Color: <span className="text-[#032345]">{selectedColor}</span>
+                  1. Select Garment Color: <span className="text-[#06163c]">{selectedColor}</span>
                 </label>
                 <div className="flex flex-wrap gap-2">
                   {product.availableColors.map((color) => (
@@ -309,7 +318,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                       onClick={() => setSelectedColor(color.name)}
                       className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
                         selectedColor === color.name
-                          ? 'border-[#032345] ring-2 ring-blue-900/20 bg-blue-50/50 text-[#032345] font-bold'
+                          ? 'border-[#06163c] ring-2 ring-blue-900/20 bg-blue-50/50 text-[#06163c] font-bold'
                           : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700'
                       }`}
                     >
@@ -318,7 +327,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                         style={{ backgroundColor: color.hex }}
                       />
                       <span>{color.name}</span>
-                      {selectedColor === color.name && <Check className="w-3.5 h-3.5 text-[#032345]" />}
+                      {selectedColor === color.name && <Check className="w-3.5 h-3.5 text-[#06163c]" />}
                     </button>
                   ))}
                 </div>
@@ -342,13 +351,13 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                       onClick={() => setBrandingType(b.id as any)}
                       className={`p-2.5 rounded-xl text-left border transition-all ${
                         brandingType === b.id
-                          ? 'border-[#032345] bg-blue-50/70 text-[#032345]'
+                          ? 'border-[#06163c] bg-blue-50/70 text-[#06163c]'
                           : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700'
                       }`}
                     >
                       <span className="block text-xs font-bold">{b.label}</span>
                       <span className="block text-[10px] text-slate-500">{b.desc}</span>
-                      <span className="block text-[10px] font-semibold text-[#032345] mt-1">{b.addon}</span>
+                      <span className="block text-[10px] font-semibold text-[#06163c] mt-1">{b.addon}</span>
                     </button>
                   ))}
                 </div>
@@ -370,7 +379,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                           onClick={() => togglePlacement(loc)}
                           className={`px-2.5 py-1 text-xs rounded-md border transition-colors ${
                             isSel
-                              ? 'bg-[#032345] text-white border-[#032345] font-semibold'
+                              ? 'bg-[#06163c] text-white border-[#06163c] font-semibold'
                               : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                           }`}
                         >
@@ -389,7 +398,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                     3. Specify Quantities per Size:
                   </label>
                   <span className="text-xs font-semibold text-slate-500">
-                    Total: <strong className="text-[#032345] font-extrabold">{totalUnits} units</strong>
+                    Total: <strong className="text-[#06163c] font-extrabold">{totalUnits} units</strong>
                   </span>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
@@ -401,7 +410,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                         min="0"
                         value={sizeQuantities[sz] || 0}
                         onChange={(e) => handleSizeChange(sz, parseInt(e.target.value))}
-                        className="w-14 text-center text-xs font-bold border border-slate-300 rounded p-1 focus:ring-1 focus:ring-[#032345] focus:outline-none"
+                        className="w-14 text-center text-xs font-bold border border-slate-300 rounded p-1 focus:ring-1 focus:ring-[#06163c] focus:outline-none"
                       />
                     </div>
                   ))}
@@ -410,6 +419,111 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                   <p className="text-[11px] text-amber-600 font-medium mt-1">
                     ⚠️ Minimum order requirement: {product.minOrder} units (Current: {totalUnits})
                   </p>
+                )}
+              </div>
+
+              {/* Artwork / Crest Image Upload */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                    Upload Crest / Logo / Sample Image (Optional):
+                  </label>
+                  <span className="text-[10px] text-slate-400 font-semibold">PNG, JPG, SVG up to 10MB</span>
+                </div>
+
+                <input
+                  ref={artworkInputRef}
+                  type="file"
+                  accept="image/png, image/jpeg, image/webp, image/svg+xml"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      if (file.size > 10 * 1024 * 1024) {
+                        alert('Image file size exceeds 10MB limit.');
+                        return;
+                      }
+                      setUploadedArtworkName(file.name);
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        if (event.target?.result) {
+                          setUploadedArtworkUrl(event.target.result as string);
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+
+                {uploadedArtworkUrl ? (
+                  <div className="flex items-center justify-between p-2.5 bg-blue-50/80 border border-blue-200 rounded-xl">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden border border-blue-200 bg-white shrink-0 shadow-xs">
+                        <img
+                          src={uploadedArtworkUrl}
+                          alt="Uploaded artwork"
+                          className="w-full h-full object-contain p-0.5"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="block text-xs font-bold text-[#06163c] truncate">
+                          {uploadedArtworkName || 'Custom Artwork Attached'}
+                        </span>
+                        <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" /> Attached for Tailoring Unit
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUploadedArtworkUrl('');
+                        setUploadedArtworkName('');
+                        if (artworkInputRef.current) artworkInputRef.current.value = '';
+                      }}
+                      className="text-xs text-red-600 hover:text-red-700 font-semibold px-2 py-1 hover:bg-red-50 rounded-lg"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsArtworkDragging(true);
+                    }}
+                    onDragLeave={() => setIsArtworkDragging(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsArtworkDragging(false);
+                      const file = e.dataTransfer.files?.[0];
+                      if (file && file.type.startsWith('image/')) {
+                        if (file.size > 10 * 1024 * 1024) {
+                          alert('Image file size exceeds 10MB limit.');
+                          return;
+                        }
+                        setUploadedArtworkName(file.name);
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          if (event.target?.result) {
+                            setUploadedArtworkUrl(event.target.result as string);
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    onClick={() => artworkInputRef.current?.click()}
+                    className={`border border-dashed rounded-xl p-3 text-center cursor-pointer transition-all flex items-center justify-center gap-2.5 ${
+                      isArtworkDragging
+                        ? 'border-[#06163c] bg-blue-100/50'
+                        : 'border-slate-300 hover:border-[#06163c] bg-slate-50/60 hover:bg-blue-50/40'
+                    }`}
+                  >
+                    <UploadCloud className="w-4 h-4 text-[#06163c] shrink-0" />
+                    <span className="text-xs font-semibold text-slate-700">
+                      <strong className="text-[#06163c]">Click to attach image file</strong> or drag & drop here
+                    </span>
+                  </div>
                 )}
               </div>
 
@@ -423,7 +537,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                   placeholder="e.g. St. Jude High School Crest, Gold thread border"
                   value={logoNotes}
                   onChange={(e) => setLogoNotes(e.target.value)}
-                  className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#032345] focus:outline-none"
+                  className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#06163c] focus:outline-none"
                 />
               </div>
 
@@ -439,7 +553,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                 Unit Price:
               </span>
               <div className="flex items-baseline gap-1.5">
-                <span className="text-lg sm:text-2xl font-black text-[#032345] font-['Outfit',sans-serif]">
+                <span className="text-lg sm:text-2xl font-black text-[#06163c] font-['Outfit',sans-serif]">
                   Ksh {calculatedUnitPrice.toLocaleString()}
                 </span>
                 {discountPercent > 0 && (
@@ -477,7 +591,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
               disabled={totalUnits < product.minOrder}
               className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl text-xs font-bold text-white shadow-md transition-all ${
                 totalUnits >= product.minOrder
-                  ? 'bg-[#032345] hover:bg-[#021a34] active:scale-98 cursor-pointer'
+                  ? 'bg-gradient-to-r from-[#020a1c] via-[#06163c] to-[#030e28] hover:from-[#010612] hover:via-[#040f28] hover:to-[#010612] active:scale-98 cursor-pointer border border-blue-900/40 shadow-lg'
                   : 'bg-slate-400 cursor-not-allowed opacity-70'
               }`}
             >

@@ -127,7 +127,7 @@ export const QuoteEstimatorModal: React.FC<QuoteEstimatorModalProps> = ({
         particleCount: 100,
         spread: 80,
         origin: { y: 0.6 },
-        colors: ['#032345', '#38BDF8', '#FFFFFF', '#10B981'],
+        colors: ['#06163c', '#38BDF8', '#FFFFFF', '#10B981'],
       });
     } catch {
       // ignore
@@ -186,7 +186,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
         {/* Header */}
         <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 bg-white sticky top-0 z-20 shrink-0">
           <div className="flex items-center gap-2.5 min-w-0 pr-2">
-            <div className="w-8 h-8 rounded-xl bg-[#032345] text-white flex items-center justify-center font-bold shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-[#06163c] text-white flex items-center justify-center font-bold shrink-0">
               <FileText className="w-4 h-4" />
             </div>
             <div className="min-w-0">
@@ -229,7 +229,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                       Inquiry Ticket: #{raisedTicketNumber}
                     </div>
                   )}
-                  <div className="inline-block bg-white px-3 py-1 rounded-md text-xs font-mono font-bold text-[#032345] border border-blue-200">
+                  <div className="inline-block bg-white px-3 py-1 rounded-md text-xs font-mono font-bold text-[#06163c] border border-blue-200">
                     Platform Hotline: 0728102929
                   </div>
                 </div>
@@ -253,7 +253,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                           Quantity: {it.totalQuantity} pcs • {it.brandingType.toUpperCase()} ({it.logoPlacement.join(', ')})
                         </span>
                         {it.logoNotes && (
-                          <span className="text-[11px] text-[#032345] block mt-0.5">
+                          <span className="text-[11px] text-[#06163c] block mt-0.5">
                             Note: {it.logoNotes}
                           </span>
                         )}
@@ -267,7 +267,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
 
                 <div className="pt-3 border-t border-slate-200 flex justify-between items-center text-sm font-extrabold text-slate-900">
                   <span>Grand Total Estimate:</span>
-                  <span className="text-xl text-[#032345] font-['Outfit']">
+                  <span className="text-xl text-[#06163c] font-['Outfit']">
                     Ksh {subtotal.toLocaleString()}
                   </span>
                 </div>
@@ -288,7 +288,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                 <button
                   type="button"
                   onClick={handleCopyQuoteSummary}
-                  className="flex items-center justify-center gap-2 p-3.5 bg-[#032345] hover:bg-[#021a34] text-white text-xs font-bold rounded-xl shadow-sm transition-colors"
+                  className="flex items-center justify-center gap-2 p-3.5 bg-[#06163c] hover:bg-[#021a34] text-white text-xs font-bold rounded-xl shadow-sm transition-colors"
                 >
                   {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                   <span>{copied ? 'Copied to Clipboard!' : 'Copy Quote Summary'}</span>
@@ -322,7 +322,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                   </p>
                   <button
                     onClick={onClose}
-                    className="px-4 py-2 bg-[#032345] text-white text-xs font-bold rounded-lg hover:bg-[#021a34]"
+                    className="px-4 py-2 bg-[#06163c] text-white text-xs font-bold rounded-lg hover:bg-[#021a34]"
                   >
                     Explore Uniform Catalog
                   </button>
@@ -352,7 +352,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                           <span className="text-slate-500 block text-[11px]">
                             Color: {item.selectedColor} • Total: {item.totalQuantity} units • Branding: {item.brandingType.toUpperCase()}
                           </span>
-                          <span className="text-[10px] text-[#032345] font-semibold">
+                          <span className="text-[10px] text-[#06163c] font-semibold">
                             Placement: {item.logoPlacement.join(', ')}
                           </span>
                         </div>
@@ -378,7 +378,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                   </div>
 
                   {/* Subtotal preview banner */}
-                  <div className="bg-blue-50/70 p-3 rounded-xl border border-blue-200 flex justify-between items-center text-xs font-bold text-[#032345]">
+                  <div className="bg-blue-50/70 p-3 rounded-xl border border-blue-200 flex justify-between items-center text-xs font-bold text-[#06163c]">
                     <span>Total Garments: {totalUnits} units</span>
                     <span className="text-base font-black font-['Outfit']">
                       Estimated Subtotal: Ksh {subtotal.toLocaleString()}
@@ -405,7 +405,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                         placeholder="e.g. St. Andrews Academy / Apex Health"
                         value={orgName}
                         onChange={(e) => setOrgName(e.target.value)}
-                        className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#032345] focus:outline-none"
+                        className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#06163c] focus:outline-none"
                       />
                     </div>
 
@@ -419,7 +419,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                         placeholder="e.g. Margaret Owino (Head of Procurement)"
                         value={contactName}
                         onChange={(e) => setContactName(e.target.value)}
-                        className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#032345] focus:outline-none"
+                        className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#06163c] focus:outline-none"
                       />
                     </div>
 
@@ -433,7 +433,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                         placeholder="+254 700 000 000"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#032345] focus:outline-none"
+                        className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#06163c] focus:outline-none"
                       />
                     </div>
 
@@ -446,7 +446,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                         placeholder="admin@school.ac.ke"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#032345] focus:outline-none"
+                        className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#06163c] focus:outline-none"
                       />
                     </div>
 
@@ -457,7 +457,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                       <select
                         value={orgType}
                         onChange={(e) => setOrgType(e.target.value as any)}
-                        className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#032345] focus:outline-none bg-white"
+                        className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#06163c] focus:outline-none bg-white"
                       >
                         <option value="school">Primary / High School / Academy</option>
                         <option value="healthcare">Hospital / Clinic / Dental Practice</option>
@@ -476,7 +476,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                         type="date"
                         value={requiredDate}
                         onChange={(e) => setRequiredDate(e.target.value)}
-                        className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#032345] focus:outline-none bg-white"
+                        className="w-full p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#06163c] focus:outline-none bg-white"
                       />
                     </div>
                   </div>
@@ -490,14 +490,14 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                       placeholder="e.g. Please provide gold thread sample proof for prefect blazers."
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      className="w-full p-2.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#032345] focus:outline-none"
+                      className="w-full p-2.5 text-xs border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#06163c] focus:outline-none"
                     ></textarea>
                   </div>
 
                   {/* Submission Button */}
                   <button
                     type="submit"
-                    className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl bg-[#032345] hover:bg-[#021a34] text-white font-extrabold text-sm shadow-md transition-all active:scale-[0.98] cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl bg-[#06163c] hover:bg-[#021a34] text-white font-extrabold text-sm shadow-md transition-all active:scale-[0.98] cursor-pointer"
                   >
                     <Send className="w-4 h-4" />
                     <span>Generate Official Quotation & Proof Request</span>

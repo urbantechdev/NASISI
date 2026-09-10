@@ -85,7 +85,7 @@ export const ERPCompanySettings: React.FC = () => {
         {/* Legal Identity Card */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-            <Building2 className="w-4 h-4 text-[#032345]" />
+            <Building2 className="w-4 h-4 text-[#06163c]" />
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
               Legal Business Identity & KRA Tax Details
             </h3>
@@ -169,7 +169,7 @@ export const ERPCompanySettings: React.FC = () => {
         {/* Location & Contacts */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-            <MapPin className="w-4 h-4 text-[#032345]" />
+            <MapPin className="w-4 h-4 text-[#06163c]" />
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
               Physical Factory Address & Contact Channels
             </h3>
@@ -336,7 +336,7 @@ export const ERPCompanySettings: React.FC = () => {
         {/* Notes & Terms */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-            <FileText className="w-4 h-4 text-[#032345]" />
+            <FileText className="w-4 h-4 text-[#06163c]" />
             <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide">
               Document Footer Terms & Warranty Notice
             </h3>
@@ -358,7 +358,7 @@ export const ERPCompanySettings: React.FC = () => {
         <div className="flex justify-end">
           <button
             type="submit"
-            className="px-6 py-3 bg-[#032345] hover:bg-blue-900 text-white font-bold text-sm rounded-xl shadow-lg transition-all flex items-center gap-2 cursor-pointer"
+            className="px-6 py-3 bg-[#06163c] hover:bg-blue-900 text-white font-bold text-sm rounded-xl shadow-lg transition-all flex items-center gap-2 cursor-pointer"
           >
             <Save className="w-4 h-4" />
             <span>Save Profile & Banking Changes</span>

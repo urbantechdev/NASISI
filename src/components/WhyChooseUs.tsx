@@ -40,7 +40,7 @@ export const WhyChooseUs: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#032345] text-xs font-bold tracking-wide">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#06163c] text-xs font-bold tracking-wide">
             <Sparkles className="w-3.5 h-3.5" />
             <span>The NASISI Quality Guarantee</span>
           </div>
@@ -60,7 +60,7 @@ export const WhyChooseUs: React.FC = () => {
                 key={idx}
                 className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all space-y-3"
               >
-                <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#032345] flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#06163c] flex items-center justify-center font-bold">
                   <Icon className="w-5 h-5" />
                 </div>
                 <h3 className="text-base font-bold text-slate-900 font-['Outfit',sans-serif]">
@@ -75,13 +75,14 @@ export const WhyChooseUs: React.FC = () => {
         </div>
 
         {/* Banner with brand motto */}
-        <div className="mt-12 p-6 sm:p-8 bg-[#032345] text-white rounded-3xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-1 text-center md:text-left">
+        <div className="mt-12 p-6 sm:p-8 bg-gradient-to-r from-[#020a1c] via-[#06163c] to-[#030e28] text-white rounded-3xl shadow-2xl border border-blue-900/50 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-80 h-80 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="space-y-1 text-center md:text-left relative z-10">
             <span className="text-xs font-bold uppercase tracking-widest text-blue-200">
               Our Core Promise
             </span>
             <h3 className="text-xl sm:text-2xl font-extrabold font-['Outfit',sans-serif]">
-              "We stitch it. You wear it. We print it. You represent."
+              "We stitch it, You wear it, We print it, you represent."
             </h3>
             <p className="text-xs sm:text-sm text-blue-100 max-w-xl">
               Schedule a visit to our workshop or request our uniform fabric sample pack delivered directly to your school administration office.
@@ -90,7 +91,7 @@ export const WhyChooseUs: React.FC = () => {
           
           <a
             href="#contact"
-            className="flex-shrink-0 px-6 py-3.5 bg-white text-[#032345] font-extrabold text-xs rounded-xl shadow hover:bg-blue-50 transition-colors"
+            className="flex-shrink-0 px-6 py-3.5 bg-white text-[#06163c] font-extrabold text-xs rounded-xl shadow hover:bg-blue-50 transition-colors"
           >
             Request Free Fabric Sample Kit
           </a>

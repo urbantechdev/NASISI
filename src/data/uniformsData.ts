@@ -1,4 +1,16 @@
 import { UniformProduct, Testimonial, PortfolioItem } from '../types';
+import academicSchoolBlazerImg from '../assets/images/academic_school_blazer_1787666599640.jpg';
+import schoolKnitSweaterImg from '../assets/images/school_knit_sweater_1787666624927.jpg';
+import schoolPiquePoloImg from '../assets/images/school_pique_polo_1787666646059.jpg';
+import schoolTracksuitJacketImg from '../assets/images/school_tracksuit_jacket_1787666665335.jpg';
+import medicalScrubSetImg from '../assets/images/medical_scrub_set_1787666693362.jpg';
+import chefJacketExecutiveImg from '../assets/images/chef_jacket_executive_1787666710074.jpg';
+import canvasBaristaApronImg from '../assets/images/canvas_barista_apron_1787666742156.jpg';
+import corporateServicePoloImg from '../assets/images/corporate_service_polo_1787666794018.jpg';
+import highVisSafetyVestImg from '../assets/images/high_vis_safety_vest_1787666856898.jpg';
+import industrialWorkwearOverallImg from '../assets/images/industrial_workwear_overall_1787666910504.jpg';
+import varsityLettermanJacketImg from '../assets/images/varsity_letterman_jacket_1787666981298.jpg';
+import fleecePulloverHoodieImg from '../assets/images/fleece_pullover_hoodie_1787666996711.jpg';
 
 export const UNIFORM_PRODUCTS: UniformProduct[] = [
   // School Uniforms
@@ -11,7 +23,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     basePrice: 3800,
     minOrder: 15,
     availableColors: [
-      { name: 'Brand Blue', hex: '#032345', bgClass: 'bg-[#032345]' },
+      { name: 'Brand Blue', hex: '#06163c', bgClass: 'bg-[#06163c]' },
       { name: 'Navy Blue', hex: '#0F172A', bgClass: 'bg-slate-900' },
       { name: 'Bottle Green', hex: '#14532D', bgClass: 'bg-green-900' },
       { name: 'Burgundy Maroon', hex: '#881337', bgClass: 'bg-rose-950' },
@@ -30,7 +42,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'The standard of academic excellence. Crafted with precision tailoring, full interior satin lining, and custom high-density chest crest embroidery designed specifically for primary, secondary schools and colleges.',
     idealFor: ['Primary & Secondary Schools', 'Prep Academies', 'School Prefects & Staff', 'Debate & Choir Teams'],
-    image: '/assets/images/school-blazer.jpg',
+    image: academicSchoolBlazerImg,
     badge: 'Best Seller',
     popular: true,
   },
@@ -43,7 +55,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     basePrice: 2200,
     minOrder: 20,
     availableColors: [
-      { name: 'Brand Blue', hex: '#032345', bgClass: 'bg-[#032345]' },
+      { name: 'Brand Blue', hex: '#06163c', bgClass: 'bg-[#06163c]' },
       { name: 'Deep Navy', hex: '#0F172A', bgClass: 'bg-slate-900' },
       { name: 'Forest Green', hex: '#166534', bgClass: 'bg-green-800' },
       { name: 'Maroon', hex: '#9F1239', bgClass: 'bg-rose-800' },
@@ -62,7 +74,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'Our signature NASISI knitwear piece. Hand-finished V-neck neckline with optional dual-stripe tipping along the collar and cuffs to match your exact institutional school pantone colors.',
     idealFor: ['Winter Uniform Requirements', 'Daywear Academies', 'Colleges & Boarding Schools'],
-    image: '/assets/images/school-knit-sweater.jpg',
+    image: schoolKnitSweaterImg,
     popular: true,
   },
   {
@@ -75,7 +87,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     minOrder: 25,
     availableColors: [
       { name: 'Pure White', hex: '#FFFFFF', bgClass: 'bg-white border border-slate-300' },
-      { name: 'Brand Blue', hex: '#032345', bgClass: 'bg-[#032345]' },
+      { name: 'Brand Blue', hex: '#06163c', bgClass: 'bg-[#06163c]' },
       { name: 'Sky Blue', hex: '#38BDF8', bgClass: 'bg-sky-400' },
       { name: 'Navy Blue', hex: '#1E293B', bgClass: 'bg-slate-800' },
       { name: 'Sunshine Yellow', hex: '#FBBF24', bgClass: 'bg-amber-400' },
@@ -93,7 +105,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'The essential daily school top. Built tough to withstand vigorous playground activity and daily washing while preserving sharp color vibrancy and pristine collar firmness.',
     idealFor: ['Elementary & Middle Schools', 'Summer Uniforms', 'House Color Shirts'],
-    image: '/assets/images/school-pique-polo.jpg',
+    image: schoolPiquePoloImg,
   },
   {
     id: 'school-sports-tracksuit',
@@ -104,7 +116,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     basePrice: 3200,
     minOrder: 15,
     availableColors: [
-      { name: 'Brand Blue & White', hex: '#032345', bgClass: 'bg-[#032345]' },
+      { name: 'Brand Blue & White', hex: '#06163c', bgClass: 'bg-[#06163c]' },
       { name: 'Navy & Sky Blue', hex: '#0F172A', bgClass: 'bg-slate-900' },
       { name: 'Black & Gold', hex: '#18181B', bgClass: 'bg-zinc-900' },
       { name: 'Green & White', hex: '#166534', bgClass: 'bg-green-800' },
@@ -123,7 +135,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'Designed for athletics and physical education. Features bold contrast shoulder piping and ample space for large screen-printed school names across the back plus left-chest embroidered crests.',
     idealFor: ['PE Classes', 'School Athletics Teams', 'Touring Sports Squads', 'Outdoor Activities'],
-    image: '/assets/images/school-sports-tracksuit.jpg',
+    image: schoolTracksuitJacketImg,
   },
 
   // Service & Healthcare Uniforms
@@ -136,7 +148,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     basePrice: 2850,
     minOrder: 10,
     availableColors: [
-      { name: 'Brand Blue', hex: '#032345', bgClass: 'bg-[#032345]' },
+      { name: 'Brand Blue', hex: '#06163c', bgClass: 'bg-[#06163c]' },
       { name: 'Ceil Sky Blue', hex: '#38BDF8', bgClass: 'bg-sky-400' },
       { name: 'Teal Green', hex: '#0D9488', bgClass: 'bg-teal-600' },
       { name: 'Midnight Navy', hex: '#1E293B', bgClass: 'bg-slate-800' },
@@ -155,7 +167,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'Engineered for doctors, nurses, pharmacists, and clinic teams. Features ergonomic side rib-knit panels, pen slots, badge loops, and crisp hospital / practice name direct embroidery.',
     idealFor: ['Hospitals & Private Clinics', 'Dental Practices', 'Veterinary Centers', 'Laboratories'],
-    image: '/assets/images/medical-scrub.jpg',
+    image: medicalScrubSetImg,
     badge: 'Popular',
     popular: true,
   },
@@ -170,7 +182,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     availableColors: [
       { name: 'Crisp White', hex: '#FFFFFF', bgClass: 'bg-white border border-slate-300' },
       { name: 'Matte Black', hex: '#18181B', bgClass: 'bg-zinc-900' },
-      { name: 'Brand Blue Trim', hex: '#032345', bgClass: 'bg-[#032345]' },
+      { name: 'Brand Blue Trim', hex: '#06163c', bgClass: 'bg-[#06163c]' },
       { name: 'Slate Grey', hex: '#475569', bgClass: 'bg-slate-600' },
     ],
     sizes: ['XS', 'S', 'M', 'L', 'XL', '2XL', '3XL'],
@@ -186,7 +198,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'The kitchen centerpiece for restaurants, catering businesses, and hotel culinary teams. Supports personalized chef name embroidery on chest and full restaurant logo embroidery on collar or front.',
     idealFor: ['Fine Dining & Bistro Kitchens', 'Hotel Culinary Staff', 'Catering Companies', 'Culinary Institutes'],
-    image: '/assets/images/chef-jacket.jpg',
+    image: chefJacketExecutiveImg,
   },
   {
     id: 'hospitality-canvas-apron',
@@ -198,7 +210,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     minOrder: 15,
     availableColors: [
       { name: 'Navy Blue', hex: '#0F172A', bgClass: 'bg-slate-900' },
-      { name: 'Brand Blue', hex: '#032345', bgClass: 'bg-[#032345]' },
+      { name: 'Brand Blue', hex: '#06163c', bgClass: 'bg-[#06163c]' },
       { name: 'Charcoal Black', hex: '#18181B', bgClass: 'bg-zinc-900' },
       { name: 'Mocha Tan', hex: '#78350F', bgClass: 'bg-amber-900' },
       { name: 'Olive Green', hex: '#365314', bgClass: 'bg-lime-950' },
@@ -217,7 +229,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'Upgrade your front-of-house staff look. Favored by artisan cafes, craft breweries, barbershops, and restaurants for its durable rustic build and prominent chest branding space.',
     idealFor: ['Coffee Shops & Bakeries', 'Bars & Restaurants', 'Barbershops & Salons', 'Event Catering'],
-    image: '/assets/images/hospitality-apron.jpg',
+    image: canvasBaristaApronImg,
   },
   {
     id: 'service-corporate-polo',
@@ -228,7 +240,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     basePrice: 1650,
     minOrder: 20,
     availableColors: [
-      { name: 'Brand Blue', hex: '#032345', bgClass: 'bg-[#032345]' },
+      { name: 'Brand Blue', hex: '#06163c', bgClass: 'bg-[#06163c]' },
       { name: 'Crisp White', hex: '#FFFFFF', bgClass: 'bg-white border border-slate-300' },
       { name: 'Midnight Navy', hex: '#0F172A', bgClass: 'bg-slate-900' },
       { name: 'Steel Slate', hex: '#334155', bgClass: 'bg-slate-700' },
@@ -247,7 +259,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'Keep your team looking coordinated, polished, and fresh all shift long. Ideal for retail stores, dealership staff, tech field reps, and event coordinators.',
     idealFor: ['Corporate Front Desks', 'Dealership Staff', 'Delivery & Field Service', 'IT & Telecom Teams'],
-    image: '/assets/images/service-corporate-polo.jpg',
+    image: corporateServicePoloImg,
     popular: true,
   },
 
@@ -263,7 +275,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     availableColors: [
       { name: 'Fluorescent Yellow/Blue', hex: '#EAB308', bgClass: 'bg-yellow-400' },
       { name: 'Fluorescent Orange/Navy', hex: '#EA580C', bgClass: 'bg-orange-600' },
-      { name: 'Brand Blue', hex: '#032345', bgClass: 'bg-[#032345]' },
+      { name: 'Brand Blue', hex: '#06163c', bgClass: 'bg-[#06163c]' },
     ],
     sizes: ['S/M', 'L/XL', '2XL/3XL', '4XL/5XL'],
     fabric: {
@@ -280,7 +292,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'Ensure site safety while projecting proud company identity. High-contrast screen-printed company logos on the back and chest that remain visible in low-light industrial environments.',
     idealFor: ['Construction & Civil Crews', 'Warehousing & Logistics', 'Airport Ground Staff', 'Traffic & Security'],
-    image: '/assets/images/industrial-hi-vis-vest.jpg',
+    image: highVisSafetyVestImg,
   },
   {
     id: 'industrial-heavy-overall',
@@ -291,7 +303,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     basePrice: 3400,
     minOrder: 15,
     availableColors: [
-      { name: 'Brand Blue', hex: '#032345', bgClass: 'bg-[#032345]' },
+      { name: 'Brand Blue', hex: '#06163c', bgClass: 'bg-[#06163c]' },
       { name: 'Navy Work Blue', hex: '#0F172A', bgClass: 'bg-slate-900' },
       { name: 'Industrial Grey', hex: '#475569', bgClass: 'bg-slate-600' },
       { name: 'Safety Orange', hex: '#C2410C', bgClass: 'bg-orange-700' },
@@ -309,7 +321,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'The ultimate shield for mechanics, factory operators, and technicians. High abrasion resistance with precision direct embroidery for company emblems and technician name tags.',
     idealFor: ['Auto Workshops & Garages', 'Manufacturing Plants', 'HVAC & Electrical Contractors', 'Agricultural Services'],
-    image: '/assets/images/industrial-heavy-overall.jpg',
+    image: industrialWorkwearOverallImg,
   },
 
   // Knitwear & Custom Apparel
@@ -322,7 +334,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     basePrice: 4800,
     minOrder: 20,
     availableColors: [
-      { name: 'Brand Blue & White', hex: '#032345', bgClass: 'bg-[#032345]' },
+      { name: 'Brand Blue & White', hex: '#06163c', bgClass: 'bg-[#06163c]' },
       { name: 'Navy & Heather Grey', hex: '#0F172A', bgClass: 'bg-slate-900' },
       { name: 'Burgundy & Off-White', hex: '#881337', bgClass: 'bg-rose-950' },
       { name: 'Black & White', hex: '#18181B', bgClass: 'bg-zinc-900' },
@@ -340,7 +352,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'A timeless institution classic. Perfect for school leavers, senior graduations, collegiate teams, and company anniversary releases. Customize ribbing striping to match your exact brand palette.',
     idealFor: ['Senior School Leavers', 'University Clubs & Fraternities', 'Esports & Sports Squads', 'Company Merch'],
-    image: '/assets/images/custom-varsity-jacket.jpg',
+    image: varsityLettermanJacketImg,
     popular: true,
   },
   {
@@ -352,7 +364,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     basePrice: 2950,
     minOrder: 25,
     availableColors: [
-      { name: 'Brand Blue', hex: '#032345', bgClass: 'bg-[#032345]' },
+      { name: 'Brand Blue', hex: '#06163c', bgClass: 'bg-[#06163c]' },
       { name: 'Crisp White', hex: '#FFFFFF', bgClass: 'bg-white border border-slate-300' },
       { name: 'Heather Grey', hex: '#94A3B8', bgClass: 'bg-slate-400' },
       { name: 'Deep Navy', hex: '#0F172A', bgClass: 'bg-slate-900' },
@@ -372,7 +384,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'The heavyweight standard for staff casual wear, school trip groups, and sports warmup gear. The tight knit surface guarantees razor-sharp screen printing and dense embroidery without puckering.',
     idealFor: ['School Trips & Camps', 'Staff Casual Uniforms', 'Brand Merchandising', 'Sports Warmups'],
-    image: '/assets/images/heavyweight-pullover-hoodie.jpg',
+    image: fleecePulloverHoodieImg,
   },
 ];
 
@@ -418,7 +430,7 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
     technique: 'Direct High-Density Crest Embroidery & Custom Knitted V-Necks',
     description: 'Designed and manufactured 600 complete sets including tailored royal blue blazers, anti-pill sweaters, pique polo shirts, and PE tracksuits.',
     tags: ['Academic Blazers', 'Knit Sweaters', 'Custom Crests'],
-    image: '/assets/images/portfolio-academy-rollout.jpg',
+    image: academicSchoolBlazerImg,
     quantityDelivered: '2,400+ Garments',
   },
   {
@@ -429,7 +441,7 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
     technique: 'Anti-Microbial Pro-Flex Scrubs with Dual Pocket Monogramming',
     description: 'Supplied color-coded scrubs across 4 departments (Emergency, Pediatric, Surgery, General Care) with doctor identification embroidery.',
     tags: ['4-Way Stretch Scrubs', 'Doctor Monograms', 'Color-Coded Tiers'],
-    image: '/assets/images/portfolio-hospital-scrubs.jpg',
+    image: medicalScrubSetImg,
     quantityDelivered: '850 Sets',
   },
   {
@@ -440,7 +452,7 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
     technique: 'Laser-Etched Leather Patches & Metallic Thread Embroidery',
     description: 'Custom heavy canvas barista aprons, executive chef jackets, and front-desk moisture-wicking corporate polos.',
     tags: ['Culinary Jackets', 'Canvas Aprons', 'Corporate Polos'],
-    image: '/assets/images/portfolio-bistro-apparel.jpg',
+    image: canvasBaristaApronImg,
     quantityDelivered: '320 Pieces',
   },
   {
@@ -451,7 +463,7 @@ export const PORTFOLIO_ITEMS: PortfolioItem[] = [
     technique: 'Large Reflective Silkscreen Printing & Reinforced Coveralls',
     description: 'Triple-stitched heavy boiler suits and high-vis safety vests with reflective company branding for night shift warehouse operations.',
     tags: ['ISO Safety Vests', 'Triple-Stitch Overalls', 'Reflective Screen Print'],
-    image: '/assets/images/portfolio-logistics-safety.jpg',
+    image: highVisSafetyVestImg,
     quantityDelivered: '1,200 Units',
   },
 ];

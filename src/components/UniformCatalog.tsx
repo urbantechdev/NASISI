@@ -38,7 +38,7 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
 
   // Only show published products on storefront catalog
   const liveProducts = useMemo(() => {
-    return products.filter((p) => p.published !== false);
+    return (products || []).filter((p) => p && p.published !== false);
   }, [products]);
 
   // Instant typed matches for popup list
@@ -46,12 +46,13 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
     if (!searchQuery.trim()) return [];
     const q = searchQuery.toLowerCase().trim();
     return liveProducts.filter((product) => {
+      if (!product) return false;
       return (
-        product.name.toLowerCase().includes(q) ||
-        product.tagline.toLowerCase().includes(q) ||
-        product.categoryLabel.toLowerCase().includes(q) ||
+        (product.name || '').toLowerCase().includes(q) ||
+        (product.tagline || '').toLowerCase().includes(q) ||
+        (product.categoryLabel || '').toLowerCase().includes(q) ||
         (product.fabric?.composition || '').toLowerCase().includes(q) ||
-        (product.idealFor || []).some((item) => item.toLowerCase().includes(q))
+        (product.idealFor || []).some((item) => (item || '').toLowerCase().includes(q))
       );
     }).slice(0, 5);
   }, [liveProducts, searchQuery]);
@@ -131,19 +132,20 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
 
   const filteredProducts = useMemo(() => {
     return liveProducts.filter((product) => {
+      if (!product) return false;
       const matchesCategory =
         selectedCategory === 'all' || product.category === selectedCategory;
       const matchesSearch =
-        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.tagline || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
         (product.fabric?.composition || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (product.idealFor || []).some((item) => item.toLowerCase().includes(searchQuery.toLowerCase()));
+        (product.idealFor || []).some((item) => (item || '').toLowerCase().includes(searchQuery.toLowerCase()));
       return matchesCategory && matchesSearch;
     });
   }, [liveProducts, selectedCategory, searchQuery]);
 
   return (
-    <section id="catalog" className="py-8 sm:py-12 bg-slate-50 border-b border-slate-200">
+    <section id="catalog" className="py-8 sm:py-12 bg-white border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Filter Controls & Search */}
@@ -160,8 +162,8 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                     onClick={() => setSelectedCategory(cat.id)}
                     className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 ${
                       selectedCategory === cat.id
-                        ? 'bg-[#032345] text-white shadow-sm'
-                        : 'bg-white text-slate-600 hover:text-[#032345] hover:bg-blue-50/70 border border-slate-200'
+                        ? 'bg-[#06163c] text-white shadow-sm'
+                        : 'bg-white text-slate-600 hover:text-[#06163c] hover:bg-blue-50/70 border border-slate-200'
                     }`}
                   >
                     <IconComponent className={`w-3.5 h-3.5 ${selectedCategory === cat.id ? 'text-white' : 'text-slate-500'}`} />
@@ -194,7 +196,7 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                   setHighlightedIndex(0);
                 }}
                 onKeyDown={handleKeyDown}
-                className="w-full pl-9 pr-14 py-2.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#032345] focus:border-transparent transition-all shadow-xs"
+                className="w-full pl-9 pr-14 py-2.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#06163c] focus:border-transparent transition-all shadow-xs"
               />
               <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
                 {searchQuery ? (
@@ -269,12 +271,12 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                               </span>
                             </div>
                             <p className="text-[11px] text-slate-500 truncate mt-0.5">
-                              {product.tagline}
+                              {product.tagline || ''}
                             </p>
                           </div>
                           <div className="text-right shrink-0">
-                            <span className="text-xs font-extrabold text-[#032345] block">
-                              ${product.price.base.toFixed(2)}
+                            <span className="text-xs font-extrabold text-[#06163c] block">
+                              ${product.price?.base ? product.price.base.toFixed(2) : (product.basePrice ? product.basePrice.toFixed(2) : '0.00')}
                             </span>
                             <span className="text-[10px] text-blue-600 font-semibold flex items-center gap-0.5 justify-end mt-0.5">
                               <Eye className="w-3 h-3" />
@@ -304,7 +306,7 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                 setSelectedCategory('all');
                 setSearchQuery('');
               }}
-              className="px-4 py-2 text-xs font-bold text-[#032345] bg-blue-50 rounded-lg hover:bg-blue-100"
+              className="px-4 py-2 text-xs font-bold text-[#06163c] bg-blue-50 rounded-lg hover:bg-blue-100"
             >
               Reset Filters
             </button>
@@ -323,10 +325,10 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                     onSelectProduct(product);
                   }
                 }}
-                className="group bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col hover:-translate-y-1 active:scale-[0.99] cursor-pointer touch-manipulation focus:outline-none focus:ring-2 focus:ring-[#032345]/50"
+                className="group bg-white rounded-2xl border border-[#D1E0FF] overflow-hidden shadow-[0_10px_28px_-4px_rgba(209,224,255,0.4),0_4px_14px_rgba(209,224,255,0.2)] hover:shadow-[0_20px_42px_-4px_rgba(209,224,255,0.6),0_8px_22px_rgba(209,224,255,0.3)] transition-all duration-300 flex flex-col hover:-translate-y-1.5 active:scale-[0.99] cursor-pointer touch-manipulation focus:outline-none focus:ring-2 focus:ring-[#D1E0FF]"
               >
                 {/* Image & Badges */}
-                <div className="relative aspect-[4/3] bg-slate-100 overflow-hidden">
+                <div className="relative aspect-[4/3] bg-gradient-to-br from-[#D1E0FF]/30 via-slate-50 to-[#D1E0FF]/15 overflow-hidden shadow-[inset_0_0_24px_rgba(209,224,255,0.25)] border-b border-[#D1E0FF]/40">
                   <img
                     src={product.image}
                     alt={product.name}
@@ -340,25 +342,25 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                   />
                   
                   {/* Category Tag */}
-                  <span className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-[#032345] text-[10px] font-extrabold px-2.5 py-1 rounded-md shadow-sm uppercase tracking-wider">
+                  <span className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-[#06163c] text-[10px] font-extrabold px-2.5 py-1 rounded-md shadow-sm uppercase tracking-wider">
                     {product.categoryLabel}
                   </span>
 
                   {product.badge && (
-                    <span className="absolute top-3 right-3 bg-[#032345] text-white text-[10px] font-extrabold px-2 py-0.5 rounded shadow-sm">
+                    <span className="absolute top-3 right-3 bg-[#06163c] text-white text-[10px] font-extrabold px-2 py-0.5 rounded shadow-sm">
                       {product.badge}
                     </span>
                   )}
 
                   {/* Quick Customizer Hover Overlay Button (Desktop) */}
-                  <div className="absolute inset-0 bg-[#032345]/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:flex items-center justify-center gap-2 p-4">
+                  <div className="absolute inset-0 bg-[#06163c]/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:flex items-center justify-center gap-2 p-4">
                     <button
                       type="button"
                       onClick={(e) => {
                         e.stopPropagation();
                         onSelectProduct(product);
                       }}
-                      className="px-3.5 py-2 bg-white text-[#032345] text-xs font-bold rounded-lg shadow-lg hover:bg-blue-50 transition-colors flex items-center gap-1.5 cursor-pointer"
+                      className="px-3.5 py-2 bg-white text-[#06163c] text-xs font-bold rounded-lg shadow-lg hover:bg-blue-50 transition-colors flex items-center gap-1.5 cursor-pointer"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>Details & Pricing</span>
@@ -369,7 +371,7 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                         e.stopPropagation();
                         onOpenCustomizerWithProduct(
                           product,
-                          product.availableColors[0]?.hex || '#032345'
+                          product.availableColors[0]?.hex || '#06163c'
                         );
                       }}
                       className="px-3.5 py-2 bg-[#021a34] text-white text-xs font-bold rounded-lg shadow-lg hover:bg-[#01152a] transition-colors flex items-center gap-1.5 cursor-pointer"
@@ -404,18 +406,18 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                     </div>
 
                     {/* Title & Tagline */}
-                    <h3 className="font-bold text-slate-900 text-base font-['Outfit',sans-serif] group-hover:text-[#032345] transition-colors leading-snug">
+                    <h3 className="font-bold text-slate-900 text-base font-['Outfit',sans-serif] group-hover:text-[#06163c] transition-colors leading-snug">
                       {product.name}
                     </h3>
                     <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                      {product.tagline}
+                      {product.tagline || ''}
                     </p>
                   </div>
 
                   {/* Fabric highlight pills */}
                   <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
                     <span className="font-medium text-slate-500 truncate max-w-[150px]">
-                      {product.fabric.weight} • {product.fabric.composition.split('/')[0]}
+                      {product.fabric?.weight || ''} • {(product.fabric?.composition || '').split('/')[0]}
                     </span>
                     <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
                       MOQ: {product.minOrder}
@@ -428,7 +430,7 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                       <span className="text-[10px] text-slate-400 uppercase font-semibold block">
                         Bulk from
                       </span>
-                      <span className="text-base sm:text-lg font-black text-[#032345] font-['Outfit',sans-serif]">
+                      <span className="text-base sm:text-lg font-black text-[#06163c] font-['Outfit',sans-serif]">
                         Ksh {product.basePrice.toLocaleString()}
                       </span>
                       <span className="text-[10px] text-slate-400">/unit</span>
@@ -440,7 +442,7 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                         e.stopPropagation();
                         onSelectProduct(product);
                       }}
-                      className="inline-flex items-center gap-1 px-3.5 py-2 text-xs font-bold text-white bg-[#032345] hover:bg-[#021a34] rounded-xl shadow-sm transition-colors active:scale-95 cursor-pointer"
+                      className="inline-flex items-center gap-1 px-3.5 py-2 text-xs font-bold text-white bg-[#06163c] hover:bg-[#021a34] rounded-xl shadow-sm transition-colors active:scale-95 cursor-pointer"
                     >
                       <span>Configure</span>
                       <ChevronRight className="w-3.5 h-3.5" />

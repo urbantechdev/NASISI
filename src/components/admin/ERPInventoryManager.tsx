@@ -63,16 +63,17 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
   const totalCostValue = inventory.reduce((sum, i) => sum + i.stockOnHand * i.unitCost, 0);
   const totalSalesValue = inventory.reduce((sum, i) => sum + i.stockOnHand * i.sellingPrice, 0);
 
-  const publishedCount = products.filter((p) => p.published !== false).length;
-  const draftCount = products.length - publishedCount;
+  const publishedCount = (products || []).filter((p) => p && p.published !== false).length;
+  const draftCount = (products || []).length - publishedCount;
 
   // Filtered platform garments
-  const filteredProducts = products.filter((prod) => {
+  const filteredProducts = (products || []).filter((prod) => {
+    if (!prod) return false;
     const matchesCategory = categoryFilter === 'all' || prod.category === categoryFilter;
     const matchesSearch =
-      prod.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (prod.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (prod.sku && prod.sku.toLowerCase().includes(searchQuery.toLowerCase())) ||
-      prod.tagline.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (prod.tagline || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
       (prod.location && prod.location.toLowerCase().includes(searchQuery.toLowerCase())) ||
       (prod.fabric?.composition || '').toLowerCase().includes(searchQuery.toLowerCase());
 
@@ -146,7 +147,7 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
   return (
     <div className="space-y-6">
       {/* Synchronization Status Banner */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-[#032345] via-blue-900 to-indigo-900 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-[#06163c] via-blue-900 to-indigo-900 text-white shadow-md flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-500/20 border border-blue-400/30 flex items-center justify-center flex-shrink-0">
             <Globe className="w-5 h-5 text-sky-400 animate-pulse" />
@@ -194,7 +195,7 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
             Total Inventory Valuation (Selling)
           </span>
-          <span className="text-2xl font-black text-[#032345] font-['Outfit'] block">
+          <span className="text-2xl font-black text-[#06163c] font-['Outfit'] block">
             {formatKsh(totalSalesValue)}
           </span>
           <span className="text-[11px] text-slate-500">Cost Basis: {formatKsh(totalCostValue)}</span>
@@ -262,7 +263,7 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
               }}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeView === 'garments'
-                  ? 'bg-[#032345] text-white shadow-xs'
+                  ? 'bg-[#06163c] text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -277,7 +278,7 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
               }}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeView === 'materials'
-                  ? 'bg-[#032345] text-white shadow-xs'
+                  ? 'bg-[#06163c] text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -292,7 +293,7 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
               }}
               className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                 activeView === 'all'
-                  ? 'bg-[#032345] text-white shadow-xs'
+                  ? 'bg-[#06163c] text-white shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
@@ -305,7 +306,7 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
               onClick={handleOpenCreateProduct}
-              className="flex-1 sm:flex-initial px-3.5 py-2 bg-[#032345] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer"
+              className="flex-1 sm:flex-initial px-3.5 py-2 bg-[#06163c] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-xs transition-all inline-flex items-center justify-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>+ New Garment Product</span>
@@ -355,7 +356,7 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
                   onClick={() => setCategoryFilter(cat.id)}
                   className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
                     categoryFilter === cat.id
-                      ? 'bg-[#032345] text-white shadow-xs'
+                      ? 'bg-[#06163c] text-white shadow-xs'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
@@ -380,7 +381,7 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
                   onClick={() => setCategoryFilter(cat.id)}
                   className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
                     categoryFilter === cat.id
-                      ? 'bg-[#032345] text-white shadow-xs'
+                      ? 'bg-[#06163c] text-white shadow-xs'
                       : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                   }`}
                 >
@@ -439,7 +440,7 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
                               )}
                             </div>
                             <span className="text-[11px] text-slate-500 line-clamp-1 block">
-                              {prod.tagline}
+                              {prod.tagline || ''}
                             </span>
                           </div>
                         </div>

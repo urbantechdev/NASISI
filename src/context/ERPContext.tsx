@@ -9,8 +9,14 @@ import {
   ERPPaymentTransaction,
   ERPProductionOrder,
   UniformProduct,
+  HeroSlide,
+  HeroConfig,
+  AdminUser,
+  AdminUserActivity,
 } from '../types';
 import { UNIFORM_PRODUCTS } from '../data/uniformsData';
+import { INITIAL_HERO_SLIDES, INITIAL_HERO_CONFIG } from '../data/heroData';
+import { INITIAL_ADMIN_USERS, DEFAULT_ADMIN_CREDENTIALS } from '../data/adminUserData';
 import {
   INITIAL_BUSINESS_PROFILE,
   INITIAL_CUSTOMERS,
@@ -22,6 +28,16 @@ import {
 } from '../data/erpInitialData';
 
 interface ERPContextType {
+  // Admin Authentication & Profile
+  currentUser: AdminUser | null;
+  isAuthenticated: boolean;
+  adminUsers: AdminUser[];
+  login: (emailOrStaffId: string, password?: string) => Promise<{ success: boolean; error?: string }>;
+  quickDemoLogin: (userId: string) => void;
+  logout: () => void;
+  updateUserProfile: (updates: Partial<AdminUser>) => void;
+  changePassword: (oldPass: string, newPass: string) => { success: boolean; error?: string };
+
   // Data
   businessProfile: ERPBusinessProfile;
   customers: ERPCustomer[];
@@ -82,6 +98,16 @@ interface ERPContextType {
   // Profile Settings
   updateBusinessProfile: (updates: Partial<ERPBusinessProfile>) => void;
   resetToDefaultData: () => void;
+
+  // Storefront Hero Banner & Slides Operations
+  heroSlides: HeroSlide[];
+  heroConfig: HeroConfig;
+  addHeroSlide: (slide: Omit<HeroSlide, 'id'>) => HeroSlide;
+  updateHeroSlide: (id: string, updates: Partial<HeroSlide>) => void;
+  deleteHeroSlide: (id: string) => void;
+  reorderHeroSlides: (newSlides: HeroSlide[]) => void;
+  updateHeroConfig: (updates: Partial<HeroConfig>) => void;
+  resetHeroToDefault: () => void;
 }
 
 const ERPContext = createContext<ERPContextType | undefined>(undefined);
@@ -93,8 +119,13 @@ const STORAGE_KEYS = {
   TRANSACTIONS: 'nasisi_erp_transactions_v2',
   INVENTORY: 'nasisi_erp_inventory_v3',
   PRODUCTION: 'nasisi_erp_production_v2',
-  PRODUCTS: 'nasisi_erp_products_v3',
+  PRODUCTS: 'nasisi_erp_products_v4',
   TICKETS: 'nasisi_erp_inquiry_tickets_v2',
+  HERO_SLIDES: 'nasisi_erp_hero_slides_v2',
+  HERO_CONFIG: 'nasisi_erp_hero_config_v2',
+  AUTH_USER: 'nasisi_erp_auth_user_v2',
+  ADMIN_USERS: 'nasisi_erp_admin_users_v2',
+  PASSWORDS: 'nasisi_erp_passwords_v2',
 };
 
 // Generate initial products with inventory SKU and publishing defaults
@@ -244,6 +275,288 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.TICKETS, JSON.stringify(inquiryTickets));
   }, [inquiryTickets]);
+
+  // Storefront Hero Banner Slides & Configuration State
+  const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.HERO_SLIDES);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch {
+      // fallback
+    }
+    return INITIAL_HERO_SLIDES;
+  });
+
+  const [heroConfig, setHeroConfig] = useState<HeroConfig>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.HERO_CONFIG);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        return {
+          ...INITIAL_HERO_CONFIG,
+          ...parsed,
+          showOverlayGradients: false,
+        };
+      }
+    } catch {
+      // fallback
+    }
+    return INITIAL_HERO_CONFIG;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.HERO_SLIDES, JSON.stringify(heroSlides));
+  }, [heroSlides]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.HERO_CONFIG, JSON.stringify(heroConfig));
+  }, [heroConfig]);
+
+  const addHeroSlide = (slideData: Omit<HeroSlide, 'id'>): HeroSlide => {
+    const newSlide: HeroSlide = {
+      ...slideData,
+      id: `hero-slide-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      order: heroSlides.length,
+    };
+    setHeroSlides((prev) => [...prev, newSlide]);
+    return newSlide;
+  };
+
+  const updateHeroSlide = (id: string, updates: Partial<HeroSlide>) => {
+    setHeroSlides((prev) =>
+      prev.map((slide) => (slide.id === id ? { ...slide, ...updates } : slide))
+    );
+  };
+
+  const deleteHeroSlide = (id: string) => {
+    setHeroSlides((prev) => prev.filter((slide) => slide.id !== id));
+  };
+
+  const reorderHeroSlides = (newSlides: HeroSlide[]) => {
+    setHeroSlides(newSlides.map((s, idx) => ({ ...s, order: idx })));
+  };
+
+  const updateHeroConfig = (updates: Partial<HeroConfig>) => {
+    setHeroConfig((prev) => ({ ...prev, ...updates }));
+  };
+
+  const resetHeroToDefault = () => {
+    setHeroSlides(INITIAL_HERO_SLIDES);
+    setHeroConfig(INITIAL_HERO_CONFIG);
+    localStorage.removeItem(STORAGE_KEYS.HERO_SLIDES);
+    localStorage.removeItem(STORAGE_KEYS.HERO_CONFIG);
+  };
+
+  // =========================================================================
+  // ADMIN AUTHENTICATION & USER PROFILE OPERATIONS
+  // =========================================================================
+
+  const [adminUsers, setAdminUsers] = useState<AdminUser[]>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.ADMIN_USERS);
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // fallback
+    }
+    return INITIAL_ADMIN_USERS;
+  });
+
+  const [currentUser, setCurrentUser] = useState<AdminUser | null>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
+      if (saved) return JSON.parse(saved);
+    } catch {
+      // fallback
+    }
+    return null;
+  });
+
+  const isAuthenticated = Boolean(currentUser);
+
+  // Sync admin users to storage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEYS.ADMIN_USERS, JSON.stringify(adminUsers));
+    } catch {
+      // fallback
+    }
+  }, [adminUsers]);
+
+  const login = async (
+    emailOrStaffId: string,
+    password?: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    const trimmed = emailOrStaffId.trim().toLowerCase();
+    const cleanPassword = (password || '').trim();
+
+    // Match by email or staffId or generic admin
+    const matchedUser = adminUsers.find(
+      (u) =>
+        u.email.toLowerCase() === trimmed ||
+        u.staffId.toLowerCase() === trimmed ||
+        (trimmed === 'admin' && u.role === 'Super Admin')
+    );
+
+    // Check custom passwords stored
+    let storedPasswords: Record<string, string> = {};
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.PASSWORDS);
+      if (saved) storedPasswords = JSON.parse(saved);
+    } catch {
+      // fallback
+    }
+
+    const expectedPass = matchedUser
+      ? storedPasswords[matchedUser.id] || DEFAULT_ADMIN_CREDENTIALS.defaultPassword
+      : DEFAULT_ADMIN_CREDENTIALS.defaultPassword;
+
+    // Allow expected pass or demo pass
+    const isPasswordValid =
+      cleanPassword === expectedPass ||
+      cleanPassword === 'admin123' ||
+      cleanPassword === 'admin' ||
+      cleanPassword === 'password' ||
+      !cleanPassword;
+
+    if (!matchedUser) {
+      // If entered admin@nasisiuniforms.co.ke or admin, match with default user
+      if (trimmed === 'admin@nasisiuniforms.co.ke' || trimmed === 'admin') {
+        const userToLogin: AdminUser = {
+          ...adminUsers[0],
+          status: 'active',
+          lastLogin: 'Just now (Nairobi Station)',
+        };
+        setCurrentUser(userToLogin);
+        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(userToLogin));
+        return { success: true };
+      }
+      return {
+        success: false,
+        error: 'No administrator account found with this email or Staff ID. Please use a quick demo account or admin@nasisiuniforms.co.ke',
+      };
+    }
+
+    if (!isPasswordValid) {
+      return {
+        success: false,
+        error: 'Incorrect password. (Hint: Demo password is "admin123" or click any 1-click Demo profile).',
+      };
+    }
+
+    const newActivity: AdminUserActivity = {
+      id: `act-${Date.now()}`,
+      action: 'Signed in to Enterprise ERP Console (Nairobi, Kenya)',
+      timestamp: 'Just now',
+      category: 'auth',
+    };
+
+    const updatedUser: AdminUser = {
+      ...matchedUser,
+      status: 'active',
+      lastLogin: 'Just now (Nairobi Station)',
+      recentActivities: [newActivity, ...(matchedUser.recentActivities || []).slice(0, 9)],
+    };
+
+    setCurrentUser(updatedUser);
+    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updatedUser));
+
+    setAdminUsers((prev) =>
+      prev.map((u) => (u.id === updatedUser.id ? updatedUser : u))
+    );
+
+    return { success: true };
+  };
+
+  const quickDemoLogin = (userId: string) => {
+    const user = adminUsers.find((u) => u.id === userId) || adminUsers[0];
+    const newActivity: AdminUserActivity = {
+      id: `act-${Date.now()}`,
+      action: 'Authenticated via 1-Click Fast Access Demo profile',
+      timestamp: 'Just now',
+      category: 'auth',
+    };
+    const updatedUser: AdminUser = {
+      ...user,
+      status: 'active',
+      lastLogin: 'Just now (Nairobi Station)',
+      recentActivities: [newActivity, ...(user.recentActivities || []).slice(0, 9)],
+    };
+    setCurrentUser(updatedUser);
+    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updatedUser));
+    setAdminUsers((prev) =>
+      prev.map((u) => (u.id === updatedUser.id ? updatedUser : u))
+    );
+  };
+
+  const logout = () => {
+    if (currentUser) {
+      const loggedOutUser: AdminUser = {
+        ...currentUser,
+        status: 'offline',
+        lastLogin: `Last seen at ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} (EAT)`,
+      };
+      setAdminUsers((prev) =>
+        prev.map((u) => (u.id === loggedOutUser.id ? loggedOutUser : u))
+      );
+    }
+    setCurrentUser(null);
+    localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
+  };
+
+  const updateUserProfile = (updates: Partial<AdminUser>) => {
+    if (!currentUser) return;
+    const newActivity: AdminUserActivity = {
+      id: `act-${Date.now()}`,
+      action: 'Updated administrator user profile & contact details',
+      timestamp: 'Just now',
+      category: 'security',
+    };
+    const updated: AdminUser = {
+      ...currentUser,
+      ...updates,
+      recentActivities: [newActivity, ...(currentUser.recentActivities || []).slice(0, 9)],
+    };
+    setCurrentUser(updated);
+    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updated));
+    setAdminUsers((prev) =>
+      prev.map((u) => (u.id === updated.id ? updated : u))
+    );
+  };
+
+  const changePassword = (oldPass: string, newPass: string) => {
+    if (!currentUser) return { success: false, error: 'Not authenticated' };
+    if (!newPass || newPass.length < 4) {
+      return { success: false, error: 'New password must be at least 4 characters long.' };
+    }
+    let storedPasswords: Record<string, string> = {};
+    try {
+      const saved = localStorage.getItem(STORAGE_KEYS.PASSWORDS);
+      if (saved) storedPasswords = JSON.parse(saved);
+    } catch {
+      // fallback
+    }
+    const currentPass = storedPasswords[currentUser.id] || DEFAULT_ADMIN_CREDENTIALS.defaultPassword;
+    if (oldPass !== currentPass && oldPass !== 'admin123' && oldPass !== 'admin') {
+      return { success: false, error: 'Current password does not match.' };
+    }
+    storedPasswords[currentUser.id] = newPass;
+    localStorage.setItem(STORAGE_KEYS.PASSWORDS, JSON.stringify(storedPasswords));
+
+    const newActivity: AdminUserActivity = {
+      id: `act-${Date.now()}`,
+      action: 'Changed portal security access password',
+      timestamp: 'Just now',
+      category: 'security',
+    };
+    updateUserProfile({
+      recentActivities: [newActivity, ...(currentUser.recentActivities || []).slice(0, 9)],
+    });
+
+    return { success: true };
+  };
 
   // =========================================================================
   // PLATFORM PRODUCT OPERATIONS (Live Storefront <-> Admin Inventory Sync)
@@ -1017,6 +1330,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setInventory(INITIAL_INVENTORY);
     setProductionOrders(INITIAL_PRODUCTION_ORDERS);
     setInquiryTickets(INITIAL_INQUIRY_TICKETS);
+    resetHeroToDefault();
     localStorage.removeItem(STORAGE_KEYS.PROFILE);
     localStorage.removeItem(STORAGE_KEYS.CUSTOMERS);
     localStorage.removeItem(STORAGE_KEYS.DOCUMENTS);
@@ -1038,6 +1352,23 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         productionOrders,
         products,
         inquiryTickets,
+        heroSlides,
+        heroConfig,
+        // Admin Auth & User Profile
+        currentUser,
+        isAuthenticated,
+        adminUsers,
+        login,
+        quickDemoLogin,
+        logout,
+        updateUserProfile,
+        changePassword,
+        addHeroSlide,
+        updateHeroSlide,
+        deleteHeroSlide,
+        reorderHeroSlides,
+        updateHeroConfig,
+        resetHeroToDefault,
         raiseInquiryTicket,
         updateInquiryTicket,
         deleteInquiryTicket,

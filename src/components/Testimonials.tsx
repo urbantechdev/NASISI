@@ -8,7 +8,7 @@ export const Testimonials: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="text-center max-w-3xl mx-auto mb-12 space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#032345] text-xs font-bold tracking-wide">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#06163c] text-xs font-bold tracking-wide">
             <MessageSquare className="w-3.5 h-3.5" />
             <span>Client Feedback & Recommendations</span>
           </div>
@@ -43,7 +43,7 @@ export const Testimonials: React.FC = () => {
                 <span className="font-bold text-slate-900 text-sm block font-['Outfit']">
                   {t.author}
                 </span>
-                <span className="text-xs font-semibold text-[#032345] block">
+                <span className="text-xs font-semibold text-[#06163c] block">
                   {t.role}
                 </span>
                 <span className="text-[11px] text-slate-500 block">

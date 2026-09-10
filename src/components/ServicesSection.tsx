@@ -21,7 +21,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#032345] text-xs font-bold tracking-wide">
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-[#06163c] text-xs font-bold tracking-wide">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Signature In-House Services</span>
           </div>
@@ -41,18 +41,18 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
               onClick={() => setActiveTab(idx)}
               className={`p-5 rounded-2xl text-left border transition-all relative overflow-hidden ${
                 activeTab === idx
-                  ? 'border-[#032345] bg-blue-50/50 shadow-md ring-2 ring-blue-500/10'
+                  ? 'border-[#06163c] bg-blue-50/50 shadow-md ring-2 ring-blue-500/10'
                   : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/70 hover:border-slate-300'
               }`}
             >
               {activeTab === idx && (
-                <span className="absolute top-0 left-0 right-0 h-1 bg-[#032345]" />
+                <span className="absolute top-0 left-0 right-0 h-1 bg-[#06163c]" />
               )}
               <div className="flex items-center gap-3 mb-2">
                 <div
                   className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
                     activeTab === idx
-                      ? 'bg-[#032345] text-white'
+                      ? 'bg-[#06163c] text-white'
                       : 'bg-slate-200 text-slate-700'
                   }`}
                 >
@@ -76,7 +76,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
             {/* Left: Deep Capabilities & Checklist */}
             <div className="lg:col-span-7 space-y-6">
               <div>
-                <span className="text-xs font-extrabold uppercase tracking-widest text-[#032345] block mb-1">
+                <span className="text-xs font-extrabold uppercase tracking-widest text-[#06163c] block mb-1">
                   Service Spotlight #0{activeTab + 1}
                 </span>
                 <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-['Outfit',sans-serif]">
@@ -95,7 +95,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   {currentService.bulletPoints.map((pt, i) => (
                     <div key={i} className="flex items-start gap-2.5 bg-white p-3 rounded-xl border border-slate-200 text-xs text-slate-800">
-                      <CheckCircle2 className="w-4 h-4 text-[#032345] flex-shrink-0 mt-0.5" />
+                      <CheckCircle2 className="w-4 h-4 text-[#06163c] flex-shrink-0 mt-0.5" />
                       <span className="leading-snug">{pt}</span>
                     </div>
                   ))}
@@ -111,7 +111,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                   {currentService.idealFabrics.map((fab) => (
                     <span
                       key={fab}
-                      className="px-3 py-1 bg-white text-[#032345] font-bold text-xs rounded-lg border border-blue-200"
+                      className="px-3 py-1 bg-white text-[#06163c] font-bold text-xs rounded-lg border border-blue-200"
                     >
                       {fab}
                     </span>
@@ -123,14 +123,14 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
               <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-200">
                 <button
                   onClick={onOpenQuoteModal}
-                  className="px-5 py-3 text-xs font-bold text-white bg-[#032345] hover:bg-[#021a34] rounded-xl shadow-sm transition-all"
+                  className="px-5 py-3 text-xs font-bold text-white bg-gradient-to-r from-[#020a1c] via-[#06163c] to-[#030e28] hover:from-[#010612] hover:via-[#040f28] hover:to-[#010612] rounded-xl shadow-md border border-blue-900/40 transition-all cursor-pointer"
                 >
                   <span>Request {currentService.title.split(' ')[0]} Quote</span>
                 </button>
                 <button
                   type="button"
                   onClick={onOpenCustomizer}
-                  className="px-5 py-3 text-xs font-bold text-[#032345] bg-white hover:bg-blue-50 border border-blue-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="px-5 py-3 text-xs font-bold text-[#06163c] bg-white hover:bg-blue-50 border border-blue-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <SlidersHorizontal className="w-4 h-4" />
                   <span>Preview in Live Mockup</span>
@@ -143,7 +143,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
               <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-md space-y-4">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                   <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 rounded-full bg-[#032345]"></div>
+                    <div className="w-3 h-3 rounded-full bg-[#06163c]"></div>
                     <span className="text-xs font-bold text-slate-800">
                       {activeTab === 0 ? 'High-Density Digitized Stitching' : activeTab === 1 ? 'High-Opacity Plastisol Printing' : 'Precision Jacquard Knitting'}
                     </span>
@@ -173,7 +173,7 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
 
                   {activeTab === 1 && (
                     <div className="space-y-2 relative z-10">
-                      <div className="px-6 py-3 border-2 border-white rounded-xl bg-[#032345] mx-auto inline-block shadow-lg">
+                      <div className="px-6 py-3 border-2 border-white rounded-xl bg-[#06163c] mx-auto inline-block shadow-lg">
                         <span className="font-black text-xl tracking-widest text-white uppercase font-['Outfit']">
                           NASISI PRINT
                         </span>
@@ -190,11 +190,11 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                   {activeTab === 2 && (
                     <div className="space-y-2 relative z-10">
                       <div className="flex justify-center gap-1.5">
-                        <div className="w-3 h-12 bg-[#032345] rounded"></div>
+                        <div className="w-3 h-12 bg-[#06163c] rounded"></div>
                         <div className="w-3 h-12 bg-white rounded"></div>
                         <div className="w-3 h-12 bg-[#021a34] rounded"></div>
                         <div className="w-3 h-12 bg-white rounded"></div>
-                        <div className="w-3 h-12 bg-[#032345] rounded"></div>
+                        <div className="w-3 h-12 bg-[#06163c] rounded"></div>
                       </div>
                       <span className="block text-xs font-bold text-blue-200 tracking-wider uppercase">
                         Bespoke Knit Ribs & Anti-Pill Acrylic
@@ -209,11 +209,11 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
                 {/* Quality Guarantees */}
                 <div className="grid grid-cols-2 gap-2 pt-2 text-[11px] text-slate-600">
                   <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-2">
-                    <ShieldCheck className="w-4 h-4 text-[#032345]" />
+                    <ShieldCheck className="w-4 h-4 text-[#06163c]" />
                     <span>Industrial Wash Tested (90°C)</span>
                   </div>
                   <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-[#032345]" />
+                    <Zap className="w-4 h-4 text-[#06163c]" />
                     <span>Free Digital Artwork Proofing</span>
                   </div>
                 </div>

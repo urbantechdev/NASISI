@@ -132,7 +132,7 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
               whileHover={{ scale: 1.04, y: -1 }}
               whileTap={{ scale: 0.96 }}
               onClick={() => onOpenCreateDoc('invoice')}
-              className="px-3.5 py-2 bg-[#032345] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow transition-all inline-flex items-center gap-1.5 cursor-pointer group"
+              className="px-3.5 py-2 bg-[#06163c] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-sm hover:shadow transition-all inline-flex items-center gap-1.5 cursor-pointer group"
             >
               <Plus className="w-4 h-4 group-hover:rotate-90 transition-transform duration-300" />
               <span>+ Tax Invoice</span>
@@ -141,7 +141,7 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
               whileHover={{ scale: 1.04, y: -1 }}
               whileTap={{ scale: 0.96 }}
               onClick={() => onOpenCreateDoc('quotation')}
-              className="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-[#032345] font-bold text-xs rounded-xl border border-blue-200 transition-all inline-flex items-center gap-1 cursor-pointer"
+              className="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-[#06163c] font-bold text-xs rounded-xl border border-blue-200 transition-all inline-flex items-center gap-1 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>+ Quotation</span>
@@ -150,7 +150,7 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
               whileHover={{ scale: 1.04, y: -1 }}
               whileTap={{ scale: 0.96 }}
               onClick={() => onOpenCreateDoc('proforma')}
-              className="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-[#032345] font-bold text-xs rounded-xl border border-blue-200 transition-all inline-flex items-center gap-1 cursor-pointer"
+              className="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-[#06163c] font-bold text-xs rounded-xl border border-blue-200 transition-all inline-flex items-center gap-1 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>+ Proforma</span>
@@ -193,7 +193,7 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
               onClick={() => setTypeFilter(tab.id as any)}
               className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all cursor-pointer ${
                 typeFilter === tab.id
-                  ? 'bg-[#032345] text-white shadow-sm'
+                  ? 'bg-[#06163c] text-white shadow-sm'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
               }`}
             >
@@ -340,7 +340,7 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
                           whileHover={{ scale: 1.08 }}
                           whileTap={{ scale: 0.95 }}
                           onClick={() => onViewDoc(doc)}
-                          className="p-1.5 bg-blue-50 hover:bg-blue-100 text-[#032345] rounded-lg transition-colors inline-flex items-center gap-1 font-bold text-[11px] cursor-pointer shadow-2xs"
+                          className="p-1.5 bg-blue-50 hover:bg-blue-100 text-[#06163c] rounded-lg transition-colors inline-flex items-center gap-1 font-bold text-[11px] cursor-pointer shadow-2xs"
                           title="Print / View Official Document Sheet"
                         >
                           <Printer className="w-3.5 h-3.5" />

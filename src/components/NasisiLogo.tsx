@@ -5,6 +5,7 @@ interface NasisiLogoProps {
   size?: 'sm' | 'md' | 'lg' | 'xl' | '2xl';
   variant?: 'full' | 'compact' | 'icon-only' | 'white';
   showTagline?: boolean;
+  tagline?: string;
 }
 
 export const NasisiLogo: React.FC<NasisiLogoProps> = ({
@@ -12,29 +13,60 @@ export const NasisiLogo: React.FC<NasisiLogoProps> = ({
   size = 'md',
   variant = 'full',
   showTagline = true,
+  tagline = 'We stitch it, You wear it, We print it, you represent.',
 }) => {
   const isWhite = variant === 'white';
-  const primaryBlue = isWhite ? '#FFFFFF' : '#032345';
+  const primaryBlue = isWhite ? '#FFFFFF' : '#06163c';
   const darkBlue = isWhite ? '#E0ECFF' : '#02162B';
   const lightBlue = isWhite ? '#93C5FD' : '#0E447B';
 
   const getDimensions = () => {
     switch (size) {
       case 'sm':
-        return { iconSize: 36, textSize: 'text-lg', subSize: 'text-[9px]' };
+        return {
+          iconSize: 36,
+          textSize: 'text-lg',
+          subSize: 'text-[9px]',
+          taglineSize: 'text-[7px]',
+          taglineMaxW: 'max-w-[180px]',
+        };
       case 'lg':
-        return { iconSize: 64, textSize: 'text-3xl', subSize: 'text-xs' };
+        return {
+          iconSize: 64,
+          textSize: 'text-3xl',
+          subSize: 'text-xs',
+          taglineSize: 'text-[9px] sm:text-[10px]',
+          taglineMaxW: 'max-w-[280px] sm:max-w-none',
+        };
       case 'xl':
-        return { iconSize: 96, textSize: 'text-4xl', subSize: 'text-sm' };
+        return {
+          iconSize: 96,
+          textSize: 'text-3xl sm:text-4xl',
+          subSize: 'text-xs sm:text-sm',
+          taglineSize: 'text-[10px] sm:text-xs',
+          taglineMaxW: 'max-w-[320px] sm:max-w-none',
+        };
       case '2xl':
-        return { iconSize: 128, textSize: 'text-5xl', subSize: 'text-base' };
+        return {
+          iconSize: 128,
+          textSize: 'text-4xl sm:text-5xl',
+          subSize: 'text-sm sm:text-base',
+          taglineSize: 'text-xs sm:text-sm',
+          taglineMaxW: 'max-w-none',
+        };
       case 'md':
       default:
-        return { iconSize: 48, textSize: 'text-2xl', subSize: 'text-[10px]' };
+        return {
+          iconSize: 48,
+          textSize: 'text-2xl',
+          subSize: 'text-[10px]',
+          taglineSize: 'text-[7.5px] sm:text-[8px]',
+          taglineMaxW: 'max-w-[225px] xs:max-w-[280px] sm:max-w-none',
+        };
     }
   };
 
-  const { iconSize, textSize, subSize } = getDimensions();
+  const { iconSize, textSize, subSize, taglineSize, taglineMaxW } = getDimensions();
 
   // SVG Icon representing the NASISI Monogram N with needle, thread, stitch, t-shirt, and screen print squeegee
   const LogoIcon = (
@@ -48,12 +80,14 @@ export const NasisiLogo: React.FC<NasisiLogoProps> = ({
     >
       <defs>
         <linearGradient id={`n-grad-${variant}`} x1="30" y1="20" x2="170" y2="180" gradientUnits="userSpaceOnUse">
-          <stop offset="0%" stopColor={isWhite ? '#FFFFFF' : '#0B3B6F'} />
-          <stop offset="100%" stopColor={isWhite ? '#BFDBFE' : '#032345'} />
+          <stop offset="0%" stopColor={isWhite ? '#FFFFFF' : '#143175'} />
+          <stop offset="60%" stopColor={isWhite ? '#BFDBFE' : '#06163c'} />
+          <stop offset="100%" stopColor={isWhite ? '#93C5FD' : '#020a1c'} />
         </linearGradient>
         <linearGradient id={`tshirt-grad-${variant}`} x1="100" y1="20" x2="160" y2="90" gradientUnits="userSpaceOnUse">
           <stop offset="0%" stopColor={isWhite ? '#FFFFFF' : '#104A8B'} />
-          <stop offset="100%" stopColor={isWhite ? '#93C5FD' : '#032345'} />
+          <stop offset="60%" stopColor={isWhite ? '#93C5FD' : '#06163c'} />
+          <stop offset="100%" stopColor={isWhite ? '#DBEAFE' : '#020a1c'} />
         </linearGradient>
       </defs>
 
@@ -76,7 +110,7 @@ export const NasisiLogo: React.FC<NasisiLogoProps> = ({
       />
 
       {/* Needle Eye & Thread looping over top */}
-      <circle cx="60" cy="38" r="4.5" fill={isWhite ? '#032345' : '#FFFFFF'} />
+      <circle cx="60" cy="38" r="4.5" fill={isWhite ? '#06163c' : '#FFFFFF'} />
       <path
         d="M 60 38 C 30 30, 26 65, 46 72 C 58 76, 75 70, 92 84"
         stroke={isWhite ? '#FFFFFF' : primaryBlue}
@@ -112,7 +146,7 @@ export const NasisiLogo: React.FC<NasisiLogoProps> = ({
       {/* T-shirt Collar cutout */}
       <path
         d="M 120 36 C 126 44, 134 44, 140 36"
-        stroke={isWhite ? '#032345' : '#FFFFFF'}
+        stroke={isWhite ? '#06163c' : '#FFFFFF'}
         strokeWidth="2"
         fill="none"
       />
@@ -137,14 +171,14 @@ export const NasisiLogo: React.FC<NasisiLogoProps> = ({
   }
 
   return (
-    <div className={`inline-flex items-center gap-3 select-none ${className}`}>
+    <div className={`inline-flex items-center gap-3 sm:gap-3.5 select-none ${className}`}>
       {LogoIcon}
       
       <div className="flex flex-col">
         <div className="flex items-center gap-1.5">
           <span
             className={`font-['Outfit',sans-serif] font-black tracking-wider ${textSize} leading-none ${
-              isWhite ? 'text-white' : 'text-[#032345]'
+              isWhite ? 'text-white' : 'text-[#06163c]'
             }`}
           >
             NASISI
@@ -160,9 +194,14 @@ export const NasisiLogo: React.FC<NasisiLogoProps> = ({
         </span>
 
         {showTagline && (
-          <div className="flex items-center gap-2 mt-1 pt-1 border-t border-blue-100/50">
-            <span className={`text-[8px] tracking-wider uppercase font-medium ${isWhite ? 'text-blue-100/80' : 'text-blue-900/70'}`}>
-              Stitched • Crafted • Printed
+          <div className={`flex items-center mt-1 pt-1 border-t border-blue-100/40 ${taglineMaxW}`}>
+            <span
+              className={`${taglineSize} tracking-tight sm:tracking-normal font-medium ${
+                isWhite ? 'text-blue-100/90' : 'text-blue-900/80'
+              } truncate sm:overflow-visible sm:whitespace-nowrap`}
+              title={tagline}
+            >
+              {tagline}
             </span>
           </div>
         )}

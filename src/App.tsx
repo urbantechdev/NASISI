@@ -12,18 +12,127 @@ import { SizeAndFabricGuide } from './components/SizeAndFabricGuide';
 import { MobileStorefrontBottomNav } from './components/MobileStorefrontBottomNav';
 import { ERPProvider } from './context/ERPContext';
 import { AdminERPSuite } from './components/admin/AdminERPSuite';
+import { PlatformPolicyPage } from './pages/PlatformPolicyPage';
+import { TermsOfServicePage } from './pages/TermsOfServicePage';
+import { CookiePolicyPage } from './pages/CookiePolicyPage';
+import { CookieConsentBanner } from './components/CookieConsentBanner';
+
+export type AppViewMode = 'storefront' | 'erp' | 'privacy' | 'terms' | 'cookies';
 
 export default function App() {
-  // View mode: storefront (client catalog & mockup studio) vs erp (Kenyan Enterprise ERP & Invoicing Suite)
-  const [viewMode, setViewMode] = useState<'storefront' | 'erp'>(() => {
+  // View mode: storefront vs erp vs independent legal pages (privacy, terms, cookies)
+  const [viewMode, setViewMode] = useState<AppViewMode>(() => {
+    // Check initial URL hash
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.toLowerCase();
+      if (hash === '#privacy' || hash === '#policy') return 'privacy';
+      if (hash === '#terms' || hash === '#tos') return 'terms';
+      if (hash === '#cookies' || hash === '#cookie-policy') return 'cookies';
+      if (hash === '#erp' || hash === '#admin') return 'erp';
+    }
     try {
       const saved = localStorage.getItem('nasisi_view_mode');
-      if (saved === 'erp' || saved === 'storefront') return saved;
+      if (
+        saved === 'erp' ||
+        saved === 'storefront' ||
+        saved === 'privacy' ||
+        saved === 'terms' ||
+        saved === 'cookies'
+      ) {
+        return saved as AppViewMode;
+      }
     } catch {
       // ignore
     }
     return 'storefront';
   });
+
+  // Listen to browser URL hash changes for deep linking & back/forward buttons
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.toLowerCase();
+      if (hash === '#privacy' || hash === '#policy') {
+        setViewMode('privacy');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (hash === '#terms' || hash === '#tos') {
+        setViewMode('terms');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (hash === '#cookies' || hash === '#cookie-policy') {
+        setViewMode('cookies');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (hash === '#erp' || hash === '#admin') {
+        setViewMode('erp');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else if (hash === '' || hash === '#catalog' || hash === '#services' || hash === '#portfolio' || hash === '#contact') {
+        // If coming from a legal page to a section hash, return to storefront
+        setViewMode((current) => (current === 'privacy' || current === 'terms' || current === 'cookies' ? 'storefront' : current));
+      }
+    };
+
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
+  // Helper to switch view mode with scroll-to-top and hash synchronization
+  const navigateToView = (mode: AppViewMode) => {
+    setViewMode(mode);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (mode === 'privacy') window.location.hash = 'privacy';
+    else if (mode === 'terms') window.location.hash = 'terms';
+    else if (mode === 'cookies') window.location.hash = 'cookies';
+    else if (mode === 'erp') window.location.hash = 'erp';
+    else if (mode === 'storefront') {
+      if (window.location.hash.includes('privacy') || window.location.hash.includes('terms') || window.location.hash.includes('cookies') || window.location.hash.includes('erp')) {
+        window.history.pushState(null, '', window.location.pathname);
+      }
+    }
+  };
+
+  // Auto full screen activation on open and first interaction
+  useEffect(() => {
+    const triggerFullscreen = () => {
+      try {
+        if (!document.fullscreenElement) {
+          const docEl = document.documentElement as any;
+          if (docEl.requestFullscreen) {
+            docEl.requestFullscreen().catch(() => {});
+          } else if (docEl.webkitRequestFullscreen) {
+            docEl.webkitRequestFullscreen();
+          } else if (docEl.mozRequestFullScreen) {
+            docEl.mozRequestFullScreen();
+          } else if (docEl.msRequestFullscreen) {
+            docEl.msRequestFullscreen();
+          }
+        }
+      } catch {
+        // Handled silently
+      }
+    };
+
+    // Attempt immediately on mount
+    triggerFullscreen();
+
+    // Trigger automatically on first user gesture anywhere on the window
+    const handleFirstGesture = () => {
+      triggerFullscreen();
+      window.removeEventListener('pointerdown', handleFirstGesture);
+      window.removeEventListener('click', handleFirstGesture);
+      window.removeEventListener('touchstart', handleFirstGesture);
+      window.removeEventListener('keydown', handleFirstGesture);
+    };
+
+    window.addEventListener('pointerdown', handleFirstGesture, { once: true });
+    window.addEventListener('click', handleFirstGesture, { once: true });
+    window.addEventListener('touchstart', handleFirstGesture, { once: true });
+    window.addEventListener('keydown', handleFirstGesture, { once: true });
+
+    return () => {
+      window.removeEventListener('pointerdown', handleFirstGesture);
+      window.removeEventListener('click', handleFirstGesture);
+      window.removeEventListener('touchstart', handleFirstGesture);
+      window.removeEventListener('keydown', handleFirstGesture);
+    };
+  }, []);
 
   // Cart state persisted to localStorage
   const [quoteItems, setQuoteItems] = useState<QuoteItem[]>(() => {
@@ -93,22 +202,56 @@ export default function App() {
 
   return (
     <ERPProvider>
-      {viewMode === 'erp' ? (
-        <AdminERPSuite onSwitchToStorefront={() => setViewMode('storefront')} />
-      ) : (
-        <div className="min-h-screen flex flex-col bg-[#F8FAFC] text-slate-900 font-['Plus_Jakarta_Sans',sans-serif]">
-          {/* Header & Sticky Nav */}
+      {/* 1. Independent Platform & Privacy Policy Page */}
+      {viewMode === 'privacy' && (
+        <PlatformPolicyPage
+          onBackToStorefront={() => navigateToView('storefront')}
+          onNavigateToTerms={() => navigateToView('terms')}
+          onNavigateToCookies={() => navigateToView('cookies')}
+        />
+      )}
+
+      {/* 2. Independent Terms of Service Page */}
+      {viewMode === 'terms' && (
+        <TermsOfServicePage
+          onBackToStorefront={() => navigateToView('storefront')}
+          onNavigateToPrivacy={() => navigateToView('privacy')}
+          onNavigateToCookies={() => navigateToView('cookies')}
+        />
+      )}
+
+      {/* 3. Independent Cookies & Storage Policy Page */}
+      {viewMode === 'cookies' && (
+        <CookiePolicyPage
+          onBackToStorefront={() => navigateToView('storefront')}
+          onNavigateToPrivacy={() => navigateToView('privacy')}
+          onNavigateToTerms={() => navigateToView('terms')}
+        />
+      )}
+
+      {/* 4. Enterprise ERP & Invoicing Center */}
+      {viewMode === 'erp' && (
+        <AdminERPSuite onSwitchToStorefront={() => navigateToView('storefront')} />
+      )}
+
+      {/* 5. Main Storefront & 3D Mockup Studio */}
+      {viewMode === 'storefront' && (
+        <div className="min-h-screen flex flex-col bg-white text-slate-900 font-['Plus_Jakarta_Sans',sans-serif]">
+          {/* Header & Sticky Nav with Mega Menu */}
           <Navbar
             quoteItems={quoteItems}
             onOpenQuoteModal={() => setIsQuoteModalOpen(true)}
             onOpenCustomizer={() => setIsCustomizerModalOpen(true)}
             onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
-            onOpenAdminERP={() => setViewMode('erp')}
+            onOpenAdminERP={() => navigateToView('erp')}
             onSelectProduct={(product) => setSelectedProductForModal(product)}
+            onOpenPrivacyPolicy={() => navigateToView('privacy')}
+            onOpenTerms={() => navigateToView('terms')}
+            onOpenCookies={() => navigateToView('cookies')}
           />
 
-          <main className="flex-1 pt-24 sm:pt-28 md:pt-32 pb-24 lg:pb-0">
-            {/* Plain Hero Banner with no text or items */}
+          <main className="flex-1 pt-32 sm:pt-36 md:pt-40 pb-24 lg:pb-0">
+            {/* Plain Hero Banner with animated images and no text overlay */}
             <Hero />
 
             {/* Uniform Catalog */}
@@ -118,7 +261,7 @@ export default function App() {
             />
           </main>
 
-          {/* Modern Mobile Bottom Navigation (5-icon with larger center studio button & wave top edge) */}
+          {/* Modern Mobile Bottom Navigation */}
           <MobileStorefrontBottomNav
             quoteItems={quoteItems}
             onOpenQuoteModal={() => setIsQuoteModalOpen(true)}
@@ -126,8 +269,19 @@ export default function App() {
             onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
           />
 
-          {/* Modern Footer */}
-          <Footer onOpenAdminERP={() => setViewMode('erp')} />
+          {/* Modern Footer with Direct Legal Links */}
+          <Footer
+            onOpenAdminERP={() => navigateToView('erp')}
+            onOpenPrivacyPolicy={() => navigateToView('privacy')}
+            onOpenTerms={() => navigateToView('terms')}
+            onOpenCookies={() => navigateToView('cookies')}
+          />
+
+          {/* Cookie Consent Floating Banner */}
+          <CookieConsentBanner
+            onOpenCookiePolicy={() => navigateToView('cookies')}
+            onOpenPrivacyPolicy={() => navigateToView('privacy')}
+          />
 
           {/* Modals & Studios */}
           <InteractiveCustomizer

@@ -22,6 +22,20 @@ import {
   Tag,
   Phone,
   MessageSquare,
+  GraduationCap,
+  HeartPulse,
+  HardHat,
+  UtensilsCrossed,
+  Shirt,
+  Palette,
+  CheckCircle2,
+  Truck,
+  Award,
+  Clock,
+  ExternalLink,
+  Factory,
+  Zap,
+  Check,
 } from 'lucide-react';
 import { QuoteItem, UniformProduct } from '../types';
 
@@ -32,6 +46,9 @@ interface NavbarProps {
   onOpenSizeGuide: () => void;
   onOpenAdminERP?: () => void;
   onSelectProduct?: (product: UniformProduct) => void;
+  onOpenPrivacyPolicy?: () => void;
+  onOpenTerms?: () => void;
+  onOpenCookies?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -41,8 +58,11 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenSizeGuide,
   onOpenAdminERP,
   onSelectProduct,
+  onOpenPrivacyPolicy,
+  onOpenTerms,
+  onOpenCookies,
 }) => {
-  const { products } = useERP();
+  const { products, currentUser, isAuthenticated } = useERP();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
@@ -56,7 +76,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   const navSearchRef = useRef<HTMLDivElement>(null);
 
   const liveProducts = useMemo(() => {
-    return products.filter((p) => p.published !== false);
+    return (products || []).filter((p) => p && p.published !== false);
   }, [products]);
 
   const matchingNavProducts = useMemo(() => {
@@ -64,12 +84,13 @@ export const Navbar: React.FC<NavbarProps> = ({
     const q = navSearchQuery.toLowerCase().trim();
     return liveProducts
       .filter((p) => {
+        if (!p) return false;
         return (
-          p.name.toLowerCase().includes(q) ||
-          p.categoryLabel.toLowerCase().includes(q) ||
-          p.tagline.toLowerCase().includes(q) ||
+          (p.name || '').toLowerCase().includes(q) ||
+          (p.categoryLabel || '').toLowerCase().includes(q) ||
+          (p.tagline || '').toLowerCase().includes(q) ||
           (p.fabric?.composition || '').toLowerCase().includes(q) ||
-          (p.idealFor || []).some((item) => item.toLowerCase().includes(q))
+          (p.idealFor || []).some((item) => (item || '').toLowerCase().includes(q))
         );
       })
       .slice(0, 5);
@@ -86,15 +107,24 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  // Lock body scroll when full-screen mobile menu is open
+  // Lock body scroll and listen for Escape key when navigation drawer is open
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
     return () => {
       document.body.style.overflow = '';
+      window.removeEventListener('keydown', handleKeyDown);
     };
   }, [mobileMenuOpen]);
 
@@ -145,51 +175,109 @@ export const Navbar: React.FC<NavbarProps> = ({
     }, 180);
   };
 
-  const serviceSubDomains = [
+  // Mega Expansive Services Taxonomy
+  const megaManufacturingServices = [
+    {
+      id: 'academic',
+      title: 'Academic & Schoolwear Outfitting',
+      description: 'Custom tailored blazers, anti-pill v-neck sweaters, pleated pinafores, sports tracksuits & pique polos.',
+      icon: GraduationCap,
+      badge: 'Bestseller',
+      href: '#catalog',
+    },
+    {
+      id: 'medical',
+      title: 'Pro-Flex Healthcare & Medical Scrubs',
+      description: 'Antimicrobial 4-way stretch scrub sets, lab coats, theatre tunics & doctor monogramming.',
+      icon: HeartPulse,
+      badge: 'ISO Grade',
+      href: '#catalog',
+    },
+    {
+      id: 'workwear',
+      title: 'Heavy Industrial & Hi-Vis Safety Gear',
+      description: 'Triple-stitched boiler suits, reflective utility vests, mechanic overalls & security uniforms.',
+      icon: HardHat,
+      badge: 'Heavy Duty',
+      href: '#catalog',
+    },
+    {
+      id: 'hospitality',
+      title: 'Hospitality, Culinary & Barista Wear',
+      description: 'Executive double-breasted chef jackets, heavy canvas barista aprons & front-desk attire.',
+      icon: UtensilsCrossed,
+      badge: 'Premium',
+      href: '#catalog',
+    },
+  ];
+
+  const megaBrandingTechniques = [
     {
       id: 'embroidery',
-      title: 'Precision Industrial Embroidery',
-      description: 'Multi-needle automated Tajima embroidery, 3D puff stitch, metallic threads & crest patches.',
+      title: 'Tajima Industrial Embroidery',
+      description: '15-needle computerized embroidery, 3D puff stitching, metallic gold thread & crest patches.',
       icon: Scissors,
       badge: 'Signature',
-      href: '#catalog',
-      isCustomizerAction: false,
+      href: '#services',
     },
     {
       id: 'screen-printing',
-      title: 'Screen Printing & DTF Transfers',
-      description: 'High-opacity plastisol, eco waterbase inks & photographic Direct-to-Film apparel prints.',
+      title: 'Plastisol & Screen Printing',
+      description: 'High-opacity vibrant prints, eco-waterbase inks, sports numbers & high-volume bulk runs.',
       icon: Printer,
       badge: 'High Volume',
-      href: '#catalog',
-      isCustomizerAction: false,
+      href: '#services',
     },
     {
-      id: 'knitwear',
-      title: 'Bespoke Knitwear & Manufacturing',
-      description: 'Anti-pill school v-necks, cardigans, custom jacquard trims & pantone dye-matched fabrics.',
+      id: 'dtf-transfers',
+      title: 'Direct-to-Film (DTF) & Badges',
+      description: 'Full-color photographic gradients, ultra-crisp micro crests & flexible activewear transfers.',
+      icon: Sparkles,
+      badge: 'Photo Crisp',
+      href: '#services',
+    },
+    {
+      id: 'labels-crests',
+      title: 'Woven Crests & Bullion Badges',
+      description: 'Laser-cut damask neck labels, blazer pocket bullion crests & custom metallic badges.',
       icon: Layers,
-      badge: 'In-House',
-      href: '#catalog',
-      isCustomizerAction: false,
+      badge: 'Custom',
+      href: '#services',
     },
-    {
-      id: 'outfitting',
-      title: 'Institutional Uniform Programs',
-      description: 'Complete turn-key apparel supply for schools, hospitals, hospitality & corporate teams.',
-      icon: ShieldCheck,
-      badge: 'End-to-End',
-      href: '#catalog',
-      isCustomizerAction: false,
-    },
+  ];
+
+  const megaDigitalAndTurnkey = [
     {
       id: 'mockup-studio',
-      title: 'Live Mockup & Digitization Studio',
-      description: 'Interactive garment visualizer with multi-location embroidery and vector proof generator.',
+      title: '3D Interactive Mockup Studio',
+      description: 'Live 3D garment visualizer, custom pantone picker, multi-crest placement & vector proofs.',
       icon: SlidersHorizontal,
       badge: 'Interactive',
-      href: '#',
-      isCustomizerAction: true,
+      isCustomizer: true,
+    },
+    {
+      id: 'quote-estimator',
+      title: 'Wholesale Quote & Price Matrix',
+      description: 'Instant tiered volume pricing, custom branding calculation & Kenyan PDF invoicing.',
+      icon: FileText,
+      badge: 'Instant KSh',
+      isQuote: true,
+    },
+    {
+      id: 'size-guide',
+      title: 'Technical Specs & Size Grading',
+      description: 'Detailed GSM fabric compositions, shrinkage tolerances & standard sizing charts.',
+      icon: Ruler,
+      badge: 'Specs',
+      isSizeGuide: true,
+    },
+    {
+      id: 'institutional-contracts',
+      title: 'Turn-Key School & Corporate Supply',
+      description: 'Annual intake fulfillment, scheduled buffer stock storage & dedicated account managers.',
+      icon: ShieldCheck,
+      badge: 'End-to-End',
+      href: '#contact',
     },
   ];
 
@@ -199,32 +287,26 @@ export const Navbar: React.FC<NavbarProps> = ({
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-200 bg-[#032345] shadow-[0_4px_20px_rgba(255,255,255,0.15)] ${
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-200 shadow-[0_4px_25px_rgba(6,22,60,0.6)] ${
         isScrolled
-          ? 'bg-[#032345]/95 backdrop-blur-md py-4 sm:py-5'
-          : 'bg-[#032345] py-6 sm:py-7 md:py-8'
+          ? 'bg-[#06163c]/98 backdrop-blur-md py-4 sm:py-5'
+          : 'bg-[#06163c] py-6 sm:py-7 md:py-8'
       }`}
     >
-      {/* Dynamic Balanced Shiny Scanner Ray sweeping Left-to-Right */}
+      {/* Subtle Luminous Ambient Sheen across Header Bar */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        {/* Luminous Angled Sheen Light Beam */}
-        <div className="absolute top-0 bottom-0 -left-1/4 w-1/3 bg-gradient-to-r from-transparent via-white/18 via-cyan-100/15 to-transparent animate-scanner-ray pointer-events-none" />
+        {/* Soft Angled Sheen Light Beam */}
+        <div className="absolute top-0 bottom-0 -left-1/4 w-1/3 bg-gradient-to-r from-transparent via-white/8 via-cyan-100/8 to-transparent animate-scanner-ray pointer-events-none" />
         
-        {/* Medium-Soft Gloss Laser Bar with Cyan Glow */}
-        <div className="absolute top-0 bottom-0 left-0 w-28 sm:w-40 bg-gradient-to-r from-transparent via-cyan-300/25 via-white/45 via-cyan-200/25 to-transparent blur-[3px] animate-scanner-laser pointer-events-none" />
-
-        {/* Crisp Specular Core Line */}
-        <div className="absolute top-0 bottom-0 left-0 w-[1.5px] bg-gradient-to-b from-transparent via-white/90 via-cyan-100/80 to-transparent shadow-[0_0_8px_#ffffff,0_0_16px_#38bdf8] animate-scanner-laser pointer-events-none" />
-
-        {/* Top Rim Shiny Light Runner */}
-        <div className="absolute top-0 left-0 w-48 sm:w-64 h-[1.5px] bg-gradient-to-r from-transparent via-white/60 to-cyan-300/70 shadow-[0_0_6px_#38bdf8] animate-scanner-laser-delayed pointer-events-none" />
+        {/* Soft Specular Runner */}
+        <div className="absolute top-0 left-0 w-48 sm:w-64 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-cyan-300/40 shadow-[0_0_6px_#38bdf8] animate-scanner-laser-delayed pointer-events-none" />
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex items-center justify-between">
-          {/* Logo in White / Brand Light Variant */}
-          <a href="#" className="focus:outline-none flex items-center group" aria-label="NASISI Home">
-            <NasisiLogo size="md" variant="white" />
+          {/* Logo in White / Brand Light Variant - Enlarged twice its size */}
+          <a href="#" className="focus:outline-none flex items-center group shrink-0" aria-label="NASISI Home">
+            <NasisiLogo size="xl" variant="white" className="scale-90 sm:scale-100 origin-left transition-transform" />
           </a>
 
           {/* Desktop Navigation Links: Home, Services (with sub domains dropdown), Products, About, Contact */}
@@ -260,109 +342,282 @@ export const Navbar: React.FC<NavbarProps> = ({
                 />
               </button>
 
-              {/* Mega Dropdown Menu */}
+              {/* Mega Expansive Dropdown Menu */}
               {servicesDropdownOpen && (
                 <div
-                  className="absolute top-full left-1/2 -translate-x-1/2 w-[520px] bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 transition-all animate-fadeIn z-50 mt-1"
+                  className="absolute top-full -left-52 md:-left-64 lg:-left-72 xl:-left-80 w-[960px] lg:w-[1040px] xl:w-[1140px] max-w-[94vw] bg-white rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.28)] border border-slate-200/90 p-6 transition-all animate-fadeIn z-50 mt-2 text-slate-900 overflow-hidden ring-1 ring-black/5"
                   role="menu"
                 >
-                  <div className="px-3 py-2 border-b border-slate-100 flex items-center justify-between mb-2">
-                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400">
-                      What We Do • Core Capabilities
-                    </span>
-                    <a
-                      href="#catalog"
-                      onClick={() => setServicesDropdownOpen(false)}
-                      className="text-xs font-bold text-[#032345] hover:underline flex items-center gap-1"
-                    >
-                      <span>Explore all capabilities</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </a>
-                  </div>
-
-                  <div className="grid grid-cols-1 gap-1.5">
-                    {serviceSubDomains.map((sub) => {
-                      const IconComp = sub.icon;
-                      if (sub.isCustomizerAction) {
-                        return (
-                          <button
-                            key={sub.id}
-                            type="button"
-                            onClick={() => {
-                              setServicesDropdownOpen(false);
-                              onOpenCustomizer();
-                            }}
-                            className="w-full text-left flex items-start gap-3.5 p-2.5 rounded-xl hover:bg-blue-50/70 border border-transparent hover:border-blue-100 transition-all group cursor-pointer"
-                            role="menuitem"
-                          >
-                            <div className="w-9 h-9 rounded-lg bg-blue-100/70 group-hover:bg-[#032345] text-[#032345] group-hover:text-white flex items-center justify-center flex-shrink-0 transition-colors mt-0.5">
-                              <IconComp className="w-4 h-4" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-2">
-                                <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#032345] transition-colors">
-                                  {sub.title}
-                                </h4>
-                                {sub.badge && (
-                                  <span className="px-1.5 py-0.5 text-[9px] font-extrabold tracking-wide uppercase bg-slate-100 group-hover:bg-blue-200/80 text-slate-700 group-hover:text-[#032345] rounded">
-                                    {sub.badge}
-                                  </span>
-                                )}
-                              </div>
-                              <p className="text-[11px] text-slate-500 leading-snug mt-0.5 line-clamp-1">
-                                {sub.description}
-                              </p>
-                            </div>
-                          </button>
-                        );
-                      }
-                      return (
-                        <a
-                          key={sub.id}
-                          href={sub.href}
-                          onClick={() => setServicesDropdownOpen(false)}
-                          className="flex items-start gap-3.5 p-2.5 rounded-xl hover:bg-blue-50/70 border border-transparent hover:border-blue-100 transition-all group"
-                          role="menuitem"
-                        >
-                          <div className="w-9 h-9 rounded-lg bg-blue-100/70 group-hover:bg-[#032345] text-[#032345] group-hover:text-white flex items-center justify-center flex-shrink-0 transition-colors mt-0.5">
-                            <IconComp className="w-4 h-4" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2">
-                              <h4 className="text-xs font-bold text-slate-900 group-hover:text-[#032345] transition-colors">
-                                {sub.title}
-                              </h4>
-                              {sub.badge && (
-                                <span className="px-1.5 py-0.5 text-[9px] font-extrabold tracking-wide uppercase bg-slate-100 group-hover:bg-blue-200/80 text-slate-700 group-hover:text-[#032345] rounded">
-                                  {sub.badge}
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-[11px] text-slate-500 leading-snug mt-0.5 line-clamp-1">
-                              {sub.description}
-                            </p>
-                          </div>
-                        </a>
-                      );
-                    })}
-                  </div>
-
-                  {/* Bottom Footer inside Dropdown */}
-                  <div className="mt-3 pt-3 border-t border-slate-100 bg-slate-50 -mx-4 -mb-4 p-3.5 px-5 rounded-b-2xl flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs text-slate-600">
-                      <Sparkles className="w-3.5 h-3.5 text-[#032345]" />
-                      <span>Free digital artwork proof on all bulk inquiries</span>
+                  {/* Top Mega Menu Header */}
+                  <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#06163c] flex items-center justify-center font-bold">
+                        <Factory className="w-4 h-4 text-[#06163c]" />
+                      </div>
+                      <div>
+                        <h3 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                          NASISI Industrial Manufacturing & Embellishment Atelier
+                        </h3>
+                        <p className="text-[11px] text-slate-500">
+                          Nairobi Factory • In-House Computerized Embroidery, Screen Printing & Bespoke Uniform Outfitting
+                        </p>
+                      </div>
                     </div>
-                    <button
-                      onClick={() => {
-                        setServicesDropdownOpen(false);
-                        onOpenQuoteModal();
-                      }}
-                      className="text-xs font-bold text-[#032345] hover:underline flex items-center gap-1 cursor-pointer"
-                    >
-                      <span>Request Quote</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </button>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setServicesDropdownOpen(false);
+                          onOpenCustomizer();
+                        }}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 hover:bg-blue-100 text-[#06163c] text-xs font-bold transition-colors cursor-pointer"
+                      >
+                        <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Launch 3D Studio</span>
+                      </button>
+                      <a
+                        href="#catalog"
+                        onClick={() => setServicesDropdownOpen(false)}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition-colors"
+                      >
+                        <span>All Uniforms</span>
+                        <ArrowRight className="w-3 h-3" />
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* 4-Column Mega Grid */}
+                  <div className="grid grid-cols-12 gap-5">
+                    {/* Column 1: Garment Manufacturing */}
+                    <div className="col-span-3 space-y-2.5">
+                      <div className="flex items-center gap-1.5 px-1">
+                        <Shirt className="w-3.5 h-3.5 text-[#06163c]" />
+                        <span className="text-[11px] font-black uppercase tracking-wider text-[#06163c]">
+                          Garment Manufacturing
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        {megaManufacturingServices.map((item) => {
+                          const Icon = item.icon;
+                          return (
+                            <a
+                              key={item.id}
+                              href={item.href}
+                              onClick={() => setServicesDropdownOpen(false)}
+                              className="group flex items-start gap-2.5 p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200/80 transition-all"
+                            >
+                              <div className="w-7 h-7 rounded-lg bg-slate-100 group-hover:bg-[#06163c] text-[#06163c] group-hover:text-white flex items-center justify-center shrink-0 transition-colors mt-0.5">
+                                <Icon className="w-3.5 h-3.5" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs font-bold text-slate-900 group-hover:text-[#06163c] transition-colors leading-tight">
+                                    {item.title}
+                                  </span>
+                                  {item.badge && (
+                                    <span className="px-1 py-0.2 text-[8px] font-extrabold uppercase tracking-wide bg-blue-50 text-[#06163c] rounded">
+                                      {item.badge}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-[10.5px] text-slate-500 leading-snug line-clamp-2 mt-0.5">
+                                  {item.description}
+                                </p>
+                              </div>
+                            </a>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Column 2: Industrial Branding & Embellishment */}
+                    <div className="col-span-3 space-y-2.5">
+                      <div className="flex items-center gap-1.5 px-1">
+                        <Palette className="w-3.5 h-3.5 text-blue-600" />
+                        <span className="text-[11px] font-black uppercase tracking-wider text-blue-700">
+                          Branding & Printing
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        {megaBrandingTechniques.map((item) => {
+                          const Icon = item.icon;
+                          return (
+                            <a
+                              key={item.id}
+                              href={item.href}
+                              onClick={() => setServicesDropdownOpen(false)}
+                              className="group flex items-start gap-2.5 p-2 rounded-xl hover:bg-blue-50/50 border border-transparent hover:border-blue-100 transition-all"
+                            >
+                              <div className="w-7 h-7 rounded-lg bg-blue-100/70 group-hover:bg-[#06163c] text-[#06163c] group-hover:text-white flex items-center justify-center shrink-0 transition-colors mt-0.5">
+                                <Icon className="w-3.5 h-3.5" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs font-bold text-slate-900 group-hover:text-[#06163c] transition-colors leading-tight">
+                                    {item.title}
+                                  </span>
+                                  {item.badge && (
+                                    <span className="px-1 py-0.2 text-[8px] font-extrabold uppercase tracking-wide bg-amber-100 text-amber-900 rounded">
+                                      {item.badge}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-[10.5px] text-slate-500 leading-snug line-clamp-2 mt-0.5">
+                                  {item.description}
+                                </p>
+                              </div>
+                            </a>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Column 3: Turn-Key Institutional & Digital */}
+                    <div className="col-span-3 space-y-2.5">
+                      <div className="flex items-center gap-1.5 px-1">
+                        <Zap className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="text-[11px] font-black uppercase tracking-wider text-emerald-700">
+                          Digital & Turn-Key
+                        </span>
+                      </div>
+                      <div className="space-y-1">
+                        {megaDigitalAndTurnkey.map((item) => {
+                          const Icon = item.icon;
+                          const handleClick = () => {
+                            setServicesDropdownOpen(false);
+                            if (item.isCustomizer) onOpenCustomizer();
+                            else if (item.isQuote) onOpenQuoteModal();
+                            else if (item.isSizeGuide) onOpenSizeGuide();
+                          };
+
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              onClick={handleClick}
+                              className="w-full text-left group flex items-start gap-2.5 p-2 rounded-xl hover:bg-emerald-50/50 border border-transparent hover:border-emerald-200 transition-all cursor-pointer"
+                            >
+                              <div className="w-7 h-7 rounded-lg bg-emerald-100/70 group-hover:bg-emerald-700 text-emerald-800 group-hover:text-white flex items-center justify-center shrink-0 transition-colors mt-0.5">
+                                <Icon className="w-3.5 h-3.5" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-xs font-bold text-slate-900 group-hover:text-emerald-900 transition-colors leading-tight">
+                                    {item.title}
+                                  </span>
+                                  {item.badge && (
+                                    <span className="px-1 py-0.2 text-[8px] font-extrabold uppercase tracking-wide bg-emerald-100 text-emerald-800 rounded">
+                                      {item.badge}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-[10.5px] text-slate-500 leading-snug line-clamp-2 mt-0.5">
+                                  {item.description}
+                                </p>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Column 4: Premium Spotlight & Quick Action Card */}
+                    <div className="col-span-3 flex flex-col justify-between p-4 rounded-2xl bg-gradient-to-b from-[#06163c] via-[#022c57] to-[#011b36] text-white shadow-md relative overflow-hidden">
+                      {/* Subtle decorative glow */}
+                      <div className="absolute top-0 right-0 -mr-8 -mt-8 w-28 h-28 rounded-full bg-cyan-400/20 blur-xl pointer-events-none" />
+                      <div className="relative z-10 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="px-2 py-0.5 rounded-full bg-white/15 text-[#D1E0FF] text-[10px] font-extrabold tracking-wide uppercase">
+                            Factory Direct
+                          </span>
+                          <span className="flex items-center gap-1 text-[10px] text-emerald-400 font-bold">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                            Active Lines
+                          </span>
+                        </div>
+
+                        <div>
+                          <h4 className="text-sm font-black text-white leading-snug">
+                            Bulk Tenders & Institutional Supply
+                          </h4>
+                          <p className="text-[11px] text-blue-200/90 mt-1 leading-relaxed">
+                            Serving 150+ schools, hospitals & corporate brands across Kenya with zero outsourcing.
+                          </p>
+                        </div>
+
+                        <div className="space-y-1.5 pt-1">
+                          <div className="flex items-center gap-1.5 text-[10.5px] text-blue-100">
+                            <Check className="w-3 h-3 text-cyan-300 shrink-0" />
+                            <span>5–7 Days Fast-Track Sampling</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[10.5px] text-blue-100">
+                            <Check className="w-3 h-3 text-cyan-300 shrink-0" />
+                            <span>Anti-Pill & Colorfast Guaranteed</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 text-[10.5px] text-blue-100">
+                            <Check className="w-3 h-3 text-cyan-300 shrink-0" />
+                            <span>Custom Crest Digitization</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons inside Spotlight Card */}
+                      <div className="relative z-10 space-y-2 pt-3 border-t border-white/15 mt-3">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setServicesDropdownOpen(false);
+                            onOpenCustomizer();
+                          }}
+                          className="w-full py-2 px-3 bg-[#D1E0FF] hover:bg-[#b8d0ff] text-[#06163c] rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all active:scale-95 cursor-pointer"
+                        >
+                          <Sparkles className="w-3.5 h-3.5" />
+                          <span>Open 3D Mockup Studio</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setServicesDropdownOpen(false);
+                            onOpenQuoteModal();
+                          }}
+                          className="w-full py-2 px-3 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-blue-200" />
+                          <span>Instant Price Matrix (KSh)</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Bottom Mega Menu Footer */}
+                  <div className="mt-4 pt-3.5 border-t border-slate-100 bg-slate-50 -mx-6 -mb-6 p-4 px-6 rounded-b-3xl flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
+                    <div className="flex flex-wrap items-center gap-5">
+                      <div className="flex items-center gap-1.5 font-medium text-slate-700">
+                        <Award className="w-3.5 h-3.5 text-[#06163c]" />
+                        <span><strong>50,000+</strong> Monthly Production</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 font-medium text-slate-700">
+                        <Clock className="w-3.5 h-3.5 text-emerald-600" />
+                        <span><strong>48-Hour</strong> Free Digital Proofs</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 font-medium text-slate-700">
+                        <Truck className="w-3.5 h-3.5 text-blue-600" />
+                        <span>Countrywide Delivery Across Kenya</span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <span className="text-slate-400 text-[11px]">Factory Hotline:</span>
+                      <a
+                        href="tel:0728102929"
+                        className="font-mono font-bold text-[#06163c] hover:underline flex items-center gap-1 text-xs"
+                      >
+                        <Phone className="w-3.5 h-3.5 text-[#06163c]" />
+                        <span>0728102929</span>
+                      </a>
+                    </div>
                   </div>
                 </div>
               )}
@@ -385,57 +640,143 @@ export const Navbar: React.FC<NavbarProps> = ({
             </a>
           </nav>
 
-          {/* Action CTAs */}
-          <div className="hidden sm:flex items-center gap-3">
-            <button
-              id="navbar-size-guide-btn"
-              onClick={onOpenSizeGuide}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-100 hover:text-white hover:bg-blue-900/60 rounded-lg transition-colors border border-blue-400/30 cursor-pointer"
-              title="View Size Chart and Fabric Specifications"
-            >
-              <Ruler className="w-3.5 h-3.5 text-blue-300" />
-              <span>Size Guide</span>
-            </button>
-
-            {/* Customizer Quick Link */}
-            <button
-              id="navbar-live-mockup-btn"
-              type="button"
-              onClick={onOpenCustomizer}
-              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-blue-700/60 hover:bg-blue-600/70 border border-blue-400/40 rounded-lg transition-colors shadow-sm cursor-pointer"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-blue-200" />
-              <span>Live Mockup</span>
-            </button>
-
-            {/* Admin ERP Suite Portal Link */}
-            {onOpenAdminERP && (
+          {/* Action CTAs - Four Right-Side Icon Buttons */}
+          <div className="hidden sm:flex items-center gap-2 sm:gap-2.5">
+            {/* 1. Size Guide Icon Button */}
+            <div className="relative group">
               <button
-                id="navbar-admin-erp-btn"
-                type="button"
-                onClick={onOpenAdminERP}
-                className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold text-emerald-200 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 rounded-lg transition-colors shadow-sm cursor-pointer"
-                title="Open Kenyan Enterprise ERP & Invoicing Suite (Ksh)"
+                id="navbar-size-guide-btn"
+                onClick={onOpenSizeGuide}
+                className="relative flex items-center justify-center w-10 h-10 rounded-xl text-blue-100 hover:text-white bg-blue-950/50 hover:bg-blue-900/80 border border-blue-400/30 hover:border-cyan-400/60 transition-all shadow-sm hover:shadow-[0_0_12px_rgba(56,189,248,0.25)] hover:scale-105 active:scale-95 cursor-pointer"
+                aria-label="Size Guide & Fabric Specifications"
+                title="Size Guide"
               >
-                <Building2 className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Admin ERP (Ksh)</span>
+                <Ruler className="w-5 h-5 text-blue-200 group-hover:text-cyan-300 transition-colors" />
               </button>
+              {/* Floating Tooltip */}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-50">
+                <span>Size Guide</span>
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
+              </div>
+            </div>
+
+            {/* 2. Live Mockup Studio Icon Button */}
+            <div className="relative group">
+              <button
+                id="navbar-live-mockup-btn"
+                type="button"
+                onClick={onOpenCustomizer}
+                className="relative flex items-center justify-center w-10 h-10 rounded-xl text-white bg-gradient-to-br from-blue-600/90 via-blue-700 to-indigo-800 hover:from-blue-500 hover:to-indigo-600 border border-blue-300/40 hover:border-cyan-300/70 transition-all shadow-sm hover:shadow-[0_0_14px_rgba(59,130,246,0.4)] hover:scale-105 active:scale-95 cursor-pointer"
+                aria-label="Launch 3D Live Mockup Studio"
+                title="Live 3D Mockup Studio"
+              >
+                <Sparkles className="w-5 h-5 text-cyan-200 group-hover:text-white group-hover:rotate-12 transition-all" />
+              </button>
+              {/* Floating Tooltip */}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-50">
+                <span>3D Live Mockup</span>
+                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
+              </div>
+            </div>
+
+            {/* 3. Admin ERP Suite Portal Icon Button */}
+            {onOpenAdminERP && (
+              <div className="relative group">
+                <button
+                  id="navbar-admin-erp-btn"
+                  type="button"
+                  onClick={onOpenAdminERP}
+                  className={`relative flex items-center justify-center h-10 rounded-xl transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer ${
+                    isAuthenticated && currentUser
+                      ? 'px-2.5 gap-2 bg-blue-950/80 hover:bg-blue-900 border border-blue-400/50 text-white'
+                      : 'w-10 text-emerald-200 hover:text-emerald-100 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 hover:border-emerald-400/70 hover:shadow-[0_0_14px_rgba(16,185,129,0.3)]'
+                  }`}
+                  aria-label={isAuthenticated ? `Admin: ${currentUser?.name}` : 'Open Enterprise Admin ERP (Ksh)'}
+                  title={isAuthenticated ? `Admin: ${currentUser?.name} (${currentUser?.role})` : 'Admin Login & ERP (Ksh)'}
+                >
+                  {isAuthenticated && currentUser ? (
+                    <>
+                      <div className="relative shrink-0">
+                        <img
+                          src={currentUser.avatar}
+                          alt={currentUser.name}
+                          className="w-6 h-6 rounded-full object-cover border border-sky-400"
+                        />
+                        <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-[#06163c]" />
+                      </div>
+                      <span className="text-xs font-bold text-sky-200 hidden xl:inline max-w-[90px] truncate">
+                        {currentUser.name.split(' ')[0]}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <Building2 className="w-5 h-5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+                      {/* Live Active Status Indicator Dot */}
+                      <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
+                    </>
+                  )}
+                </button>
+                {/* Floating Tooltip */}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-50">
+                  <span>
+                    {isAuthenticated && currentUser
+                      ? `Admin: ${currentUser.name} (${currentUser.role})`
+                      : 'Admin Login & ERP (Ksh)'}
+                  </span>
+                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
+                </div>
+              </div>
             )}
 
-            {/* Quote Request / Cart Button (Crisp White with Brand Blue Accent) */}
-            <button
-              id="navbar-quote-cart-btn"
-              onClick={onOpenQuoteModal}
-              className="relative flex items-center gap-2 px-4 py-2 text-xs font-extrabold text-[#032345] bg-white hover:bg-blue-50 rounded-lg shadow-md hover:shadow-lg transition-all active:scale-95 cursor-pointer"
-            >
-              <ShoppingBag className="w-4 h-4 text-[#032345]" />
-              <span>Quote Cart</span>
-              {totalItemsCount > 0 && (
-                <span className="flex items-center justify-center min-w-[20px] h-5 px-1 text-[11px] font-black bg-[#032345] text-white rounded-full shadow">
-                  {totalItemsCount}
-                </span>
-              )}
-            </button>
+            {/* 4. Quote Request / Cart Icon Button */}
+            <div className="relative group">
+              <button
+                id="navbar-quote-cart-btn"
+                onClick={onOpenQuoteModal}
+                className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-md hover:shadow-[0_0_16px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                aria-label="View Quote Cart"
+                title="Quote Cart"
+              >
+                <ShoppingBag className="w-5 h-5 text-[#06163c] group-hover:scale-110 transition-transform" />
+                {totalItemsCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[20px] h-5 px-1 text-[11px] font-black bg-[#06163c] text-white rounded-full border-2 border-white shadow-md animate-scaleIn">
+                    {totalItemsCount}
+                  </span>
+                )}
+              </button>
+              {/* Floating Tooltip */}
+              <div className="absolute top-full right-0 sm:left-1/2 sm:-translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-50">
+                <span>Quote Cart {totalItemsCount > 0 ? `(${totalItemsCount})` : ''}</span>
+                <div className="absolute -top-1 right-3 sm:left-1/2 sm:-translate-x-1/2 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
+              </div>
+            </div>
+
+            {/* 5. Desktop Hamburger Menu Toggle Button */}
+            <div className="relative group">
+              <button
+                id="navbar-desktop-hamburger-btn"
+                type="button"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer ${
+                  mobileMenuOpen
+                    ? 'bg-white text-[#06163c] border border-white shadow-md'
+                    : 'bg-white/10 hover:bg-white text-white hover:text-[#06163c] border border-white/20 hover:border-white hover:shadow-[0_0_14px_rgba(255,255,255,0.35)]'
+                }`}
+                aria-label={mobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+                title="Navigation Menu"
+              >
+                {mobileMenuOpen ? (
+                  <X className="w-5 h-5 transition-transform" />
+                ) : (
+                  <Menu className="w-5 h-5 transition-transform group-hover:scale-110" />
+                )}
+              </button>
+              {/* Floating Tooltip */}
+              <div className="absolute top-full right-0 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-50">
+                <span>{mobileMenuOpen ? 'Close Menu' : 'Navigation & Quick Links'}</span>
+                <div className="absolute -top-1 right-3.5 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
+              </div>
+            </div>
           </div>
 
           {/* Mobile menu toggle button */}
@@ -443,12 +784,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="mobile-quote-btn"
               onClick={onOpenQuoteModal}
-              className="relative p-2.5 text-[#032345] bg-white hover:bg-slate-100 active:bg-slate-200 border border-slate-200/90 rounded-xl shadow-sm transition-all active:scale-95 cursor-pointer"
+              className="relative p-2.5 text-[#06163c] bg-white hover:bg-slate-100 active:bg-slate-200 border border-slate-200/90 rounded-xl shadow-sm transition-all active:scale-95 cursor-pointer"
               aria-label="View Quote Cart"
             >
-              <ShoppingBag className="w-5 h-5 text-[#032345]" />
+              <ShoppingBag className="w-5 h-5 text-[#06163c]" />
               {totalItemsCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-black bg-[#032345] text-white rounded-full border-2 border-white shadow-xs">
+                <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-black bg-[#06163c] text-white rounded-full border-2 border-white shadow-xs">
                   {totalItemsCount}
                 </span>
               )}
@@ -457,57 +798,68 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="mobile-menu-toggle-btn"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2.5 text-[#032345] bg-white hover:bg-slate-100 active:bg-slate-200 border border-slate-200/90 rounded-xl shadow-sm focus:outline-none transition-all active:scale-95 cursor-pointer"
+              className="p-2.5 text-[#06163c] bg-white hover:bg-slate-100 active:bg-slate-200 border border-slate-200/90 rounded-xl shadow-sm focus:outline-none transition-all active:scale-95 cursor-pointer"
               aria-label="Toggle Menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5 text-[#032345]" /> : <Menu className="w-5 h-5 text-[#032345]" />}
+              {mobileMenuOpen ? <X className="w-5 h-5 text-[#06163c]" /> : <Menu className="w-5 h-5 text-[#06163c]" />}
             </button>
           </div>
         </div>
 
-        {/* Full Screen White Background Mobile Hamburger Window */}
+        {/* Responsive Hamburger Navigation Drawer (Full screen on mobile, right slide-over on desktop) */}
         {mobileMenuOpen && (
-          <div className="lg:hidden fixed inset-0 z-[100] bg-white text-slate-900 flex flex-col overflow-hidden animate-fadeIn">
-            {/* Mobile Header Bar with curved wave accent */}
-            <div className="relative bg-white/95 backdrop-blur-md shrink-0 shadow-xs border-b border-slate-100">
-              <div className="flex items-center justify-between px-5 py-4">
-                <div className="flex items-center gap-2.5">
-                  <NasisiLogo className="h-8 w-auto" />
-                  <span className="px-2 py-0.5 bg-blue-50 text-[#032345] text-[10px] font-black uppercase rounded-md tracking-wider border border-blue-200">
-                    Menu
-                  </span>
-                </div>
+          <div className="fixed inset-0 z-[100] flex justify-end">
+            {/* Backdrop for desktop with blur and click-to-close */}
+            <div
+              className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity animate-fadeIn"
+              onClick={() => setMobileMenuOpen(false)}
+              aria-hidden="true"
+            />
 
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      onOpenQuoteModal();
-                    }}
-                    className="relative p-2.5 text-[#032345] bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
-                    aria-label="View Quote Cart"
-                  >
-                    <ShoppingBag className="w-5 h-5 text-[#032345]" />
-                    {totalItemsCount > 0 && (
-                      <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-black bg-[#032345] text-white rounded-full">
-                        {totalItemsCount}
-                      </span>
-                    )}
-                  </button>
+            {/* Slide-over Drawer Panel */}
+            <div className="relative z-10 w-full sm:w-[500px] lg:w-[540px] h-full bg-white text-slate-900 flex flex-col shadow-2xl overflow-hidden animate-slide-in-right">
+              {/* Header Bar with logo & close */}
+              <div className="relative bg-white/95 backdrop-blur-md shrink-0 shadow-xs border-b border-slate-200/80">
+                <div className="flex items-center justify-between px-5 py-4">
+                  <div className="flex items-center gap-2.5">
+                    <NasisiLogo size="lg" />
+                    <span className="px-2 py-0.5 bg-blue-50 text-[#06163c] text-[10px] font-black uppercase rounded-md tracking-wider border border-blue-200">
+                      Menu
+                    </span>
+                  </div>
 
-                  <button
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="p-2.5 text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 rounded-xl transition-colors cursor-pointer"
-                    aria-label="Close Mobile Menu"
-                  >
-                    <X className="w-5 h-5 text-slate-800" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        onOpenQuoteModal();
+                      }}
+                      className="relative p-2.5 text-[#06163c] bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+                      aria-label="View Quote Cart"
+                      title="Quote Cart"
+                    >
+                      <ShoppingBag className="w-5 h-5 text-[#06163c]" />
+                      {totalItemsCount > 0 && (
+                        <span className="absolute -top-1 -right-1 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-black bg-[#06163c] text-white rounded-full">
+                          {totalItemsCount}
+                        </span>
+                      )}
+                    </button>
+
+                    <button
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="p-2.5 text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 active:bg-slate-300 rounded-xl transition-colors cursor-pointer"
+                      aria-label="Close Menu"
+                      title="Close Menu (Esc)"
+                    >
+                      <X className="w-5 h-5 text-slate-800" />
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Mobile Scrollable Body */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-6 overscroll-contain">
+              {/* Scrollable Body */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-6 overscroll-contain">
               {/* Mobile Search Box */}
               <div className="relative">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
@@ -519,7 +871,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     setNavSearchQuery(e.target.value);
                     setIsNavSearchOpen(true);
                   }}
-                  className="w-full pl-10 pr-9 py-3 text-xs text-slate-900 placeholder-slate-400 bg-slate-100/80 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#032345] focus:bg-white transition-all shadow-2xs"
+                  className="w-full pl-10 pr-9 py-3 text-xs text-slate-900 placeholder-slate-400 bg-slate-100/80 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#06163c] focus:bg-white transition-all shadow-2xs"
                 />
                 {navSearchQuery && (
                   <button
@@ -536,7 +888,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <div className="mt-2 bg-white text-slate-900 rounded-2xl shadow-xl border border-slate-200 p-2 space-y-1 max-h-64 overflow-y-auto">
                     <div className="text-[10px] font-black uppercase text-slate-400 px-2 py-1 border-b border-slate-100 flex items-center justify-between">
                       <span>Matching Uniforms</span>
-                      <span className="text-[#032345] font-bold">{matchingNavProducts.length} items</span>
+                      <span className="text-[#06163c] font-bold">{matchingNavProducts.length} items</span>
                     </div>
                     {matchingNavProducts.length === 0 ? (
                       <div className="py-3 text-center text-xs text-slate-500">
@@ -564,7 +916,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                             <span className="text-[10px] text-slate-500 block truncate">{p.categoryLabel}</span>
                           </div>
                           <div className="text-right shrink-0">
-                            <span className="text-xs font-extrabold text-[#032345] block">
+                            <span className="text-xs font-extrabold text-[#06163c] block">
                               ${p.price.base.toFixed(2)}
                             </span>
                             <span className="text-[9px] text-emerald-600 font-bold uppercase">Ready</span>
@@ -584,7 +936,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     setMobileMenuOpen(false);
                     onOpenCustomizer();
                   }}
-                  className="p-3.5 rounded-2xl bg-gradient-to-tr from-[#032345] to-[#024177] text-white flex flex-col justify-between items-start text-left shadow-sm hover:shadow-md transition-all active:scale-[0.98] cursor-pointer"
+                  className="p-3.5 rounded-2xl bg-gradient-to-tr from-[#06163c] to-[#024177] text-white flex flex-col justify-between items-start text-left shadow-sm hover:shadow-md transition-all active:scale-[0.98] cursor-pointer"
                 >
                   <div className="p-2 rounded-xl bg-white/15 text-cyan-300 mb-3">
                     <Sparkles className="w-5 h-5" />
@@ -622,7 +974,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <a
                   href="#"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between px-3.5 py-3 text-sm font-bold text-slate-800 hover:text-[#032345] hover:bg-slate-100/80 rounded-xl transition-colors"
+                  className="flex items-center justify-between px-3.5 py-3 text-sm font-bold text-slate-800 hover:text-[#06163c] hover:bg-slate-100/80 rounded-xl transition-colors"
                 >
                   <span>Home</span>
                   <ArrowRight className="w-4 h-4 text-slate-400" />
@@ -633,52 +985,114 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <button
                     type="button"
                     onClick={() => setMobileServicesOpen(!mobileServicesOpen)}
-                    className="w-full flex items-center justify-between px-3.5 py-3 text-sm font-bold text-slate-800 hover:text-[#032345] hover:bg-slate-100/80 rounded-xl transition-colors cursor-pointer"
+                    className="w-full flex items-center justify-between px-3.5 py-3 text-sm font-bold text-slate-800 hover:text-[#06163c] hover:bg-slate-100/80 rounded-xl transition-colors cursor-pointer"
                   >
-                    <span>Manufacturing Services</span>
+                    <div className="flex items-center gap-2">
+                      <Factory className="w-4 h-4 text-[#06163c]" />
+                      <span>Manufacturing Services</span>
+                    </div>
                     <ChevronDown
                       className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${
-                        mobileServicesOpen ? 'rotate-180 text-[#032345]' : ''
+                        mobileServicesOpen ? 'rotate-180 text-[#06163c]' : ''
                       }`}
                     />
                   </button>
 
                   {mobileServicesOpen && (
-                    <div className="bg-slate-50 p-2 space-y-1 rounded-xl my-1 border border-slate-100">
-                      {serviceSubDomains.map((sub) => {
-                        const SubIcon = sub.icon;
-                        if (sub.isCustomizerAction) {
-                          return (
-                            <button
-                              key={sub.id}
-                              type="button"
-                              onClick={() => {
-                                setMobileMenuOpen(false);
-                                setMobileServicesOpen(false);
-                                onOpenCustomizer();
-                              }}
-                              className="w-full text-left flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-[#032345] hover:bg-white rounded-lg transition-colors cursor-pointer"
-                            >
-                              <SubIcon className="w-4 h-4 text-[#032345]" />
-                              <span>{sub.title}</span>
-                            </button>
-                          );
-                        }
-                        return (
-                          <a
-                            key={sub.id}
-                            href={sub.href}
-                            onClick={() => {
+                    <div className="bg-slate-50 p-3 space-y-3 rounded-xl my-1 border border-slate-200/80">
+                      {/* Section 1: Garment Manufacturing */}
+                      <div>
+                        <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-black uppercase text-[#06163c] tracking-wider">
+                          <Shirt className="w-3 h-3 text-[#06163c]" />
+                          <span>Garment Manufacturing</span>
+                        </div>
+                        <div className="space-y-1 mt-1">
+                          {megaManufacturingServices.map((sub) => {
+                            const SubIcon = sub.icon;
+                            return (
+                              <a
+                                key={sub.id}
+                                href={sub.href}
+                                onClick={() => {
+                                  setMobileMenuOpen(false);
+                                  setMobileServicesOpen(false);
+                                }}
+                                className="flex items-start gap-2.5 px-2.5 py-2 text-xs font-semibold text-slate-700 hover:text-[#06163c] hover:bg-white rounded-lg transition-colors"
+                              >
+                                <SubIcon className="w-4 h-4 text-[#06163c] mt-0.5 shrink-0" />
+                                <div className="min-w-0">
+                                  <div className="font-bold text-slate-900 leading-tight">{sub.title}</div>
+                                  <div className="text-[10px] text-slate-500 line-clamp-1">{sub.description}</div>
+                                </div>
+                              </a>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Section 2: Branding & Printing */}
+                      <div className="border-t border-slate-200/60 pt-2">
+                        <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-black uppercase text-blue-700 tracking-wider">
+                          <Palette className="w-3 h-3 text-blue-600" />
+                          <span>Industrial Branding</span>
+                        </div>
+                        <div className="space-y-1 mt-1">
+                          {megaBrandingTechniques.map((sub) => {
+                            const SubIcon = sub.icon;
+                            return (
+                              <a
+                                key={sub.id}
+                                href={sub.href}
+                                onClick={() => {
+                                  setMobileMenuOpen(false);
+                                  setMobileServicesOpen(false);
+                                }}
+                                className="flex items-start gap-2.5 px-2.5 py-2 text-xs font-semibold text-slate-700 hover:text-[#06163c] hover:bg-white rounded-lg transition-colors"
+                              >
+                                <SubIcon className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+                                <div className="min-w-0">
+                                  <div className="font-bold text-slate-900 leading-tight">{sub.title}</div>
+                                  <div className="text-[10px] text-slate-500 line-clamp-1">{sub.description}</div>
+                                </div>
+                              </a>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Section 3: Digital & Tools */}
+                      <div className="border-t border-slate-200/60 pt-2">
+                        <div className="flex items-center gap-1.5 px-2 py-1 text-[10px] font-black uppercase text-emerald-700 tracking-wider">
+                          <Zap className="w-3 h-3 text-emerald-600" />
+                          <span>Digital Studio & Pricing</span>
+                        </div>
+                        <div className="space-y-1 mt-1">
+                          {megaDigitalAndTurnkey.map((sub) => {
+                            const SubIcon = sub.icon;
+                            const handleClick = () => {
                               setMobileMenuOpen(false);
                               setMobileServicesOpen(false);
-                            }}
-                            className="flex items-center gap-2.5 px-3 py-2 text-xs font-semibold text-slate-700 hover:text-[#032345] hover:bg-white rounded-lg transition-colors"
-                          >
-                            <SubIcon className="w-4 h-4 text-[#032345]" />
-                            <span>{sub.title}</span>
-                          </a>
-                        );
-                      })}
+                              if (sub.isCustomizer) onOpenCustomizer();
+                              else if (sub.isQuote) onOpenQuoteModal();
+                              else if (sub.isSizeGuide) onOpenSizeGuide();
+                            };
+                            return (
+                              <button
+                                key={sub.id}
+                                type="button"
+                                onClick={handleClick}
+                                className="w-full text-left flex items-start gap-2.5 px-2.5 py-2 text-xs font-semibold text-slate-700 hover:text-emerald-800 hover:bg-white rounded-lg transition-colors cursor-pointer"
+                              >
+                                <SubIcon className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                                <div className="min-w-0">
+                                  <div className="font-bold text-slate-900 leading-tight">{sub.title}</div>
+                                  <div className="text-[10px] text-slate-500 line-clamp-1">{sub.description}</div>
+                                </div>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -686,7 +1100,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <a
                   href="#catalog"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between px-3.5 py-3 text-sm font-bold text-slate-800 hover:text-[#032345] hover:bg-slate-100/80 rounded-xl transition-colors"
+                  className="flex items-center justify-between px-3.5 py-3 text-sm font-bold text-slate-800 hover:text-[#06163c] hover:bg-slate-100/80 rounded-xl transition-colors"
                 >
                   <span>Uniform Catalog</span>
                   <ArrowRight className="w-4 h-4 text-slate-400" />
@@ -695,7 +1109,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <a
                   href="#portfolio"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between px-3.5 py-3 text-sm font-bold text-slate-800 hover:text-[#032345] hover:bg-slate-100/80 rounded-xl transition-colors"
+                  className="flex items-center justify-between px-3.5 py-3 text-sm font-bold text-slate-800 hover:text-[#06163c] hover:bg-slate-100/80 rounded-xl transition-colors"
                 >
                   <span>Client Portfolio & Gallery</span>
                   <ArrowRight className="w-4 h-4 text-slate-400" />
@@ -707,10 +1121,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                     setMobileMenuOpen(false);
                     onOpenSizeGuide();
                   }}
-                  className="w-full flex items-center justify-between px-3.5 py-3 text-sm font-bold text-slate-800 hover:text-[#032345] hover:bg-slate-100/80 rounded-xl transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center justify-between px-3.5 py-3 text-sm font-bold text-slate-800 hover:text-[#06163c] hover:bg-slate-100/80 rounded-xl transition-colors cursor-pointer text-left"
                 >
                   <div className="flex items-center gap-2">
-                    <Ruler className="w-4 h-4 text-[#032345]" />
+                    <Ruler className="w-4 h-4 text-[#06163c]" />
                     <span>Size & Fabric Standards</span>
                   </div>
                   <ArrowRight className="w-4 h-4 text-slate-400" />
@@ -719,7 +1133,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <a
                   href="#contact"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center justify-between px-3.5 py-3 text-sm font-bold text-slate-800 hover:text-[#032345] hover:bg-slate-100/80 rounded-xl transition-colors"
+                  className="flex items-center justify-between px-3.5 py-3 text-sm font-bold text-slate-800 hover:text-[#06163c] hover:bg-slate-100/80 rounded-xl transition-colors"
                 >
                   <span>Contact Factory</span>
                   <ArrowRight className="w-4 h-4 text-slate-400" />
@@ -735,20 +1149,41 @@ export const Navbar: React.FC<NavbarProps> = ({
                       setMobileMenuOpen(false);
                       onOpenAdminERP();
                     }}
-                    className="w-full p-3.5 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-100 border border-emerald-300 text-emerald-950 flex items-center justify-between transition-all active:scale-[0.98] cursor-pointer"
+                    className={`w-full p-3.5 rounded-2xl border flex items-center justify-between transition-all active:scale-[0.98] cursor-pointer ${
+                      isAuthenticated && currentUser
+                        ? 'bg-gradient-to-r from-blue-50 via-sky-50 to-indigo-100 border-blue-300 text-blue-950'
+                        : 'bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-100 border-emerald-300 text-emerald-950'
+                    }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-xl bg-emerald-600 text-white shadow-xs">
-                        <Building2 className="w-4 h-4" />
-                      </div>
+                      {isAuthenticated && currentUser ? (
+                        <div className="relative shrink-0">
+                          <img
+                            src={currentUser.avatar}
+                            alt={currentUser.name}
+                            className="w-10 h-10 rounded-xl object-cover border border-blue-400"
+                          />
+                          <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
+                        </div>
+                      ) : (
+                        <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-xs">
+                          <Building2 className="w-5 h-5" />
+                        </div>
+                      )}
                       <div className="text-left">
-                        <span className="text-xs font-black block">Factory ERP & Invoicing Center</span>
-                        <span className="text-[10px] text-emerald-800 font-mono">
-                          M-Pesa STK, Quotations & Receipts (Ksh)
+                        <span className="text-xs font-black block">
+                          {isAuthenticated && currentUser
+                            ? `${currentUser.name} (Admin)`
+                            : 'Factory ERP & Invoicing Center'}
+                        </span>
+                        <span className="text-[10px] text-slate-600 font-mono">
+                          {isAuthenticated && currentUser
+                            ? `${currentUser.role} • Tap to enter ERP`
+                            : 'M-Pesa STK, Quotations & Receipts (Ksh)'}
                         </span>
                       </div>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-emerald-700" />
+                    <ArrowRight className="w-4 h-4 text-blue-700" />
                   </button>
                 </div>
               )}
@@ -768,9 +1203,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <div className="grid grid-cols-2 gap-2">
                   <a
                     href="tel:0728102929"
-                    className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-white border border-slate-200 hover:border-slate-300 rounded-xl text-xs font-bold text-[#032345] shadow-2xs transition-colors"
+                    className="flex items-center justify-center gap-1.5 py-2.5 px-3 bg-white border border-slate-200 hover:border-slate-300 rounded-xl text-xs font-bold text-[#06163c] shadow-2xs transition-colors"
                   >
-                    <Phone className="w-3.5 h-3.5 text-[#032345]" />
+                    <Phone className="w-3.5 h-3.5 text-[#06163c]" />
                     <span className="font-mono">0728102929</span>
                   </a>
 
@@ -784,71 +1219,70 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <span>WhatsApp</span>
                   </a>
                 </div>
+
+                {/* Mobile Legal Policy Links */}
+                <div className="pt-2 border-t border-slate-200/80 flex items-center justify-around text-[11px] text-slate-500 font-medium">
+                  {onOpenPrivacyPolicy && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        onOpenPrivacyPolicy();
+                      }}
+                      className="hover:text-[#06163c] hover:underline"
+                    >
+                      Privacy
+                    </button>
+                  )}
+                  <span>•</span>
+                  {onOpenTerms && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        onOpenTerms();
+                      }}
+                      className="hover:text-[#06163c] hover:underline"
+                    >
+                      Terms
+                    </button>
+                  )}
+                  <span>•</span>
+                  {onOpenCookies && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        onOpenCookies();
+                      }}
+                      className="hover:text-[#06163c] hover:underline"
+                    >
+                      Cookies
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
       </div>
 
-      {/* Wave Curve on the Bottom Edge with Visible White Border, White Glow, Smoke Motion & Shiny Scanner Ray */}
-      <motion.div
-        className="absolute top-full left-0 right-0 w-full overflow-hidden leading-none pointer-events-none -mt-[1px] filter drop-shadow-[0_6px_14px_rgba(255,255,255,0.65)]"
-        animate={{
-          y: [0, 3, 0],
-        }}
-        transition={{
-          duration: 5,
-          repeat: Infinity,
-          ease: 'easeInOut',
-        }}
-      >
-        {/* Left-to-Right Flowing Ambient Smoke Effect along Header Bottom */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-          <div className="absolute top-0 -left-48 w-[400px] sm:w-[550px] h-10 bg-gradient-to-r from-transparent via-cyan-300/20 to-sky-200/15 rounded-full blur-xl animate-smoke-l2r-1" />
-          <div className="absolute top-1 -left-64 w-[500px] sm:w-[650px] h-12 bg-gradient-to-r from-transparent via-blue-400/15 to-indigo-300/10 rounded-full blur-2xl animate-smoke-l2r-2" />
-          
-          {/* Balanced Gloss Sheen Traveling along Wave Edge */}
-          <div className="absolute top-0 bottom-0 left-0 w-32 sm:w-56 bg-gradient-to-r from-transparent via-cyan-200/25 via-white/55 via-cyan-100/30 to-transparent blur-[3px] animate-scanner-wave pointer-events-none" />
-        </div>
-
+      {/* Clean Wave Curve on the Bottom Edge matching the header bar color */}
+      <div className="absolute top-full left-0 right-0 w-full overflow-hidden leading-none pointer-events-none -mt-[1px]">
         <svg
           className="w-full h-7 sm:h-9 md:h-10 lg:h-12 block relative z-10"
           viewBox="0 0 1440 60"
           fill="none"
           preserveAspectRatio="none"
         >
-          <defs>
-            {/* Luminous Balanced Gloss Gradient for Wave Edge */}
-            <linearGradient id="waveScannerGlow" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.8" />
-              <stop offset="50%" stopColor="#7dd3fc" stopOpacity="0.9" />
-              <stop offset="100%" stopColor="#ffffff" stopOpacity="0.8" />
-            </linearGradient>
-          </defs>
-
-          {/* Main wave fill */}
+          {/* Main wave fill matching header bar color (#06163c) */}
           <path
             d="M0,0 L1440,0 L1440,20 C1040,56 400,-6 0,36 Z"
-            fill="#032345"
-          />
-          {/* Glowing White Bottom Wave Contour Edge */}
-          <path
-            d="M0,36 C400,-6 1040,56 1440,20"
-            stroke="url(#waveScannerGlow)"
-            strokeWidth="2.8"
-            strokeLinecap="round"
-            fill="none"
-          />
-          {/* Secondary crisp white highlight line for depth */}
-          <path
-            d="M0,33 C400,-8 1040,54 1440,18"
-            stroke="rgba(255, 255, 255, 0.35)"
-            strokeWidth="1.3"
-            strokeLinecap="round"
-            fill="none"
+            fill="#06163c"
           />
         </svg>
-      </motion.div>
+      </div>
     </motion.header>
   );
 };
