@@ -11,6 +11,7 @@ import {
 export const INITIAL_BUSINESS_PROFILE: ERPBusinessProfile = {
   companyName: 'NASISI KNITWEAR & GRAPHICS LTD',
   tagline: 'Leading Kenyan Manufacturers of Precision School Uniforms, Hospital Scrubs, Industrial Workwear & Fine Knitwear',
+  slogan: 'We stitch it, You wear it, We print it, you represent.',
   registrationNumber: 'CPR/2018/382910',
   kraPin: 'P051982734K',
   vatRatePercent: 16,
@@ -18,7 +19,7 @@ export const INITIAL_BUSINESS_PROFILE: ERPBusinessProfile = {
   phone: '0728102929',
   altPhone: '+254 728 102 929',
   whatsappNumber: '0728102929',
-  physicalAddress: 'Nasisi Industrial Complex, Enterprise Road, Industrial Area',
+  physicalAddress: 'Uhuru Market, Nairobi, Kenya',
   city: 'Nairobi',
   country: 'Kenya',
 
@@ -31,6 +32,12 @@ export const INITIAL_BUSINESS_PROFILE: ERPBusinessProfile = {
   bankAccountName: 'NASISI KNITWEAR & GRAPHICS LIMITED',
   bankAccountNumber: '0180293847291',
   bankSwiftCode: 'EQBLKENA',
+
+  // Brand Logos & Favicon
+  logoUrl: '',
+  faviconUrl: '',
+  footerLogoUrl: '',
+  logoDisplayMode: 'image-only',
 };
 
 export const INITIAL_CUSTOMERS: ERPCustomer[] = [
@@ -499,7 +506,7 @@ export const INITIAL_TRANSACTIONS: ERPPaymentTransaction[] = [
     customerName: 'Nairobi Metropolitan Dental Clinics',
     receiptVoucherNo: 'CSH-VCH-0312',
     receivedByCashier: 'Beatrice Njeri (Finance Office)',
-    branch: 'Industrial Area Main Factory',
+    branch: 'Uhuru Market Main Workshop',
     notes: 'Cash payment for 15 scrub sample sets.',
     createdAt: '2026-02-21T09:15:00Z',
   },

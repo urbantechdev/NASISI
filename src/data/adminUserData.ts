@@ -11,7 +11,7 @@ export const INITIAL_ADMIN_USERS: AdminUser[] = [
     department: 'Executive Management & Factory Oversight',
     avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop',
     bio: 'Managing Director & Enterprise Executive leading Nasisi Uniforms & Knitwear manufacturing operations across Kenya. Specialized in high-volume schoolwear, institutional healthcare apparel, and modern automated knitting plant management.',
-    location: 'Nairobi HQ, Enterprise Road, Industrial Area Unit 4B',
+    location: 'Nairobi HQ, Uhuru Market Workshop, Nairobi',
     status: 'active',
     lastLogin: 'Today, 08:45 AM (EAT)',
     joinedDate: 'January 2021',

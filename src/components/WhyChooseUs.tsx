@@ -58,12 +58,12 @@ export const WhyChooseUs: React.FC = () => {
             return (
               <div
                 key={idx}
-                className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all space-y-3"
+                className="group bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-xl hover:border-blue-300 hover:-translate-y-1.5 transition-all duration-300 space-y-3 cursor-default"
               >
-                <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#06163c] flex items-center justify-center font-bold">
-                  <Icon className="w-5 h-5" />
+                <div className="w-11 h-11 rounded-xl bg-blue-50 text-[#06163c] flex items-center justify-center font-bold transition-all duration-300 group-hover:bg-[#06163c] group-hover:text-white group-hover:scale-110 group-hover:shadow-md">
+                  <Icon className="w-5 h-5 transition-transform duration-300 group-hover:rotate-6" />
                 </div>
-                <h3 className="text-base font-bold text-slate-900 font-['Outfit',sans-serif]">
+                <h3 className="text-base font-bold text-slate-900 font-['Outfit',sans-serif] group-hover:text-blue-900 transition-colors">
                   {feat.title}
                 </h3>
                 <p className="text-xs text-slate-600 leading-relaxed">
@@ -91,7 +91,7 @@ export const WhyChooseUs: React.FC = () => {
           
           <a
             href="#contact"
-            className="flex-shrink-0 px-6 py-3.5 bg-white text-[#06163c] font-extrabold text-xs rounded-xl shadow hover:bg-blue-50 transition-colors"
+            className="btn-shimmer-sweep group flex-shrink-0 px-6 py-3.5 bg-white text-[#06163c] font-black text-xs rounded-xl shadow-lg hover:bg-blue-50 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
           >
             Request Free Fabric Sample Kit
           </a>

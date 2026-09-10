@@ -476,7 +476,7 @@ export const PlatformPolicyPage: React.FC<PlatformPolicyPageProps> = ({
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-700">
                   <div className="flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-[#06163c] shrink-0" />
-                    <span>Industrial Area Workshop, Unit 4B, Nairobi, Kenya</span>
+                    <span>Uhuru Market Workshop, Nairobi, Kenya</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Mail className="w-4 h-4 text-[#06163c] shrink-0" />

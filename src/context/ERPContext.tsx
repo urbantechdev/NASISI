@@ -26,6 +26,7 @@ import {
   INITIAL_PRODUCTION_ORDERS,
   INITIAL_TRANSACTIONS,
 } from '../data/erpInitialData';
+import { applyBrowserFavicon } from '../utils/favicon';
 
 interface ERPContextType {
   // Admin Authentication & Profile
@@ -247,6 +248,11 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(businessProfile));
   }, [businessProfile]);
+
+  // Instantly apply browser favicon to document head whenever it changes or on boot
+  useEffect(() => {
+    applyBrowserFavicon(businessProfile.faviconUrl);
+  }, [businessProfile.faviconUrl]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(customers));
@@ -1413,4 +1419,8 @@ export const useERP = () => {
     throw new Error('useERP must be used within an ERPProvider');
   }
   return context;
+};
+
+export const useERPSafe = () => {
+  return useContext(ERPContext);
 };

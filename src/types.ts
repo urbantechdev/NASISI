@@ -311,6 +311,7 @@ export interface ERPInquiryTicket {
 export interface ERPBusinessProfile {
   companyName: string;
   tagline: string;
+  slogan?: string; // Official brand slogan (e.g. "We stitch it, You wear it, We print it, you represent.")
   registrationNumber: string;
   kraPin: string;
   vatRatePercent: number; // 16
@@ -331,6 +332,12 @@ export interface ERPBusinessProfile {
   bankAccountName: string;
   bankAccountNumber: string;
   bankSwiftCode: string;
+
+  // Instant Brand Logos & Favicon Assets
+  logoUrl?: string; // Main brand logo (URL or Base64 data URL)
+  faviconUrl?: string; // Browser tab favicon (URL or Base64 data URL)
+  footerLogoUrl?: string; // Footer logo (URL or Base64 data URL)
+  logoDisplayMode?: 'image-only' | 'image-and-text'; // Display preference
 }
 
 export interface HeroSlide {

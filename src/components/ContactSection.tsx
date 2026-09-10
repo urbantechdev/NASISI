@@ -101,8 +101,8 @@ export const ContactSection: React.FC = () => {
                 <div className="flex items-start gap-3">
                   <MapPin className="w-4 h-4 text-[#06163c] flex-shrink-0 mt-0.5" />
                   <div>
-                    <strong className="block text-slate-900">Factory & Design Studio:</strong>
-                    <span>Commercial Industrial Park, Uniforms & Knitwear Wing</span>
+                    <strong className="block text-slate-900">Workshop & Production Location:</strong>
+                    <span>Uhuru Market, Nairobi, Kenya</span>
                   </div>
                 </div>
 
@@ -320,9 +320,9 @@ export const ContactSection: React.FC = () => {
 
                   <button
                     type="submit"
-                    className="w-full flex items-center justify-center gap-2 py-3.5 bg-gradient-to-r from-[#020a1c] via-[#06163c] to-[#030e28] hover:from-[#010612] hover:via-[#040f28] hover:to-[#010612] text-white font-extrabold text-xs rounded-xl shadow-lg border border-blue-900/40 transition-all active:scale-[0.98] cursor-pointer"
+                    className="btn-shimmer-sweep group w-full flex items-center justify-center gap-2 py-4 bg-gradient-to-r from-[#020a1c] via-[#06163c] to-[#030e28] hover:from-[#010612] hover:via-[#040f28] hover:to-[#010612] text-white font-extrabold text-xs rounded-xl shadow-lg hover:shadow-xl hover:scale-[1.01] border border-blue-900/40 transition-all duration-200 active:scale-[0.98] cursor-pointer"
                   >
-                    <Send className="w-4 h-4" />
+                    <Send className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-0.5" />
                     <span>Submit Inquiry & Raise ERP Ticket</span>
                   </button>
                 </form>

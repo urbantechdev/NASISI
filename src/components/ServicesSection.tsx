@@ -34,39 +34,42 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
         </div>
 
         {/* 3 Main Tab Buttons */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-10">
-          {CORE_SERVICES.map((srv, idx) => (
-            <button
-              key={srv.id}
-              onClick={() => setActiveTab(idx)}
-              className={`p-5 rounded-2xl text-left border transition-all relative overflow-hidden ${
-                activeTab === idx
-                  ? 'border-[#06163c] bg-blue-50/50 shadow-md ring-2 ring-blue-500/10'
-                  : 'border-slate-200 bg-slate-50/50 hover:bg-slate-100/70 hover:border-slate-300'
-              }`}
-            >
-              {activeTab === idx && (
-                <span className="absolute top-0 left-0 right-0 h-1 bg-[#06163c]" />
-              )}
-              <div className="flex items-center gap-3 mb-2">
-                <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
-                    activeTab === idx
-                      ? 'bg-[#06163c] text-white'
-                      : 'bg-slate-200 text-slate-700'
-                  }`}
-                >
-                  0{idx + 1}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+          {CORE_SERVICES.map((srv, idx) => {
+            const isActive = activeTab === idx;
+            return (
+              <button
+                key={srv.id}
+                onClick={() => setActiveTab(idx)}
+                className={`group p-5 rounded-2xl text-left border transition-all duration-300 relative overflow-hidden hover:-translate-y-1 hover:shadow-lg active:scale-98 cursor-pointer ${
+                  isActive
+                    ? 'border-[#06163c] bg-blue-50/60 shadow-md ring-2 ring-blue-500/20 scale-[1.01]'
+                    : 'border-slate-200 bg-slate-50/50 hover:bg-white hover:border-blue-300'
+                }`}
+              >
+                {isActive && (
+                  <span className="absolute top-0 left-0 right-0 h-1.5 bg-[#06163c]" />
+                )}
+                <div className="flex items-center gap-3 mb-2">
+                  <div
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs transition-all duration-200 ${
+                      isActive
+                        ? 'bg-[#06163c] text-white shadow-xs'
+                        : 'bg-slate-200 text-slate-700 group-hover:bg-[#06163c] group-hover:text-white group-hover:scale-110'
+                    }`}
+                  >
+                    0{idx + 1}
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 font-['Outfit',sans-serif] group-hover:text-blue-900 transition-colors">
+                    {srv.title}
+                  </h3>
                 </div>
-                <h3 className="text-base font-bold text-slate-900 font-['Outfit',sans-serif]">
-                  {srv.title}
-                </h3>
-              </div>
-              <p className="text-xs text-slate-500 line-clamp-2">
-                {srv.shortDescription}
-              </p>
-            </button>
-          ))}
+                <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                  {srv.shortDescription}
+                </p>
+              </button>
+            );
+          })}
         </div>
 
         {/* Active Service Showcase Card */}
@@ -123,16 +126,17 @@ export const ServicesSection: React.FC<ServicesSectionProps> = ({
               <div className="flex flex-wrap items-center gap-3 pt-4 border-t border-slate-200">
                 <button
                   onClick={onOpenQuoteModal}
-                  className="px-5 py-3 text-xs font-bold text-white bg-gradient-to-r from-[#020a1c] via-[#06163c] to-[#030e28] hover:from-[#010612] hover:via-[#040f28] hover:to-[#010612] rounded-xl shadow-md border border-blue-900/40 transition-all cursor-pointer"
+                  className="btn-shimmer-sweep group px-6 py-3.5 text-xs font-extrabold text-white bg-gradient-to-r from-[#020a1c] via-[#06163c] to-[#030e28] hover:from-[#010612] hover:via-[#040f28] hover:to-[#010612] rounded-xl shadow-md hover:shadow-xl hover:scale-105 active:scale-95 border border-blue-900/40 transition-all duration-200 cursor-pointer flex items-center gap-2"
                 >
                   <span>Request {currentService.title.split(' ')[0]} Quote</span>
+                  <Sparkles className="w-3.5 h-3.5 text-cyan-300 group-hover:rotate-12 transition-transform duration-200" />
                 </button>
                 <button
                   type="button"
                   onClick={onOpenCustomizer}
-                  className="px-5 py-3 text-xs font-bold text-[#06163c] bg-white hover:bg-blue-50 border border-blue-200 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
+                  className="group px-5 py-3.5 text-xs font-bold text-[#06163c] bg-white hover:bg-blue-50 hover:border-blue-300 border border-blue-200 rounded-xl shadow-xs hover:shadow-md hover:scale-105 active:scale-95 transition-all duration-200 flex items-center gap-2 cursor-pointer"
                 >
-                  <SlidersHorizontal className="w-4 h-4" />
+                  <SlidersHorizontal className="w-4 h-4 text-[#06163c] group-hover:rotate-12 transition-transform duration-200" />
                   <span>Preview in Live Mockup</span>
                 </button>
               </div>

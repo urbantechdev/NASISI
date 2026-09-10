@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import { useERP } from '../context/ERPContext';
 import { UniformProduct, UniformCategory } from '../types';
 import {
@@ -153,26 +154,27 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
           <div className="flex flex-col md:flex-row gap-4 items-stretch md:items-center justify-between">
             
             {/* Category Filter Pills */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
               {categories.map((cat) => {
                 const IconComponent = cat.icon;
+                const isSelected = selectedCategory === cat.id;
                 return (
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.id)}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 ${
-                      selectedCategory === cat.id
-                        ? 'bg-[#06163c] text-white shadow-sm'
-                        : 'bg-white text-slate-600 hover:text-[#06163c] hover:bg-blue-50/70 border border-slate-200'
+                    className={`group px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 flex items-center gap-2 hover:-translate-y-0.5 active:scale-95 cursor-pointer ${
+                      isSelected
+                        ? 'bg-[#06163c] text-white shadow-md ring-2 ring-blue-500/20 scale-[1.02]'
+                        : 'bg-white text-slate-600 hover:text-[#06163c] hover:bg-blue-50/80 border border-slate-200 hover:border-blue-300 hover:shadow-xs'
                     }`}
                   >
-                    <IconComponent className={`w-3.5 h-3.5 ${selectedCategory === cat.id ? 'text-white' : 'text-slate-500'}`} />
+                    <IconComponent className={`w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110 ${isSelected ? 'text-white' : 'text-slate-500 group-hover:text-[#06163c]'}`} />
                     <span>{cat.label}</span>
                     <span
-                      className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold ${
-                        selectedCategory === cat.id
+                      className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold transition-colors duration-200 ${
+                        isSelected
                           ? 'bg-white/20 text-white'
-                          : 'bg-slate-100 text-slate-500'
+                          : 'bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-[#06163c]'
                       }`}
                     >
                       {cat.count}
@@ -184,7 +186,7 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
 
             {/* Search Box with Live Auto-Popup on Typing */}
             <div ref={searchContainerRef} className="relative min-w-[280px] sm:min-w-[340px]">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 transition-colors group-focus-within:text-[#06163c]" />
               <input
                 type="text"
                 placeholder="Type a product (e.g. blazer, scrub, polo)..."
@@ -196,7 +198,7 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                   setHighlightedIndex(0);
                 }}
                 onKeyDown={handleKeyDown}
-                className="w-full pl-9 pr-14 py-2.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#06163c] focus:border-transparent transition-all shadow-xs"
+                className="w-full pl-9 pr-14 py-2.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#06163c] focus:border-transparent transition-all shadow-xs hover:border-slate-300"
               />
               <div className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
                 {searchQuery ? (
@@ -206,7 +208,7 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                       setSearchQuery('');
                       setIsSearchFocused(false);
                     }}
-                    className="text-xs text-slate-400 hover:text-slate-700 px-1 py-0.5"
+                    className="text-xs text-slate-400 hover:text-slate-700 hover:scale-110 active:scale-95 px-1 py-0.5 transition-all cursor-pointer font-medium"
                   >
                     Clear
                   </button>
@@ -243,16 +245,16 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                             setIsSearchFocused(false);
                           }}
                           onMouseEnter={() => setHighlightedIndex(idx)}
-                          className={`flex items-center gap-3 p-2 rounded-xl transition-all cursor-pointer ${
+                          className={`flex items-center gap-3 p-2 rounded-xl transition-all duration-150 cursor-pointer hover:translate-x-1 ${
                             highlightedIndex === idx
-                              ? 'bg-blue-50/80 border border-blue-200/80'
+                              ? 'bg-blue-50/80 border border-blue-200/80 shadow-xs'
                               : 'hover:bg-slate-50 border border-transparent'
                           }`}
                         >
                           <img
                             src={product.image}
                             alt={product.name}
-                            className="w-11 h-11 rounded-lg object-cover bg-slate-100 border border-slate-200 shrink-0"
+                            className="w-11 h-11 rounded-lg object-cover bg-slate-100 border border-slate-200 shrink-0 transition-transform duration-200 hover:scale-105"
                             loading="lazy"
                             decoding="async"
                             referrerPolicy="no-referrer"
@@ -313,144 +315,154 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
-              <div
-                key={product.id}
-                role="button"
-                tabIndex={0}
-                onClick={() => onSelectProduct(product)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    onSelectProduct(product);
-                  }
-                }}
-                className="group bg-white rounded-2xl border border-[#D1E0FF] overflow-hidden shadow-[0_10px_28px_-4px_rgba(209,224,255,0.4),0_4px_14px_rgba(209,224,255,0.2)] hover:shadow-[0_20px_42px_-4px_rgba(209,224,255,0.6),0_8px_22px_rgba(209,224,255,0.3)] transition-all duration-300 flex flex-col hover:-translate-y-1.5 active:scale-[0.99] cursor-pointer touch-manipulation focus:outline-none focus:ring-2 focus:ring-[#D1E0FF]"
-              >
-                {/* Image & Badges */}
-                <div className="relative aspect-[4/3] bg-gradient-to-br from-[#D1E0FF]/30 via-slate-50 to-[#D1E0FF]/15 overflow-hidden shadow-[inset_0_0_24px_rgba(209,224,255,0.25)] border-b border-[#D1E0FF]/40">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                    decoding="async"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      e.currentTarget.src = 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80';
-                    }}
-                  />
-                  
-                  {/* Category Tag */}
-                  <span className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-[#06163c] text-[10px] font-extrabold px-2.5 py-1 rounded-md shadow-sm uppercase tracking-wider">
-                    {product.categoryLabel}
-                  </span>
+            <AnimatePresence mode="popLayout">
+              {filteredProducts.map((product) => (
+                <motion.div
+                  key={product.id}
+                  layout
+                  initial={{ opacity: 0, y: 18 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => onSelectProduct(product)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      onSelectProduct(product);
+                    }
+                  }}
+                  className="group card-ambient-hover relative bg-white rounded-2xl border border-[#D1E0FF] hover:border-blue-400 overflow-hidden shadow-[0_10px_28px_-4px_rgba(209,224,255,0.45),0_4px_14px_rgba(209,224,255,0.22)] hover:shadow-[0_24px_50px_-8px_rgba(6,22,60,0.22),0_12px_28px_rgba(209,224,255,0.5)] flex flex-col active:scale-[0.985] cursor-pointer touch-manipulation focus:outline-none focus:ring-2 focus:ring-blue-400"
+                >
+                  {/* Image & Badges with Shimmer Hover Reflection */}
+                  <div className="relative aspect-[4/3] bg-gradient-to-br from-[#D1E0FF]/30 via-slate-50 to-[#D1E0FF]/15 overflow-hidden shadow-[inset_0_0_24px_rgba(209,224,255,0.25)] border-b border-[#D1E0FF]/40">
+                    {/* Subtle light sweep on hover */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out pointer-events-none z-10" />
 
-                  {product.badge && (
-                    <span className="absolute top-3 right-3 bg-[#06163c] text-white text-[10px] font-extrabold px-2 py-0.5 rounded shadow-sm">
-                      {product.badge}
+                    <img
+                      src={product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-108 group-hover:brightness-[1.03] transition-transform duration-700 ease-out"
+                      loading="lazy"
+                      decoding="async"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80';
+                      }}
+                    />
+                    
+                    {/* Category Tag */}
+                    <span className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm text-[#06163c] text-[10px] font-extrabold px-2.5 py-1 rounded-md shadow-sm uppercase tracking-wider transition-all duration-300 group-hover:scale-105 group-hover:shadow-md z-10">
+                      {product.categoryLabel}
                     </span>
-                  )}
 
-                  {/* Quick Customizer Hover Overlay Button (Desktop) */}
-                  <div className="absolute inset-0 bg-[#06163c]/80 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:flex items-center justify-center gap-2 p-4">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSelectProduct(product);
-                      }}
-                      className="px-3.5 py-2 bg-white text-[#06163c] text-xs font-bold rounded-lg shadow-lg hover:bg-blue-50 transition-colors flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>Details & Pricing</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onOpenCustomizerWithProduct(
-                          product,
-                          product.availableColors[0]?.hex || '#06163c'
-                        );
-                      }}
-                      className="px-3.5 py-2 bg-[#021a34] text-white text-xs font-bold rounded-lg shadow-lg hover:bg-[#01152a] transition-colors flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <SlidersHorizontal className="w-3.5 h-3.5" />
-                      <span>Mockup</span>
-                    </button>
+                    {product.badge && (
+                      <span className="absolute top-3 right-3 bg-[#06163c] group-hover:bg-blue-900 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded shadow-sm transition-all duration-300 group-hover:scale-105 z-10">
+                        {product.badge}
+                      </span>
+                    )}
+
+                    {/* Quick Customizer Hover Overlay Button (Desktop) */}
+                    <div className="absolute inset-0 bg-[#06163c]/75 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-all duration-300 hidden sm:flex items-center justify-center gap-2.5 p-4 z-20">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectProduct(product);
+                        }}
+                        className="btn-shimmer-sweep group/btn1 px-3.5 py-2 bg-white text-[#06163c] text-xs font-extrabold rounded-xl shadow-lg hover:bg-blue-50 hover:scale-105 active:scale-95 transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <Eye className="w-3.5 h-3.5 group-hover/btn1:scale-115 transition-transform" />
+                        <span>Details & Pricing</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onOpenCustomizerWithProduct(
+                            product,
+                            product.availableColors[0]?.hex || '#06163c'
+                          );
+                        }}
+                        className="btn-shimmer-sweep group/btn2 px-3.5 py-2 bg-[#021a34] hover:bg-blue-900 text-white text-xs font-extrabold rounded-xl shadow-lg hover:scale-105 active:scale-95 transition-all duration-200 flex items-center gap-1.5 cursor-pointer"
+                      >
+                        <SlidersHorizontal className="w-3.5 h-3.5 group-hover/btn2:rotate-12 transition-transform" />
+                        <span>Mockup</span>
+                      </button>
+                    </div>
                   </div>
-                </div>
 
-                {/* Card Body */}
-                <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
-                  <div className="space-y-2">
-                    {/* Available Color Swatches */}
-                    <div className="flex items-center gap-1.5">
-                      {product.availableColors.map((color) => (
-                        <button
-                          key={color.name}
-                          type="button"
-                          title={color.name}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            onSelectProduct(product);
-                          }}
-                          className={`w-3.5 h-3.5 rounded-full border border-slate-200 hover:scale-125 transition-transform ${color.bgClass}`}
-                          style={{ backgroundColor: color.hex }}
-                        />
-                      ))}
-                      <span className="text-[10px] text-slate-400 ml-1">
-                        {product.availableColors.length} colors
+                  {/* Card Body */}
+                  <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                    <div className="space-y-2">
+                      {/* Available Color Swatches with Spring Hover */}
+                      <div className="flex items-center gap-1.5">
+                        {product.availableColors.map((color) => (
+                          <button
+                            key={color.name}
+                            type="button"
+                            title={color.name}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              onSelectProduct(product);
+                            }}
+                            className={`w-4 h-4 rounded-full border border-slate-200 hover:scale-140 hover:ring-2 hover:ring-blue-500 hover:ring-offset-1 hover:shadow-md transition-all duration-200 active:scale-90 cursor-pointer ${color.bgClass}`}
+                            style={{ backgroundColor: color.hex }}
+                          />
+                        ))}
+                        <span className="text-[10px] text-slate-400 ml-1 font-medium">
+                          {product.availableColors.length} colors
+                        </span>
+                      </div>
+
+                      {/* Title & Tagline */}
+                      <h3 className="font-bold text-slate-900 text-base font-['Outfit',sans-serif] group-hover:text-blue-900 transition-colors duration-200 leading-snug">
+                        {product.name}
+                      </h3>
+                      <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                        {product.tagline || ''}
+                      </p>
+                    </div>
+
+                    {/* Fabric highlight pills */}
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
+                      <span className="font-medium text-slate-500 truncate max-w-[150px]">
+                        {product.fabric?.weight || ''} • {(product.fabric?.composition || '').split('/')[0]}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+                        MOQ: {product.minOrder}
                       </span>
                     </div>
 
-                    {/* Title & Tagline */}
-                    <h3 className="font-bold text-slate-900 text-base font-['Outfit',sans-serif] group-hover:text-[#06163c] transition-colors leading-snug">
-                      {product.name}
-                    </h3>
-                    <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
-                      {product.tagline || ''}
-                    </p>
-                  </div>
+                    {/* Price & Primary CTA */}
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
+                      <div>
+                        <span className="text-[10px] text-slate-400 uppercase font-semibold block">
+                          Bulk from
+                        </span>
+                        <span className="text-base sm:text-lg font-black text-[#06163c] font-['Outfit',sans-serif]">
+                          Ksh {product.basePrice.toLocaleString()}
+                        </span>
+                        <span className="text-[10px] text-slate-400">/unit</span>
+                      </div>
 
-                  {/* Fabric highlight pills */}
-                  <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
-                    <span className="font-medium text-slate-500 truncate max-w-[150px]">
-                      {product.fabric?.weight || ''} • {(product.fabric?.composition || '').split('/')[0]}
-                    </span>
-                    <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
-                      MOQ: {product.minOrder}
-                    </span>
-                  </div>
-
-                  {/* Price & Primary CTA */}
-                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-semibold block">
-                        Bulk from
-                      </span>
-                      <span className="text-base sm:text-lg font-black text-[#06163c] font-['Outfit',sans-serif]">
-                        Ksh {product.basePrice.toLocaleString()}
-                      </span>
-                      <span className="text-[10px] text-slate-400">/unit</span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectProduct(product);
+                        }}
+                        className="btn-shimmer-sweep group/cfg inline-flex items-center gap-1.5 px-4 py-2 text-xs font-extrabold text-white bg-[#06163c] hover:bg-blue-900 hover:shadow-md rounded-xl transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+                      >
+                        <span>Configure</span>
+                        <ChevronRight className="w-3.5 h-3.5 group-hover/cfg:translate-x-1 transition-transform duration-200" />
+                      </button>
                     </div>
-
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onSelectProduct(product);
-                      }}
-                      className="inline-flex items-center gap-1 px-3.5 py-2 text-xs font-bold text-white bg-[#06163c] hover:bg-[#021a34] rounded-xl shadow-sm transition-colors active:scale-95 cursor-pointer"
-                    >
-                      <span>Configure</span>
-                      <ChevronRight className="w-3.5 h-3.5" />
-                    </button>
                   </div>
-                </div>
-              </div>
-            ))}
+                </motion.div>
+              ))}
+            </AnimatePresence>
           </div>
         )}
 

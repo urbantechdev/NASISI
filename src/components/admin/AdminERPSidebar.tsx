@@ -130,8 +130,8 @@ export const AdminERPSidebar: React.FC<AdminERPSidebarProps> = ({
     },
     {
       id: 'settings',
-      label: 'Company Tax & Banking',
-      description: 'KRA PIN, Paybill & bank details',
+      label: 'Brand Logos & Settings',
+      description: 'Change logo, favicon, footer & KRA PIN',
       icon: Settings,
     },
   ];

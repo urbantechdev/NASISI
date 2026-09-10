@@ -92,35 +92,35 @@ export const Hero: React.FC = () => {
             type="button"
             onClick={prevSlide}
             aria-label="Previous banner"
-            className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white/90 hover:bg-white text-slate-800 hover:text-[#06163c] border border-slate-200/80 shadow-lg transition-all opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95 cursor-pointer backdrop-blur-sm"
+            className="group/arrow absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/95 hover:bg-white text-slate-800 hover:text-[#06163c] border border-slate-200 shadow-xl transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-115 hover:shadow-2xl hover:border-blue-300 active:scale-90 cursor-pointer backdrop-blur-md"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-5 h-5 transition-transform duration-200 group-hover/arrow:-translate-x-0.5" />
           </button>
 
           <button
             type="button"
             onClick={nextSlide}
             aria-label="Next banner"
-            className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-20 p-2.5 rounded-full bg-white/90 hover:bg-white text-slate-800 hover:text-[#06163c] border border-slate-200/80 shadow-lg transition-all opacity-0 group-hover:opacity-100 hover:scale-110 active:scale-95 cursor-pointer backdrop-blur-sm"
+            className="group/arrow absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/95 hover:bg-white text-slate-800 hover:text-[#06163c] border border-slate-200 shadow-xl transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-115 hover:shadow-2xl hover:border-blue-300 active:scale-90 cursor-pointer backdrop-blur-md"
           >
-            <ChevronRight className="w-5 h-5" />
+            <ChevronRight className="w-5 h-5 transition-transform duration-200 group-hover/arrow:translate-x-0.5" />
           </button>
         </>
       )}
 
       {/* Minimalist Progress Indicators & Playback Controls */}
       {banners.length > 1 && (
-        <div className="absolute bottom-6 right-4 sm:right-8 z-20 flex items-center gap-2 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-200 shadow-md">
+        <div className="absolute bottom-6 right-4 sm:right-8 z-20 flex items-center gap-2 bg-white/90 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-slate-200 shadow-md hover:shadow-lg transition-shadow duration-300">
           {heroConfig.autoPlay && (
             <>
               <button
                 type="button"
                 onClick={() => setIsPaused(!isPaused)}
                 aria-label={isPaused ? 'Resume auto-play' : 'Pause auto-play'}
-                className="text-slate-600 hover:text-slate-900 transition-colors p-0.5 cursor-pointer"
+                className="text-slate-600 hover:text-slate-900 hover:scale-115 active:scale-90 transition-all duration-200 p-0.5 cursor-pointer"
                 title={isPaused ? 'Resume' : 'Pause'}
               >
-                {isPaused ? <Play className="w-3 h-3" /> : <Pause className="w-3 h-3" />}
+                {isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
               </button>
 
               <div className="h-2.5 w-px bg-slate-200" />
@@ -133,10 +133,10 @@ export const Hero: React.FC = () => {
                 key={b.id || idx}
                 type="button"
                 onClick={() => setActiveBanner(idx)}
-                className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
                   activeBanner === idx
-                    ? 'bg-[#06163c] w-5 shadow-xs'
-                    : 'bg-slate-300 hover:bg-slate-400 w-1.5'
+                    ? 'bg-[#06163c] w-6 shadow-xs scale-105'
+                    : 'bg-slate-300 hover:bg-slate-500 hover:scale-125 w-2'
                 }`}
                 aria-label={`Slide ${idx + 1}`}
               />

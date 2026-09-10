@@ -59,7 +59,7 @@ export const Footer: React.FC<FooterProps> = ({
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-9">
         {/* On Mobile: Only show Logo and Title. On Desktop/Tablet: Show full 5-column grid */}
         <div className="sm:hidden flex flex-col items-center justify-center text-center space-y-1.5 pb-2">
-          <NasisiLogo size="xl" variant="full" />
+          <NasisiLogo size="xl" variant="full" isFooter={true} />
         </div>
 
         {/* Desktop / Tablet Grid (Hidden on Mobile) */}
@@ -67,7 +67,7 @@ export const Footer: React.FC<FooterProps> = ({
           
           {/* Col 1 & 2: Brand Info */}
           <div className="lg:col-span-2 space-y-2.5">
-            <NasisiLogo size="xl" variant="full" />
+            <NasisiLogo size="xl" variant="full" isFooter={true} />
             <p className="text-xs text-slate-600 leading-relaxed max-w-sm pt-1">
               Premier manufacturer and supplier of academic school uniforms, healthcare scrubs, hospitality wear, high-vis industrial gear, and bespoke computerized embroidery for local organizations.
             </p>
@@ -140,7 +140,7 @@ export const Footer: React.FC<FooterProps> = ({
                 </p>
                 <p className="flex items-start gap-2 pt-1">
                   <MapPin className="w-3.5 h-3.5 text-[#06163c] flex-shrink-0 mt-0.5" />
-                  <span>Industrial Area Workshop, Unit 4B</span>
+                  <span>Uhuru Market Workshop, Nairobi, Kenya</span>
                 </p>
               </div>
             </div>

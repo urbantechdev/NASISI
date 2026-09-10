@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useERPSafe } from '../context/ERPContext';
 
 interface NasisiLogoProps {
   className?: string;
@@ -6,15 +7,43 @@ interface NasisiLogoProps {
   variant?: 'full' | 'compact' | 'icon-only' | 'white';
   showTagline?: boolean;
   tagline?: string;
+  isFooter?: boolean;
+  customSrc?: string;
+  forceDefault?: boolean;
 }
+
+export const CANONICAL_BRAND_SLOGAN = 'We stitch it, You wear it, We print it, you represent.';
+export const CANONICAL_BRAND_SUBTITLE = 'Knitwear & Graphics';
 
 export const NasisiLogo: React.FC<NasisiLogoProps> = ({
   className = '',
   size = 'md',
   variant = 'full',
   showTagline = true,
-  tagline = 'We stitch it, You wear it, We print it, you represent.',
+  tagline,
+  isFooter = false,
+  customSrc,
+  forceDefault = false,
 }) => {
+  const erp = useERPSafe();
+  const businessProfile = erp?.businessProfile;
+  const [imgError, setImgError] = useState(false);
+
+  // Check if a custom logo image is configured
+  const effectiveCustomLogo = forceDefault || imgError
+    ? undefined
+    : customSrc ||
+      (isFooter
+        ? businessProfile?.footerLogoUrl || businessProfile?.logoUrl
+        : businessProfile?.logoUrl);
+
+  // Canonical Slogan Priority: Explicit prop > businessProfile.slogan > CANONICAL_BRAND_SLOGAN
+  const activeTagline =
+    tagline ||
+    (businessProfile?.slogan && businessProfile.slogan.trim().length > 0
+      ? businessProfile.slogan
+      : CANONICAL_BRAND_SLOGAN);
+
   const isWhite = variant === 'white';
   const primaryBlue = isWhite ? '#FFFFFF' : '#06163c';
   const darkBlue = isWhite ? '#E0ECFF' : '#02162B';
@@ -25,30 +54,38 @@ export const NasisiLogo: React.FC<NasisiLogoProps> = ({
       case 'sm':
         return {
           iconSize: 36,
+          imgHeight: 'h-8 sm:h-9 max-h-9',
+          maxW: 'max-w-[160px]',
           textSize: 'text-lg',
           subSize: 'text-[9px]',
-          taglineSize: 'text-[7px]',
-          taglineMaxW: 'max-w-[180px]',
+          taglineSize: 'text-[7.5px]',
+          taglineMaxW: 'max-w-[190px]',
         };
       case 'lg':
         return {
           iconSize: 64,
+          imgHeight: 'h-12 sm:h-14 max-h-14',
+          maxW: 'max-w-[240px]',
           textSize: 'text-3xl',
           subSize: 'text-xs',
-          taglineSize: 'text-[9px] sm:text-[10px]',
-          taglineMaxW: 'max-w-[280px] sm:max-w-none',
+          taglineSize: 'text-[9.5px] sm:text-[10.5px]',
+          taglineMaxW: 'max-w-[300px] sm:max-w-none',
         };
       case 'xl':
         return {
           iconSize: 96,
+          imgHeight: 'h-16 sm:h-20 max-h-20',
+          maxW: 'max-w-[300px]',
           textSize: 'text-3xl sm:text-4xl',
           subSize: 'text-xs sm:text-sm',
           taglineSize: 'text-[10px] sm:text-xs',
-          taglineMaxW: 'max-w-[320px] sm:max-w-none',
+          taglineMaxW: 'max-w-[360px] sm:max-w-none',
         };
       case '2xl':
         return {
           iconSize: 128,
+          imgHeight: 'h-20 sm:h-24 max-h-24',
+          maxW: 'max-w-[360px]',
           textSize: 'text-4xl sm:text-5xl',
           subSize: 'text-sm sm:text-base',
           taglineSize: 'text-xs sm:text-sm',
@@ -58,15 +95,72 @@ export const NasisiLogo: React.FC<NasisiLogoProps> = ({
       default:
         return {
           iconSize: 48,
+          imgHeight: 'h-10 sm:h-12 max-h-12',
+          maxW: 'max-w-[200px]',
           textSize: 'text-2xl',
           subSize: 'text-[10px]',
-          taglineSize: 'text-[7.5px] sm:text-[8px]',
-          taglineMaxW: 'max-w-[225px] xs:max-w-[280px] sm:max-w-none',
+          taglineSize: 'text-[8px] sm:text-[9px]',
+          taglineMaxW: 'max-w-[240px] xs:max-w-[280px] sm:max-w-none',
         };
     }
   };
 
-  const { iconSize, textSize, subSize, taglineSize, taglineMaxW } = getDimensions();
+  const { iconSize, imgHeight, maxW, textSize, subSize, taglineSize, taglineMaxW } = getDimensions();
+
+  // If a custom logo image is provided and hasn't errored
+  if (effectiveCustomLogo) {
+    if (businessProfile?.logoDisplayMode === 'image-and-text' && variant !== 'icon-only') {
+      return (
+        <div className={`inline-flex items-center gap-3 select-none ${className}`}>
+          <img
+            src={effectiveCustomLogo}
+            alt={businessProfile?.companyName || 'Logo'}
+            onError={() => setImgError(true)}
+            className={`${imgHeight} w-auto object-contain shrink-0`}
+          />
+          <div className="flex flex-col">
+            <span
+              className={`font-['Outfit',sans-serif] font-black tracking-wider ${textSize} leading-none ${
+                isWhite ? 'text-white' : 'text-[#06163c]'
+              }`}
+            >
+              {businessProfile?.companyName?.includes('NASISI') ? 'NASISI' : (businessProfile?.companyName || 'NASISI')}
+            </span>
+            <span
+              className={`font-semibold tracking-[0.2em] uppercase ${subSize} mt-1 ${
+                isWhite ? 'text-blue-200' : 'text-slate-700'
+              }`}
+            >
+              {CANONICAL_BRAND_SUBTITLE}
+            </span>
+            {showTagline && (
+              <div className={`flex items-center mt-1 pt-1 border-t border-blue-100/40 ${taglineMaxW}`}>
+                <span
+                  className={`${taglineSize} tracking-tight sm:tracking-normal font-medium italic ${
+                    isWhite ? 'text-blue-100/90' : 'text-blue-900/80'
+                  } whitespace-normal sm:whitespace-nowrap`}
+                  title={activeTagline}
+                >
+                  "{activeTagline}"
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className={`inline-flex items-center select-none ${className}`}>
+        <img
+          src={effectiveCustomLogo}
+          alt={businessProfile?.companyName || 'Company Logo'}
+          onError={() => setImgError(true)}
+          className={`${imgHeight} ${maxW} w-auto object-contain block`}
+        />
+      </div>
+    );
+  }
 
   // SVG Icon representing the NASISI Monogram N with needle, thread, stitch, t-shirt, and screen print squeegee
   const LogoIcon = (
@@ -190,18 +284,18 @@ export const NasisiLogo: React.FC<NasisiLogoProps> = ({
             isWhite ? 'text-blue-200' : 'text-slate-700'
           }`}
         >
-          Knitwear & Graphics
+          {CANONICAL_BRAND_SUBTITLE}
         </span>
 
         {showTagline && (
           <div className={`flex items-center mt-1 pt-1 border-t border-blue-100/40 ${taglineMaxW}`}>
             <span
-              className={`${taglineSize} tracking-tight sm:tracking-normal font-medium ${
+              className={`${taglineSize} tracking-tight sm:tracking-normal font-medium italic ${
                 isWhite ? 'text-blue-100/90' : 'text-blue-900/80'
-              } truncate sm:overflow-visible sm:whitespace-nowrap`}
-              title={tagline}
+              } whitespace-normal sm:whitespace-nowrap`}
+              title={activeTagline}
             >
-              {tagline}
+              "{activeTagline}"
             </span>
           </div>
         )}

@@ -304,9 +304,15 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex items-center justify-between">
-          {/* Logo in White / Brand Light Variant - Enlarged twice its size */}
+          {/* Logo in White / Brand Light Variant - Enlarged with restored subtitle & slogan */}
           <a href="#" className="focus:outline-none flex items-center group shrink-0" aria-label="NASISI Home">
-            <NasisiLogo size="xl" variant="white" className="scale-90 sm:scale-100 origin-left transition-transform" />
+            <NasisiLogo
+              size="xl"
+              variant="white"
+              showTagline={true}
+              tagline="We stitch it, You wear it, We print it, you represent."
+              className="scale-90 sm:scale-100 origin-left transition-transform"
+            />
           </a>
 
           {/* Desktop Navigation Links: Home, Services (with sub domains dropdown), Products, About, Contact */}
@@ -647,11 +653,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 id="navbar-size-guide-btn"
                 onClick={onOpenSizeGuide}
-                className="relative flex items-center justify-center w-10 h-10 rounded-xl text-blue-100 hover:text-white bg-blue-950/50 hover:bg-blue-900/80 border border-blue-400/30 hover:border-cyan-400/60 transition-all shadow-sm hover:shadow-[0_0_12px_rgba(56,189,248,0.25)] hover:scale-105 active:scale-95 cursor-pointer"
+                className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl text-blue-100 hover:text-white bg-blue-950/60 hover:bg-blue-900/90 border border-blue-400/30 hover:border-cyan-400/80 transition-all duration-200 shadow-sm hover:shadow-[0_0_16px_rgba(56,189,248,0.35)] hover:scale-110 hover:-translate-y-0.5 active:scale-90 cursor-pointer"
                 aria-label="Size Guide & Fabric Specifications"
                 title="Size Guide"
               >
-                <Ruler className="w-5 h-5 text-blue-200 group-hover:text-cyan-300 transition-colors" />
+                <Ruler className="w-5 h-5 text-blue-200 group-hover:text-cyan-300 group-hover:rotate-12 group-hover:scale-110 transition-transform duration-300" />
               </button>
               {/* Floating Tooltip */}
               <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-50">
@@ -666,11 +672,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 id="navbar-live-mockup-btn"
                 type="button"
                 onClick={onOpenCustomizer}
-                className="relative flex items-center justify-center w-10 h-10 rounded-xl text-white bg-gradient-to-br from-blue-600/90 via-blue-700 to-indigo-800 hover:from-blue-500 hover:to-indigo-600 border border-blue-300/40 hover:border-cyan-300/70 transition-all shadow-sm hover:shadow-[0_0_14px_rgba(59,130,246,0.4)] hover:scale-105 active:scale-95 cursor-pointer"
+                className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl text-white bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 hover:from-blue-500 hover:to-indigo-600 border border-blue-300/40 hover:border-cyan-300/80 transition-all duration-200 shadow-sm hover:shadow-[0_0_18px_rgba(59,130,246,0.5)] hover:scale-110 hover:-translate-y-0.5 active:scale-90 cursor-pointer"
                 aria-label="Launch 3D Live Mockup Studio"
                 title="Live 3D Mockup Studio"
               >
-                <Sparkles className="w-5 h-5 text-cyan-200 group-hover:text-white group-hover:rotate-12 transition-all" />
+                <Sparkles className="w-5 h-5 text-cyan-200 group-hover:text-white group-hover:rotate-45 group-hover:scale-120 transition-all duration-300" />
               </button>
               {/* Floating Tooltip */}
               <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-50">
@@ -686,10 +692,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                   id="navbar-admin-erp-btn"
                   type="button"
                   onClick={onOpenAdminERP}
-                  className={`relative flex items-center justify-center h-10 rounded-xl transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer ${
+                  className={`btn-shimmer-sweep relative flex items-center justify-center h-10 rounded-xl transition-all duration-200 shadow-sm hover:scale-110 hover:-translate-y-0.5 active:scale-90 cursor-pointer ${
                     isAuthenticated && currentUser
-                      ? 'px-2.5 gap-2 bg-blue-950/80 hover:bg-blue-900 border border-blue-400/50 text-white'
-                      : 'w-10 text-emerald-200 hover:text-emerald-100 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 hover:border-emerald-400/70 hover:shadow-[0_0_14px_rgba(16,185,129,0.3)]'
+                      ? 'px-2.5 gap-2 bg-blue-950/80 hover:bg-blue-900 border border-blue-400/50 hover:border-blue-300 text-white hover:shadow-[0_0_16px_rgba(56,189,248,0.3)]'
+                      : 'w-10 text-emerald-200 hover:text-emerald-100 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 hover:border-emerald-400/80 hover:shadow-[0_0_16px_rgba(16,185,129,0.4)]'
                   }`}
                   aria-label={isAuthenticated ? `Admin: ${currentUser?.name}` : 'Open Enterprise Admin ERP (Ksh)'}
                   title={isAuthenticated ? `Admin: ${currentUser?.name} (${currentUser?.role})` : 'Admin Login & ERP (Ksh)'}
@@ -710,9 +716,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </>
                   ) : (
                     <>
-                      <Building2 className="w-5 h-5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+                      <Building2 className="w-5 h-5 text-emerald-400 group-hover:text-emerald-200 group-hover:scale-115 transition-all duration-200" />
                       {/* Live Active Status Indicator Dot */}
-                      <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399]" />
+                      <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399] animate-pulse" />
                     </>
                   )}
                 </button>
@@ -733,11 +739,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 id="navbar-quote-cart-btn"
                 onClick={onOpenQuoteModal}
-                className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-md hover:shadow-[0_0_16px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-md hover:shadow-[0_0_18px_rgba(255,255,255,0.5)] hover:scale-110 hover:-translate-y-0.5 active:scale-90 transition-all duration-200 cursor-pointer"
                 aria-label="View Quote Cart"
                 title="Quote Cart"
               >
-                <ShoppingBag className="w-5 h-5 text-[#06163c] group-hover:scale-110 transition-transform" />
+                <ShoppingBag className="w-5 h-5 text-[#06163c] group-hover:scale-115 group-hover:-rotate-12 transition-transform duration-200" />
                 {totalItemsCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[20px] h-5 px-1 text-[11px] font-black bg-[#06163c] text-white rounded-full border-2 border-white shadow-md animate-scaleIn">
                     {totalItemsCount}
@@ -757,18 +763,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                 id="navbar-desktop-hamburger-btn"
                 type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-all shadow-sm hover:scale-105 active:scale-95 cursor-pointer ${
+                className={`btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 shadow-sm hover:scale-110 hover:-translate-y-0.5 active:scale-90 cursor-pointer ${
                   mobileMenuOpen
                     ? 'bg-white text-[#06163c] border border-white shadow-md'
-                    : 'bg-white/10 hover:bg-white text-white hover:text-[#06163c] border border-white/20 hover:border-white hover:shadow-[0_0_14px_rgba(255,255,255,0.35)]'
+                    : 'bg-white/10 hover:bg-white text-white hover:text-[#06163c] border border-white/20 hover:border-white hover:shadow-[0_0_16px_rgba(255,255,255,0.4)]'
                 }`}
                 aria-label={mobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
                 title="Navigation Menu"
               >
                 {mobileMenuOpen ? (
-                  <X className="w-5 h-5 transition-transform" />
+                  <X className="w-5 h-5 transition-transform duration-200 group-hover:rotate-90" />
                 ) : (
-                  <Menu className="w-5 h-5 transition-transform group-hover:scale-110" />
+                  <Menu className="w-5 h-5 transition-transform duration-200 group-hover:scale-115" />
                 )}
               </button>
               {/* Floating Tooltip */}
@@ -822,7 +828,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="relative bg-white/95 backdrop-blur-md shrink-0 shadow-xs border-b border-slate-200/80">
                 <div className="flex items-center justify-between px-5 py-4">
                   <div className="flex items-center gap-2.5">
-                    <NasisiLogo size="lg" />
+                    <NasisiLogo size="lg" showTagline={true} tagline="We stitch it, You wear it, We print it, you represent." />
                     <span className="px-2 py-0.5 bg-blue-50 text-[#06163c] text-[10px] font-black uppercase rounded-md tracking-wider border border-blue-200">
                       Menu
                     </span>

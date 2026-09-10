@@ -626,9 +626,9 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                       key={g.id}
                       type="button"
                       onClick={() => setSelectedGarment(g)}
-                      className={`p-2 rounded-xl text-left border transition-all ${
+                      className={`p-2 rounded-xl text-left border transition-all duration-150 hover:scale-[1.02] active:scale-95 cursor-pointer ${
                         selectedGarment.id === g.id
-                          ? 'border-[#06163c] bg-blue-50/80 ring-2 ring-blue-500/10 text-[#06163c] font-bold'
+                          ? 'border-[#06163c] bg-blue-50/80 ring-2 ring-blue-500/10 text-[#06163c] font-bold shadow-xs'
                           : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'
                       }`}
                     >
@@ -650,9 +650,9 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                       key={col.name}
                       type="button"
                       onClick={() => setGarmentColor(col)}
-                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all duration-150 hover:scale-105 active:scale-95 cursor-pointer ${
                         garmentColor.name === col.name
-                          ? 'border-[#06163c] ring-2 ring-blue-500/20 bg-blue-50 text-[#06163c]'
+                          ? 'border-[#06163c] ring-2 ring-blue-500/20 bg-blue-50 text-[#06163c] shadow-xs'
                           : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'
                       }`}
                     >
@@ -673,9 +673,9 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                   <button
                     type="button"
                     onClick={() => setBrandingTechnique('embroidery')}
-                    className={`p-2.5 rounded-xl text-left border transition-all ${
+                    className={`p-2.5 rounded-xl text-left border transition-all duration-150 hover:scale-[1.02] active:scale-95 cursor-pointer ${
                       brandingTechnique === 'embroidery'
-                        ? 'border-[#06163c] bg-blue-50/80 text-[#06163c] ring-2 ring-blue-500/10'
+                        ? 'border-[#06163c] bg-blue-50/80 text-[#06163c] ring-2 ring-blue-500/10 shadow-xs'
                         : 'border-slate-200 text-slate-700 bg-white hover:border-slate-300'
                     }`}
                   >
@@ -686,9 +686,9 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                   <button
                     type="button"
                     onClick={() => setBrandingTechnique('screen_print')}
-                    className={`p-2.5 rounded-xl text-left border transition-all ${
+                    className={`p-2.5 rounded-xl text-left border transition-all duration-150 hover:scale-[1.02] active:scale-95 cursor-pointer ${
                       brandingTechnique === 'screen_print'
-                        ? 'border-[#06163c] bg-blue-50/80 text-[#06163c] ring-2 ring-blue-500/10'
+                        ? 'border-[#06163c] bg-blue-50/80 text-[#06163c] ring-2 ring-blue-500/10 shadow-xs'
                         : 'border-slate-200 text-slate-700 bg-white hover:border-slate-300'
                     }`}
                   >
@@ -739,10 +739,10 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                           setSelectedSampleLogo(sample);
                           setCustomLogoUrl(null);
                         }}
-                        className={`flex-shrink-0 w-10 h-10 p-1 rounded-xl border transition-all ${
+                        className={`flex-shrink-0 w-10 h-10 p-1 rounded-xl border transition-all duration-150 hover:scale-110 active:scale-95 cursor-pointer ${
                           !customLogoUrl && selectedSampleLogo.id === sample.id
-                            ? 'border-[#06163c] bg-blue-50 ring-2 ring-blue-500/20'
-                            : 'border-slate-200 bg-white hover:border-slate-300'
+                            ? 'border-[#06163c] bg-blue-50 ring-2 ring-blue-500/20 shadow-xs'
+                            : 'border-slate-200 bg-white hover:border-slate-400'
                         }`}
                         title={sample.name}
                       >
@@ -753,7 +753,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="flex-shrink-0 flex items-center justify-center gap-1 w-24 h-10 rounded-xl border border-dashed border-[#06163c] bg-blue-50/50 hover:bg-blue-100 text-[#06163c] text-[10px] font-bold px-2 transition-colors cursor-pointer"
+                      className="flex-shrink-0 flex items-center justify-center gap-1 w-24 h-10 rounded-xl border border-dashed border-[#06163c] bg-blue-50/50 hover:bg-blue-100 hover:scale-105 active:scale-95 text-[#06163c] text-[10px] font-bold px-2 transition-all duration-150 cursor-pointer"
                     >
                       <Upload className="w-3 h-3" />
                       <span>Upload</span>
@@ -795,10 +795,10 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                       key={qty}
                       type="button"
                       onClick={() => setOrderQuantity(qty)}
-                      className={`py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      className={`py-1.5 rounded-lg text-xs font-bold transition-all duration-150 hover:scale-105 active:scale-95 cursor-pointer ${
                         orderQuantity === qty
                           ? 'bg-white text-[#06163c] shadow-md'
-                          : 'bg-[#021a34] text-blue-100 hover:bg-[#01152a]'
+                          : 'bg-[#021a34] text-blue-100 hover:bg-[#03264c]'
                       }`}
                     >
                       {qty} pcs
@@ -819,9 +819,9 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                 <button
                   type="button"
                   onClick={handleSendToCart}
-                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-white text-[#06163c] font-black text-xs sm:text-sm hover:bg-blue-50 shadow-md transition-all active:scale-[0.98] cursor-pointer"
+                  className="btn-shimmer-sweep group w-full flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-white text-[#06163c] font-black text-xs sm:text-sm hover:bg-blue-50 shadow-md hover:shadow-xl hover:scale-[1.01] transition-all duration-200 active:scale-[0.98] cursor-pointer"
                 >
-                  <ShoppingBag className="w-4 h-4 text-[#06163c]" />
+                  <ShoppingBag className="w-4 h-4 text-[#06163c] group-hover:scale-115 group-hover:-rotate-12 transition-transform duration-200" />
                   <span>Add Design to Quote Cart (Ksh {totalEstimate.toLocaleString()})</span>
                 </button>
               </div>

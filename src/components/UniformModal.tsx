@@ -292,7 +292,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                   onOpenCustomizerWithProduct(product, activeColorHex);
                   onClose();
                 }}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold text-[#06163c] bg-white hover:bg-blue-50 border-2 border-[#06163c] shadow-sm transition-all"
+                className="btn-shimmer-sweep w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-extrabold text-[#06163c] hover:text-white bg-white hover:bg-[#06163c] border-2 border-[#06163c] shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer"
               >
                 <SlidersHorizontal className="w-4 h-4" />
                 <span>Open in Live Mockup Studio</span>
@@ -316,10 +316,10 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                       key={color.name}
                       type="button"
                       onClick={() => setSelectedColor(color.name)}
-                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-150 hover:scale-105 active:scale-95 cursor-pointer ${
                         selectedColor === color.name
-                          ? 'border-[#06163c] ring-2 ring-blue-900/20 bg-blue-50/50 text-[#06163c] font-bold'
-                          : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700'
+                          ? 'border-[#06163c] ring-2 ring-blue-900/20 bg-blue-50/50 text-[#06163c] font-bold shadow-xs'
+                          : 'border-slate-200 hover:border-slate-400 bg-white text-slate-700'
                       }`}
                     >
                       <span
@@ -349,10 +349,10 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                       key={b.id}
                       type="button"
                       onClick={() => setBrandingType(b.id as any)}
-                      className={`p-2.5 rounded-xl text-left border transition-all ${
+                      className={`p-2.5 rounded-xl text-left border transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer ${
                         brandingType === b.id
-                          ? 'border-[#06163c] bg-blue-50/70 text-[#06163c]'
-                          : 'border-slate-200 hover:border-slate-300 bg-white text-slate-700'
+                          ? 'border-[#06163c] bg-blue-50/70 text-[#06163c] shadow-xs'
+                          : 'border-slate-200 hover:border-blue-300 bg-white text-slate-700'
                       }`}
                     >
                       <span className="block text-xs font-bold">{b.label}</span>
@@ -377,10 +377,10 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                           key={loc}
                           type="button"
                           onClick={() => togglePlacement(loc)}
-                          className={`px-2.5 py-1 text-xs rounded-md border transition-colors ${
+                          className={`px-3 py-1.5 text-xs rounded-lg border transition-all duration-150 hover:scale-105 active:scale-95 cursor-pointer ${
                             isSel
-                              ? 'bg-[#06163c] text-white border-[#06163c] font-semibold'
-                              : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                              ? 'bg-[#06163c] text-white border-[#06163c] font-bold shadow-xs'
+                              : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                           }`}
                         >
                           {isSel ? '✓ ' : '+ '} {loc}
@@ -580,7 +580,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-3 sm:px-4 py-2.5 sm:py-2.5 text-xs font-bold text-slate-600 hover:bg-slate-200 active:bg-slate-300 rounded-xl transition-colors shrink-0"
+              className="px-3.5 sm:px-4 py-2.5 sm:py-2.5 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-200 hover:scale-105 active:scale-95 rounded-xl transition-all duration-150 shrink-0 cursor-pointer"
             >
               Cancel
             </button>
@@ -589,9 +589,9 @@ export const UniformModal: React.FC<UniformModalProps> = ({
               type="button"
               onClick={handleAdd}
               disabled={totalUnits < product.minOrder}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 sm:px-6 py-3 rounded-xl text-xs font-bold text-white shadow-md transition-all ${
+              className={`btn-shimmer-sweep flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 sm:px-7 py-3 rounded-xl text-xs font-black text-white shadow-md transition-all duration-200 ${
                 totalUnits >= product.minOrder
-                  ? 'bg-gradient-to-r from-[#020a1c] via-[#06163c] to-[#030e28] hover:from-[#010612] hover:via-[#040f28] hover:to-[#010612] active:scale-98 cursor-pointer border border-blue-900/40 shadow-lg'
+                  ? 'bg-gradient-to-r from-[#020a1c] via-[#06163c] to-[#030e28] hover:from-[#010612] hover:via-[#040f28] hover:to-[#010612] hover:scale-105 hover:shadow-xl active:scale-95 cursor-pointer border border-blue-900/40'
                   : 'bg-slate-400 cursor-not-allowed opacity-70'
               }`}
             >

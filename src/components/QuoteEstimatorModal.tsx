@@ -279,7 +279,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                   href={generateWhatsAppUrl()}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 p-3.5 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-xl shadow-sm transition-colors"
+                  className="btn-shimmer-sweep flex items-center justify-center gap-2 p-3.5 bg-emerald-600 hover:bg-emerald-700 hover:scale-105 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md transition-all duration-200 cursor-pointer"
                 >
                   <MessageSquare className="w-4 h-4" />
                   <span>Send to WhatsApp Hotline</span>
@@ -288,9 +288,9 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                 <button
                   type="button"
                   onClick={handleCopyQuoteSummary}
-                  className="flex items-center justify-center gap-2 p-3.5 bg-[#06163c] hover:bg-[#021a34] text-white text-xs font-bold rounded-xl shadow-sm transition-colors"
+                  className="btn-shimmer-sweep flex items-center justify-center gap-2 p-3.5 bg-[#06163c] hover:bg-[#021a34] hover:scale-105 active:scale-95 text-white text-xs font-bold rounded-xl shadow-md transition-all duration-200 cursor-pointer"
                 >
-                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copied ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                   <span>{copied ? 'Copied to Clipboard!' : 'Copy Quote Summary'}</span>
                 </button>
               </div>
@@ -302,7 +302,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                     onClearCart();
                     onClose();
                   }}
-                  className="text-xs text-slate-500 hover:text-slate-800 font-semibold"
+                  className="text-xs text-slate-500 hover:text-slate-800 hover:underline font-semibold cursor-pointer transition-colors"
                 >
                   Close and Start New Order
                 </button>
@@ -322,7 +322,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                   </p>
                   <button
                     onClick={onClose}
-                    className="px-4 py-2 bg-[#06163c] text-white text-xs font-bold rounded-lg hover:bg-[#021a34]"
+                    className="btn-shimmer-sweep px-5 py-2.5 bg-[#06163c] text-white text-xs font-bold rounded-lg hover:bg-[#021a34] hover:scale-105 active:scale-95 transition-all duration-150 cursor-pointer shadow-sm"
                   >
                     Explore Uniform Catalog
                   </button>
@@ -497,9 +497,9 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                   {/* Submission Button */}
                   <button
                     type="submit"
-                    className="w-full flex items-center justify-center gap-2 py-3.5 px-6 rounded-xl bg-[#06163c] hover:bg-[#021a34] text-white font-extrabold text-sm shadow-md transition-all active:scale-[0.98] cursor-pointer"
+                    className="btn-shimmer-sweep group w-full flex items-center justify-center gap-2 py-4 px-6 rounded-xl bg-[#06163c] hover:bg-[#021a34] text-white font-black text-sm shadow-md hover:shadow-xl hover:scale-[1.01] transition-all duration-200 active:scale-[0.98] cursor-pointer"
                   >
-                    <Send className="w-4 h-4" />
+                    <Send className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1 group-hover:-translate-y-0.5" />
                     <span>Generate Official Quotation & Proof Request</span>
                   </button>
                 </form>
