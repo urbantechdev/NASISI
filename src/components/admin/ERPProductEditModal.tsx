@@ -38,6 +38,9 @@ import {
   UploadCloud,
   FileImage,
   Link as LinkIcon,
+  Star,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 
 interface ERPProductEditModalProps {
@@ -47,15 +50,30 @@ interface ERPProductEditModalProps {
 }
 
 const CATEGORY_OPTIONS: { id: UniformCategory; label: string }[] = [
-  { id: 'school', label: 'School Uniforms' },
-  { id: 'healthcare', label: 'Healthcare & Scrubs' },
-  { id: 'hospitality', label: 'Hospitality & Culinary' },
-  { id: 'service', label: 'Corporate & Service Polos' },
-  { id: 'workwear', label: 'Workwear & Industrial' },
-  { id: 'knitwear', label: 'Custom Knitwear & Fleece' },
+  { id: 'safety_industrial', label: '1. Safety & Industrial Wear' },
+  { id: 'corporate', label: '2. Corporate Wear' },
+  { id: 'school', label: '3. School & Institutional Uniforms' },
+  { id: 'security', label: '4. Security & Staff Uniforms' },
+  { id: 'healthcare', label: '5. Medical & Healthcare Wear' },
+  { id: 'hospitality', label: '6. Hospitality & Restaurant Wear' },
+  { id: 'promotional', label: '7. Promotional & Branding Wear' },
+  { id: 'sportswear', label: '8. Sportswear' },
+  { id: 'specialized_workwear', label: '9. Specialized Work-wear' },
+  // Legacy categories
+  { id: 'service', label: 'Service & Corporate (Legacy)' },
+  { id: 'workwear', label: 'Workwear & Industrial (Legacy)' },
+  { id: 'knitwear', label: 'Custom Knitwear & Fleece (Legacy)' },
 ];
 
 const PRESET_GARMENT_IMAGES = [
+  {
+    name: 'High-Vis Safety Vest / Jacket',
+    url: highVisSafetyVestImg,
+  },
+  {
+    name: 'Heavy-Duty Workwear Boiler Suit',
+    url: industrialWorkwearOverallImg,
+  },
   {
     name: 'Tailored Academic Blazer',
     url: academicSchoolBlazerImg,
@@ -65,12 +83,8 @@ const PRESET_GARMENT_IMAGES = [
     url: schoolKnitSweaterImg,
   },
   {
-    name: 'School Pique Polo',
-    url: schoolPiquePoloImg,
-  },
-  {
-    name: 'School Sports Tracksuit',
-    url: schoolTracksuitJacketImg,
+    name: 'Corporate Performance Polo',
+    url: corporateServicePoloImg,
   },
   {
     name: 'Pro-Flex Medical Scrubs Set',
@@ -85,16 +99,12 @@ const PRESET_GARMENT_IMAGES = [
     url: canvasBaristaApronImg,
   },
   {
-    name: 'Corporate Performance Polo',
-    url: corporateServicePoloImg,
+    name: 'School Sports Tracksuit',
+    url: schoolTracksuitJacketImg,
   },
   {
-    name: 'High-Vis Safety Utility Vest',
-    url: highVisSafetyVestImg,
-  },
-  {
-    name: 'Heavy-Duty Workwear Boiler Suit',
-    url: industrialWorkwearOverallImg,
+    name: 'School Pique Polo',
+    url: schoolPiquePoloImg,
   },
   {
     name: 'Custom Varsity Letterman Jacket',
@@ -103,6 +113,22 @@ const PRESET_GARMENT_IMAGES = [
   {
     name: 'Heritage Fleece Pullover Hoodie',
     url: fleecePulloverHoodieImg,
+  },
+  {
+    name: 'Tactical Security Uniform',
+    url: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    name: 'Doctor Medical Lab Coat',
+    url: 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    name: 'Sublimated Football Team Jersey',
+    url: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=800&q=80',
+  },
+  {
+    name: 'Promotional Round-Neck T-Shirt',
+    url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80',
   },
 ];
 
@@ -144,6 +170,9 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
   const [badge, setBadge] = useState<string>('');
   const [popular, setPopular] = useState<boolean>(false);
   const [image, setImage] = useState<string>(PRESET_GARMENT_IMAGES[0].url);
+  const [images, setImages] = useState<string[]>([PRESET_GARMENT_IMAGES[0].url]);
+  const [activePreviewIdx, setActivePreviewIdx] = useState<number>(0);
+  const [customUrlInput, setCustomUrlInput] = useState<string>('');
   const [imageSourceMode, setImageSourceMode] = useState<'upload' | 'url' | 'presets'>('upload');
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
   const [isImageDragging, setIsImageDragging] = useState<boolean>(false);
@@ -221,7 +250,15 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
       setPublished(productToEdit.published !== false);
       setBadge(productToEdit.badge || '');
       setPopular(!!productToEdit.popular);
-      setImage(productToEdit.image || '');
+      const initialImgs =
+        productToEdit.images && productToEdit.images.length > 0
+          ? productToEdit.images
+          : productToEdit.image
+          ? [productToEdit.image]
+          : [PRESET_GARMENT_IMAGES[0].url];
+      setImages(initialImgs);
+      setImage(initialImgs[0]);
+      setActivePreviewIdx(0);
       setDescription(productToEdit.description || '');
       setColors(productToEdit.availableColors || []);
       setSizes(productToEdit.sizes || []);
@@ -241,7 +278,7 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
       setName('');
       setTagline('');
       setCategory('school');
-      setCategoryLabel('School Uniforms');
+      setCategoryLabel('3. School & Institutional Uniforms');
       setSku(`SKU-GAR-SCH-${Math.floor(100 + Math.random() * 900)}`);
       setBasePrice(3200);
       setUnitCost(1850);
@@ -253,7 +290,9 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
       setPublished(true);
       setBadge('New Item');
       setPopular(false);
+      setImages([PRESET_GARMENT_IMAGES[0].url]);
       setImage(PRESET_GARMENT_IMAGES[0].url);
+      setActivePreviewIdx(0);
       setDescription(
         'Precision engineered uniform garment manufactured in Kenya with reinforced stress points, anti-shrink dyes, and commercial laundering endurance.'
       );
@@ -279,6 +318,68 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
       setIdealFor(['Academic Uniforms', 'School & College Students']);
     }
   }, [productToEdit, isOpen]);
+
+  // Multi-image handlers
+  const handleAddImage = (url: string) => {
+    if (!url || !url.trim()) return;
+    const cleanUrl = url.trim();
+    setImages((prev) => {
+      if (prev.includes(cleanUrl)) return prev;
+      const next = [...prev, cleanUrl];
+      return next;
+    });
+    setCustomUrlInput('');
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImages((prev) => {
+      if (prev.length <= 1) {
+        alert('Each product must have at least 1 image. Please add another image before removing this one.');
+        return prev;
+      }
+      const next = prev.filter((_, i) => i !== index);
+      if (activePreviewIdx >= next.length) {
+        setActivePreviewIdx(Math.max(0, next.length - 1));
+      }
+      setImage(next[0]);
+      return next;
+    });
+  };
+
+  const handleSetPrimary = (index: number) => {
+    setImages((prev) => {
+      if (index === 0 || index >= prev.length) return prev;
+      const target = prev[index];
+      const rest = prev.filter((_, i) => i !== index);
+      const next = [target, ...rest];
+      setImage(target);
+      setActivePreviewIdx(0);
+      return next;
+    });
+  };
+
+  const handleMultipleFiles = (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    Array.from(files).forEach((file) => {
+      if (!file.type.startsWith('image/')) return;
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`File ${file.name} exceeds 10MB limit.`);
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          const dataUrl = event.target.result as string;
+          setImages((prev) => {
+            if (prev.includes(dataUrl)) return prev;
+            return [...prev, dataUrl];
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+    setUploadedFileName(`${files.length} file(s) added to gallery`);
+  };
 
   // Sync category label when category changes
   const handleCategoryChange = (newCat: UniformCategory) => {
@@ -340,6 +441,9 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
       return;
     }
 
+    const finalImages = images.length > 0 ? images : [PRESET_GARMENT_IMAGES[0].url];
+    const primaryImage = finalImages[0] || PRESET_GARMENT_IMAGES[0].url;
+
     const payload: UniformProduct = {
       id: productToEdit?.id || `prod-${Date.now()}`,
       name: name.trim(),
@@ -355,10 +459,14 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
         weight: fabricWeight || '240 GSM',
         features: fabricFeatures,
       },
-      customizationOptions: customization,
+      customizationOptions: {
+        ...customization,
+        customStitching: true,
+      },
       description: description.trim() || `${name} manufactured with industrial-grade stitching.`,
       idealFor,
-      image: image || PRESET_GARMENT_IMAGES[0].url,
+      image: primaryImage,
+      images: finalImages,
       badge: badge.trim() || undefined,
       popular: !!popular,
       published: published !== false,
@@ -552,94 +660,231 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                   </div>
                 </div>
 
-                {/* Garment Image: File Upload, Custom URL, and Presets */}
-                <div className="space-y-3 pt-2">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-slate-700 uppercase">
-                      Garment Product Image
-                    </label>
-                    <div className="inline-flex p-0.5 bg-slate-200/80 rounded-lg text-[11px] font-semibold">
+                {/* Multi-Image Studio: Multi-File Upload, Custom URLs, and Curated Presets */}
+                <div className="space-y-3 pt-2 bg-slate-50/80 p-4 rounded-2xl border border-slate-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-200">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
+                          Garment Multi-Image Gallery
+                        </label>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#06163c] text-white">
+                          {images.length} {images.length === 1 ? 'Image' : 'Images'}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5">
+                        Add multiple angles (front, back, fabric close-up, on-model). Image #1 is the main storefront cover.
+                      </p>
+                    </div>
+
+                    <div className="inline-flex p-0.5 bg-slate-200/80 rounded-xl text-[11px] font-semibold self-start sm:self-auto">
                       <button
                         type="button"
                         onClick={() => setImageSourceMode('upload')}
-                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all ${
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all ${
                           imageSourceMode === 'upload'
-                            ? 'bg-white text-[#06163c] shadow-xs'
+                            ? 'bg-white text-[#06163c] shadow-xs font-bold'
                             : 'text-slate-600 hover:text-slate-900'
                         }`}
                       >
                         <Upload className="w-3.5 h-3.5" />
-                        <span>Upload File</span>
+                        <span>Upload Files</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => setImageSourceMode('url')}
-                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all ${
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all ${
                           imageSourceMode === 'url'
-                            ? 'bg-white text-[#06163c] shadow-xs'
+                            ? 'bg-white text-[#06163c] shadow-xs font-bold'
                             : 'text-slate-600 hover:text-slate-900'
                         }`}
                       >
                         <LinkIcon className="w-3.5 h-3.5" />
-                        <span>Image URL</span>
+                        <span>Add URL</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => setImageSourceMode('presets')}
-                        className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-all ${
+                        className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all ${
                           imageSourceMode === 'presets'
-                            ? 'bg-white text-[#06163c] shadow-xs'
+                            ? 'bg-white text-[#06163c] shadow-xs font-bold'
                             : 'text-slate-600 hover:text-slate-900'
                         }`}
                       >
                         <FileImage className="w-3.5 h-3.5" />
-                        <span>Presets</span>
+                        <span>Factory Presets</span>
                       </button>
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row gap-4 items-start bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200">
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-[#D1E0FF] shadow-[0_4px_16px_rgba(209,224,255,0.45)] flex-shrink-0 bg-slate-100 relative group">
+                  {/* Active Preview Showcase & Thumbnail Strip */}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+                    {/* Active Selected Image Preview */}
+                    <div className="md:col-span-5 relative bg-slate-900 rounded-2xl overflow-hidden aspect-4/3 flex items-center justify-center border-2 border-slate-200 shadow-inner group">
                       <img
-                        src={image}
-                        alt="Garment Preview"
+                        src={images[activePreviewIdx] || images[0] || PRESET_GARMENT_IMAGES[0].url}
+                        alt={`Garment angle ${activePreviewIdx + 1}`}
                         className="w-full h-full object-cover"
                         referrerPolicy="no-referrer"
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = PRESET_GARMENT_IMAGES[0].url;
                         }}
                       />
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white text-[10px] font-bold p-1 text-center">
-                        <span>Ready</span>
-                        {uploadedFileName && <span className="text-[8px] truncate max-w-full font-normal opacity-90">{uploadedFileName}</span>}
+
+                      {/* Cover Badge or Make Cover Action */}
+                      <div className="absolute top-2.5 left-2.5 z-10">
+                        {activePreviewIdx === 0 ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-600 text-white shadow-md">
+                            <Star className="w-3 h-3 fill-white" />
+                            Primary Storefront Cover
+                          </span>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => handleSetPrimary(activePreviewIdx)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-white/95 text-[#06163c] hover:bg-[#06163c] hover:text-white shadow-md transition-all cursor-pointer"
+                          >
+                            <Star className="w-3 h-3 text-amber-500" />
+                            Make Primary Cover
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Counter & Controls */}
+                      <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between text-white text-[11px] font-bold z-10 pointer-events-none">
+                        <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm pointer-events-auto">
+                          Photo {activePreviewIdx + 1} of {images.length}
+                        </span>
+
+                        <div className="flex items-center gap-1 pointer-events-auto">
+                          {images.length > 1 && (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setActivePreviewIdx((prev) => (prev > 0 ? prev - 1 : images.length - 1))
+                                }
+                                className="p-1.5 rounded-lg bg-black/60 hover:bg-black/90 text-white backdrop-blur-sm cursor-pointer"
+                                title="Previous photo"
+                              >
+                                <ChevronLeft className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setActivePreviewIdx((prev) => (prev < images.length - 1 ? prev + 1 : 0))
+                                }
+                                className="p-1.5 rounded-lg bg-black/60 hover:bg-black/90 text-white backdrop-blur-sm cursor-pointer"
+                                title="Next photo"
+                              >
+                                <ChevronRight className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveImage(activePreviewIdx)}
+                                className="p-1.5 rounded-lg bg-red-600/80 hover:bg-red-700 text-white backdrop-blur-sm ml-1 cursor-pointer"
+                                title="Delete this angle"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex-1 space-y-2.5 w-full">
-                      {/* Mode 1: File Upload */}
+                    {/* Right column: Thumbnails strip + Input Source */}
+                    <div className="md:col-span-7 space-y-3">
+                      {/* Thumbnails grid */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <span className="text-[11px] font-bold text-slate-700 uppercase">
+                            Attached Angles ({images.length})
+                          </span>
+                          <span className="text-[10px] text-slate-500">
+                            Click any to preview or delete
+                          </span>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-1 bg-white rounded-xl border border-slate-200">
+                          {images.map((imgUrl, idx) => {
+                            const isCurrent = activePreviewIdx === idx;
+                            const isCover = idx === 0;
+                            return (
+                              <div
+                                key={idx}
+                                className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 cursor-pointer transition-all group shrink-0 ${
+                                  isCurrent
+                                    ? 'border-[#06163c] ring-2 ring-blue-400/40 shadow-md'
+                                    : 'border-slate-200 hover:border-slate-400 opacity-80 hover:opacity-100'
+                                }`}
+                                onClick={() => setActivePreviewIdx(idx)}
+                              >
+                                <img
+                                  src={imgUrl}
+                                  alt={`Thumb ${idx + 1}`}
+                                  className="w-full h-full object-cover"
+                                  referrerPolicy="no-referrer"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = PRESET_GARMENT_IMAGES[0].url;
+                                  }}
+                                />
+                                {isCover && (
+                                  <span className="absolute top-1 left-1 px-1 py-0.5 rounded text-[8px] font-extrabold bg-emerald-600 text-white shadow-xs">
+                                    Cover
+                                  </span>
+                                )}
+                                {images.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRemoveImage(idx);
+                                    }}
+                                    className="absolute top-1 right-1 p-1 rounded-md bg-black/70 hover:bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                    title="Remove this image"
+                                  >
+                                    <X className="w-2.5 h-2.5" />
+                                  </button>
+                                )}
+                                <span className="absolute bottom-1 right-1 px-1 rounded text-[8px] font-bold bg-black/60 text-white">
+                                  #{idx + 1}
+                                </span>
+                              </div>
+                            );
+                          })}
+
+                          {/* Quick add trigger button */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (imageSourceMode === 'upload') {
+                                fileInputRef.current?.click();
+                              } else {
+                                setImageSourceMode('upload');
+                                setTimeout(() => fileInputRef.current?.click(), 50);
+                              }
+                            }}
+                            className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#06163c] bg-slate-50 hover:bg-blue-50/50 flex flex-col items-center justify-center text-slate-500 hover:text-[#06163c] transition-colors shrink-0"
+                            title="Add another photo"
+                          >
+                            <Plus className="w-5 h-5 mb-0.5" />
+                            <span className="text-[9px] font-bold">+ Angle</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Source Mode 1: Multi-file Upload */}
                       {imageSourceMode === 'upload' && (
                         <div className="space-y-2">
                           <input
                             ref={fileInputRef}
                             type="file"
+                            multiple
                             accept="image/png, image/jpeg, image/webp, image/svg+xml, image/gif"
                             className="hidden"
                             onChange={(e) => {
-                              const file = e.target.files?.[0];
-                              if (file) {
-                                if (file.size > 10 * 1024 * 1024) {
-                                  alert('Image size exceeds 10MB limit. Please choose a smaller image.');
-                                  return;
-                                }
-                                setUploadedFileName(file.name);
-                                const reader = new FileReader();
-                                reader.onload = (event) => {
-                                  if (event.target?.result) {
-                                    setImage(event.target.result as string);
-                                  }
-                                };
-                                reader.readAsDataURL(file);
-                              }
+                              handleMultipleFiles(e.target.files);
                             }}
                           />
 
@@ -652,37 +897,23 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                             onDrop={(e) => {
                               e.preventDefault();
                               setIsImageDragging(false);
-                              const file = e.dataTransfer.files?.[0];
-                              if (file && file.type.startsWith('image/')) {
-                                if (file.size > 10 * 1024 * 1024) {
-                                  alert('Image size exceeds 10MB limit. Please choose a smaller image.');
-                                  return;
-                                }
-                                setUploadedFileName(file.name);
-                                const reader = new FileReader();
-                                reader.onload = (event) => {
-                                  if (event.target?.result) {
-                                    setImage(event.target.result as string);
-                                  }
-                                };
-                                reader.readAsDataURL(file);
-                              }
+                              handleMultipleFiles(e.dataTransfer.files);
                             }}
                             onClick={() => fileInputRef.current?.click()}
-                            className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 ${
+                            className={`border-2 border-dashed rounded-xl p-3.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1 ${
                               isImageDragging
                                 ? 'border-[#06163c] bg-blue-100/50 scale-[1.01]'
                                 : 'border-slate-300 hover:border-[#06163c] bg-white hover:bg-blue-50/30'
                             }`}
                           >
-                            <div className="p-2 bg-blue-50 rounded-full text-[#06163c]">
-                              <UploadCloud className="w-5 h-5 text-[#06163c]" />
+                            <div className="p-1.5 bg-blue-50 rounded-full text-[#06163c]">
+                              <UploadCloud className="w-4 h-4 text-[#06163c]" />
                             </div>
                             <div className="text-xs">
-                              <span className="font-bold text-[#06163c]">Click to upload product image</span> or drag and drop
+                              <span className="font-bold text-[#06163c]">Upload Multiple Garment Images</span> or drag & drop here
                             </div>
                             <p className="text-[10px] text-slate-500">
-                              Supports high-res PNG, JPG, WebP or SVG (up to 10MB)
+                              You can select multiple photos at once (Front, Back, Close-up, Tag). PNG, JPG, WebP up to 10MB each.
                             </p>
                           </div>
 
@@ -690,68 +921,82 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                             <div className="flex items-center justify-between px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-900 text-xs">
                               <div className="flex items-center gap-2 truncate">
                                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                <span className="font-semibold truncate">Uploaded: {uploadedFileName}</span>
+                                <span className="font-semibold truncate">{uploadedFileName}</span>
                               </div>
                               <button
                                 type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setUploadedFileName('');
-                                  setImage(PRESET_GARMENT_IMAGES[0].url);
-                                  if (fileInputRef.current) fileInputRef.current.value = '';
-                                }}
-                                className="text-slate-400 hover:text-red-600 font-bold ml-2"
+                                onClick={() => setUploadedFileName('')}
+                                className="text-slate-400 hover:text-slate-600 font-bold ml-2"
                               >
-                                Clear
+                                Dismiss
                               </button>
                             </div>
                           )}
                         </div>
                       )}
 
-                      {/* Mode 2: Direct Image URL */}
+                      {/* Source Mode 2: Direct Image URL */}
                       {imageSourceMode === 'url' && (
-                        <div className="space-y-1.5">
-                          <input
-                            type="url"
-                            placeholder="Paste image URL (Unsplash, Cloud CDN, or Direct Image Link)..."
-                            value={image}
-                            onChange={(e) => {
-                              setImage(e.target.value);
-                              setUploadedFileName('');
-                            }}
-                            className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                          />
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="url"
+                              placeholder="Paste high-res image URL (e.g. https://images.unsplash.com/...)"
+                              value={customUrlInput}
+                              onChange={(e) => setCustomUrlInput(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  handleAddImage(customUrlInput);
+                                }
+                              }}
+                              className="flex-1 px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleAddImage(customUrlInput)}
+                              disabled={!customUrlInput.trim()}
+                              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#06163c] text-white hover:bg-blue-900 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex items-center gap-1"
+                            >
+                              <Plus className="w-3.5 h-3.5" />
+                              <span>Add Angle</span>
+                            </button>
+                          </div>
                           <p className="text-[10px] text-slate-500">
-                            Enter any direct image web link (HTTPS recommended)
+                            Enter any image URL to add an additional viewpoint to this product.
                           </p>
                         </div>
                       )}
 
-                      {/* Mode 3: Presets */}
+                      {/* Source Mode 3: Factory Curated Presets */}
                       {imageSourceMode === 'presets' && (
-                        <div className="space-y-1.5">
-                          <span className="text-[11px] text-slate-600 block font-semibold">
-                            Select from curated factory photography:
+                        <div className="space-y-2">
+                          <span className="text-[11px] text-slate-700 block font-bold">
+                            Click to add factory product photography into your gallery:
                           </span>
-                          <div className="flex flex-wrap gap-1.5 max-h-28 overflow-y-auto pr-1">
-                            {PRESET_GARMENT_IMAGES.map((preset, idx) => (
-                              <button
-                                key={idx}
-                                type="button"
-                                onClick={() => {
-                                  setImage(preset.url);
-                                  setUploadedFileName('');
-                                }}
-                                className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
-                                  image === preset.url
-                                    ? 'bg-[#06163c] text-white shadow-xs'
-                                    : 'bg-white hover:bg-slate-200 text-slate-700 border border-slate-200'
-                                }`}
-                              >
-                                {preset.name}
-                              </button>
-                            ))}
+                          <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
+                            {PRESET_GARMENT_IMAGES.map((preset, idx) => {
+                              const alreadyAdded = images.includes(preset.url);
+                              return (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={() => handleAddImage(preset.url)}
+                                  className={`px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all flex items-center gap-1.5 ${
+                                    alreadyAdded
+                                      ? 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold'
+                                      : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                                  }`}
+                                >
+                                  {alreadyAdded ? (
+                                    <Check className="w-3 h-3 text-emerald-600" />
+                                  ) : (
+                                    <Plus className="w-3 h-3 text-slate-400" />
+                                  )}
+                                  <span>{preset.name}</span>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
                       )}

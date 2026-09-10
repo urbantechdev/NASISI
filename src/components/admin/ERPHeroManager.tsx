@@ -10,6 +10,7 @@ import {
   MoveUp,
   MoveDown,
   RotateCcw,
+  RefreshCw,
   CheckCircle2,
   Sparkles,
   Sliders,
@@ -37,6 +38,7 @@ export const ERPHeroManager: React.FC = () => {
     reorderHeroSlides,
     updateHeroConfig,
     resetHeroToDefault,
+    syncHeroSlidesFromRepo,
   } = useERP();
 
   // Active modal state
@@ -113,6 +115,11 @@ export const ERPHeroManager: React.FC = () => {
     }
   };
 
+  const handleSyncRepo = () => {
+    syncHeroSlidesFromRepo();
+    showFeedback('Successfully imported and synchronized hero images from repository.');
+  };
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto font-['Plus_Jakarta_Sans',sans-serif]">
       {/* 1. Header Banner */}
@@ -131,6 +138,16 @@ export const ERPHeroManager: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <button
+            type="button"
+            onClick={handleSyncRepo}
+            className="px-3.5 py-2.5 bg-blue-50 hover:bg-blue-100 text-blue-800 text-xs font-bold rounded-xl transition-all inline-flex items-center gap-1.5 cursor-pointer border border-blue-200 shadow-xs"
+            title="Import and synchronize hero slides with latest repository assets"
+          >
+            <RefreshCw className="w-3.5 h-3.5 text-blue-600" />
+            <span>Sync Repo Images</span>
+          </button>
+
           <button
             type="button"
             onClick={handleReset}
@@ -194,13 +211,11 @@ export const ERPHeroManager: React.FC = () => {
                 referrerPolicy="no-referrer"
               />
 
-              {/* Dark Navy Overlays */}
-              {heroConfig.showOverlayGradients && (
-                <>
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#020a1c]/85 via-transparent to-[#020a1c]/50 pointer-events-none" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-[#020a1c]/70 via-transparent to-[#020a1c]/70 pointer-events-none" />
-                </>
-              )}
+              {/* Slight White Gradient Overlay on top of hero image */}
+              <div
+                className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-b from-white/70 via-white/20 to-transparent"
+                aria-hidden="true"
+              />
 
               {/* Slide Caption Overlay in Preview */}
               <div className="absolute top-4 left-4 sm:top-6 sm:left-6 max-w-md pointer-events-none z-10">

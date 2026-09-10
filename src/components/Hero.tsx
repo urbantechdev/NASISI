@@ -83,7 +83,11 @@ export const Hero: React.FC = () => {
         </motion.div>
       </AnimatePresence>
 
-      {/* Hero image is completely clear without gradient overlays on pristine white background */}
+      {/* Slight White Gradient Overlay on top of the hero image */}
+      <div
+        className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-b from-white/70 via-white/20 to-transparent"
+        aria-hidden="true"
+      />
 
       {/* Left / Right Navigation Buttons (Visible on hover & touch) */}
       {banners.length > 1 && (

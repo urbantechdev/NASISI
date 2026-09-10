@@ -344,12 +344,15 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
             <div className="flex items-center gap-1 overflow-x-auto pb-1 text-xs scrollbar-none">
               {[
                 { id: 'all', label: 'All Garments' },
+                { id: 'safety_industrial', label: 'Safety & Industrial' },
+                { id: 'corporate', label: 'Corporate' },
                 { id: 'school', label: 'School' },
+                { id: 'security', label: 'Security' },
                 { id: 'healthcare', label: 'Healthcare' },
                 { id: 'hospitality', label: 'Hospitality' },
-                { id: 'service', label: 'Polos & Corporate' },
-                { id: 'workwear', label: 'Workwear' },
-                { id: 'knitwear', label: 'Knitwear & Fleece' },
+                { id: 'promotional', label: 'Promotional' },
+                { id: 'sportswear', label: 'Sportswear' },
+                { id: 'specialized_workwear', label: 'Specialized' },
               ].map((cat) => (
                 <button
                   key={cat.id}
@@ -422,12 +425,22 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
                       {/* Image & Name */}
                       <td className="py-3 px-3">
                         <div className="flex items-center gap-3">
-                          <img
-                            src={prod.image}
-                            alt={prod.name}
-                            className="w-12 h-12 rounded-xl object-cover border border-slate-200 flex-shrink-0 shadow-2xs"
-                            referrerPolicy="no-referrer"
-                          />
+                          <div className="relative flex-shrink-0">
+                            <img
+                              src={(prod.images && prod.images[0]) || prod.image}
+                              alt={prod.name}
+                              className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-2xs"
+                              referrerPolicy="no-referrer"
+                            />
+                            {prod.images && prod.images.length > 1 && (
+                              <span
+                                className="absolute -bottom-1 -right-1 bg-[#06163c] text-white text-[9px] font-bold px-1.5 py-0.2 rounded-full shadow-2xs"
+                                title={`${prod.images.length} product gallery images`}
+                              >
+                                {prod.images.length}
+                              </span>
+                            )}
+                          </div>
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="font-bold text-slate-900 group-hover:text-blue-900 transition-colors">

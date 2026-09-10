@@ -109,6 +109,7 @@ interface ERPContextType {
   reorderHeroSlides: (newSlides: HeroSlide[]) => void;
   updateHeroConfig: (updates: Partial<HeroConfig>) => void;
   resetHeroToDefault: () => void;
+  syncHeroSlidesFromRepo: () => void;
 }
 
 const ERPContext = createContext<ERPContextType | undefined>(undefined);
@@ -169,7 +170,20 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          return parsed.map((p: any, idx: number) => {
+            const canonical = UNIFORM_PRODUCTS.find((u) => u.id === p.id);
+            const resolvedSku = p.sku || canonical?.sku || `SKU-GAR-${(p.category || 'GEN').substring(0, 3).toUpperCase()}-${String(idx + 101)}`;
+            return {
+              ...p,
+              sku: resolvedSku,
+              images:
+                Array.isArray(p.images) && p.images.length > 0
+                  ? p.images
+                  : p.image
+                  ? [p.image]
+                  : [],
+            };
+          });
         }
       }
     } catch {
@@ -285,10 +299,22 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Storefront Hero Banner Slides & Configuration State
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(() => {
     try {
+      const syncKey = localStorage.getItem('nasisi_hero_repo_sync_v4');
+      // If repo hero assets haven't been synchronized yet, load directly from repository assets
+      if (!syncKey) {
+        localStorage.setItem('nasisi_hero_repo_sync_v4', 'true');
+        localStorage.setItem(STORAGE_KEYS.HERO_SLIDES, JSON.stringify(INITIAL_HERO_SLIDES));
+        return INITIAL_HERO_SLIDES;
+      }
       const saved = localStorage.getItem(STORAGE_KEYS.HERO_SLIDES);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const hasValidImages = parsed.every(
+            (s: any) => s && typeof s.src === 'string' && s.src.trim().length > 0
+          );
+          if (hasValidImages) return parsed;
+        }
       }
     } catch {
       // fallback
@@ -354,6 +380,14 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setHeroConfig(INITIAL_HERO_CONFIG);
     localStorage.removeItem(STORAGE_KEYS.HERO_SLIDES);
     localStorage.removeItem(STORAGE_KEYS.HERO_CONFIG);
+  };
+
+  const syncHeroSlidesFromRepo = () => {
+    setHeroSlides(INITIAL_HERO_SLIDES);
+    setHeroConfig(INITIAL_HERO_CONFIG);
+    localStorage.setItem(STORAGE_KEYS.HERO_SLIDES, JSON.stringify(INITIAL_HERO_SLIDES));
+    localStorage.setItem(STORAGE_KEYS.HERO_CONFIG, JSON.stringify(INITIAL_HERO_CONFIG));
+    localStorage.setItem('nasisi_hero_repo_sync_v4', 'true');
   };
 
   // =========================================================================
@@ -1375,6 +1409,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         reorderHeroSlides,
         updateHeroConfig,
         resetHeroToDefault,
+        syncHeroSlidesFromRepo,
         raiseInquiryTicket,
         updateInquiryTicket,
         deleteInquiryTicket,

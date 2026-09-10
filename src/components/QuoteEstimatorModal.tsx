@@ -246,9 +246,16 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                   {submittedQuote.items.map((it) => (
                     <div key={it.id} className="flex justify-between items-start">
                       <div>
-                        <span className="font-bold text-slate-900 block text-sm">
-                          {it.product.name} ({it.selectedColor})
-                        </span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-slate-900 text-sm">
+                            {it.product.name} ({it.selectedColor})
+                          </span>
+                          {it.product.sku && (
+                            <span className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 border border-slate-200 px-1.5 py-0.2 rounded">
+                              {it.product.sku}
+                            </span>
+                          )}
+                        </div>
                         <span className="text-slate-500 block">
                           Quantity: {it.totalQuantity} pcs • {it.brandingType.toUpperCase()} ({it.logoPlacement.join(', ')})
                         </span>
@@ -346,9 +353,16 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
                         className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex items-center justify-between gap-3 text-xs"
                       >
                         <div className="flex-1">
-                          <span className="font-bold text-slate-900 block text-sm">
-                            {item.product.name}
-                          </span>
+                          <div className="flex items-center gap-1.5 flex-wrap">
+                            <span className="font-bold text-slate-900 block text-sm">
+                              {item.product.name}
+                            </span>
+                            {item.product.sku && (
+                              <span className="text-[10px] font-mono font-bold text-slate-600 bg-white border border-slate-200 px-1.5 py-0.2 rounded shadow-2xs">
+                                {item.product.sku}
+                              </span>
+                            )}
+                          </div>
                           <span className="text-slate-500 block text-[11px]">
                             Color: {item.selectedColor} • Total: {item.totalQuantity} units • Branding: {item.brandingType.toUpperCase()}
                           </span>

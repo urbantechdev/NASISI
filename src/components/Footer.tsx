@@ -1,6 +1,6 @@
 import React from 'react';
 import { NasisiLogo } from './NasisiLogo';
-import { Phone, Mail, MapPin, MessageSquare, ArrowUp, Sparkles, ShieldCheck, Building2 } from 'lucide-react';
+import { Phone, Mail, MapPin, MessageSquare, ArrowUp, Sparkles, ShieldCheck, Lock } from 'lucide-react';
 
 interface FooterProps {
   onOpenAdminERP?: () => void;
@@ -195,11 +195,14 @@ export const Footer: React.FC<FooterProps> = ({
             </a>
             {onOpenAdminERP && (
               <button
+                id="footer-admin-lock-btn"
+                type="button"
                 onClick={onOpenAdminERP}
-                className="hidden sm:inline-flex text-emerald-800 hover:text-emerald-950 font-bold items-center gap-1 bg-emerald-100 hover:bg-emerald-200 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-[#06163c] hover:bg-slate-100 active:scale-95 transition-all border border-slate-200 inline-flex items-center justify-center cursor-pointer shadow-2xs"
+                title="Admin Access"
+                aria-label="Admin Access"
               >
-                <Building2 className="w-3.5 h-3.5" />
-                <span>Admin ERP Portal (Ksh)</span>
+                <Lock className="w-4 h-4 text-slate-500 hover:text-[#06163c] transition-colors" />
               </button>
             )}
             <button

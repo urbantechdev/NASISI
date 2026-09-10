@@ -16,7 +16,6 @@ import {
   ShieldCheck,
   SlidersHorizontal,
   ArrowRight,
-  Building2,
   Search,
   Eye,
   Tag,
@@ -653,11 +652,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 id="navbar-size-guide-btn"
                 onClick={onOpenSizeGuide}
-                className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl text-blue-100 hover:text-white bg-blue-950/60 hover:bg-blue-900/90 border border-blue-400/30 hover:border-cyan-400/80 transition-all duration-200 shadow-sm hover:shadow-[0_0_16px_rgba(56,189,248,0.35)] hover:scale-110 hover:-translate-y-0.5 active:scale-90 cursor-pointer"
+                className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm hover:shadow-[0_0_16px_rgba(255,255,255,0.4)] hover:scale-110 hover:-translate-y-0.5 active:scale-90 transition-all duration-200 cursor-pointer"
                 aria-label="Size Guide & Fabric Specifications"
                 title="Size Guide"
               >
-                <Ruler className="w-5 h-5 text-blue-200 group-hover:text-cyan-300 group-hover:rotate-12 group-hover:scale-110 transition-transform duration-300" />
+                <Ruler className="w-5 h-5 text-[#06163c] transition-transform duration-200 group-hover:rotate-12 group-hover:scale-110" />
               </button>
               {/* Floating Tooltip */}
               <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-50">
@@ -672,11 +671,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 id="navbar-live-mockup-btn"
                 type="button"
                 onClick={onOpenCustomizer}
-                className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl text-white bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 hover:from-blue-500 hover:to-indigo-600 border border-blue-300/40 hover:border-cyan-300/80 transition-all duration-200 shadow-sm hover:shadow-[0_0_18px_rgba(59,130,246,0.5)] hover:scale-110 hover:-translate-y-0.5 active:scale-90 cursor-pointer"
+                className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm hover:shadow-[0_0_16px_rgba(255,255,255,0.4)] hover:scale-110 hover:-translate-y-0.5 active:scale-90 transition-all duration-200 cursor-pointer"
                 aria-label="Launch 3D Live Mockup Studio"
                 title="Live 3D Mockup Studio"
               >
-                <Sparkles className="w-5 h-5 text-cyan-200 group-hover:text-white group-hover:rotate-45 group-hover:scale-120 transition-all duration-300" />
+                <Sparkles className="w-5 h-5 text-[#06163c] transition-transform duration-200 group-hover:rotate-12 group-hover:scale-110" />
               </button>
               {/* Floating Tooltip */}
               <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-50">
@@ -685,61 +684,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             </div>
 
-            {/* 3. Admin ERP Suite Portal Icon Button */}
-            {onOpenAdminERP && (
-              <div className="relative group">
-                <button
-                  id="navbar-admin-erp-btn"
-                  type="button"
-                  onClick={onOpenAdminERP}
-                  className={`btn-shimmer-sweep relative flex items-center justify-center h-10 rounded-xl transition-all duration-200 shadow-sm hover:scale-110 hover:-translate-y-0.5 active:scale-90 cursor-pointer ${
-                    isAuthenticated && currentUser
-                      ? 'px-2.5 gap-2 bg-blue-950/80 hover:bg-blue-900 border border-blue-400/50 hover:border-blue-300 text-white hover:shadow-[0_0_16px_rgba(56,189,248,0.3)]'
-                      : 'w-10 text-emerald-200 hover:text-emerald-100 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 hover:border-emerald-400/80 hover:shadow-[0_0_16px_rgba(16,185,129,0.4)]'
-                  }`}
-                  aria-label={isAuthenticated ? `Admin: ${currentUser?.name}` : 'Open Enterprise Admin ERP (Ksh)'}
-                  title={isAuthenticated ? `Admin: ${currentUser?.name} (${currentUser?.role})` : 'Admin Login & ERP (Ksh)'}
-                >
-                  {isAuthenticated && currentUser ? (
-                    <>
-                      <div className="relative shrink-0">
-                        <img
-                          src={currentUser.avatar}
-                          alt={currentUser.name}
-                          className="w-6 h-6 rounded-full object-cover border border-sky-400"
-                        />
-                        <span className="absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-400 border border-[#06163c]" />
-                      </div>
-                      <span className="text-xs font-bold text-sky-200 hidden xl:inline max-w-[90px] truncate">
-                        {currentUser.name.split(' ')[0]}
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <Building2 className="w-5 h-5 text-emerald-400 group-hover:text-emerald-200 group-hover:scale-115 transition-all duration-200" />
-                      {/* Live Active Status Indicator Dot */}
-                      <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_6px_#34d399] animate-pulse" />
-                    </>
-                  )}
-                </button>
-                {/* Floating Tooltip */}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-50">
-                  <span>
-                    {isAuthenticated && currentUser
-                      ? `Admin: ${currentUser.name} (${currentUser.role})`
-                      : 'Admin Login & ERP (Ksh)'}
-                  </span>
-                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
-                </div>
-              </div>
-            )}
-
-            {/* 4. Quote Request / Cart Icon Button */}
+            {/* 3. Quote Request / Cart Icon Button */}
             <div className="relative group">
               <button
                 id="navbar-quote-cart-btn"
                 onClick={onOpenQuoteModal}
-                className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-md hover:shadow-[0_0_18px_rgba(255,255,255,0.5)] hover:scale-110 hover:-translate-y-0.5 active:scale-90 transition-all duration-200 cursor-pointer"
+                className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm hover:shadow-[0_0_16px_rgba(255,255,255,0.4)] hover:scale-110 hover:-translate-y-0.5 active:scale-90 transition-all duration-200 cursor-pointer"
                 aria-label="View Quote Cart"
                 title="Quote Cart"
               >
@@ -757,24 +707,20 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             </div>
 
-            {/* 5. Desktop Hamburger Menu Toggle Button */}
+            {/* 4. Desktop Hamburger Menu Toggle Button */}
             <div className="relative group">
               <button
                 id="navbar-desktop-hamburger-btn"
                 type="button"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className={`btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 shadow-sm hover:scale-110 hover:-translate-y-0.5 active:scale-90 cursor-pointer ${
-                  mobileMenuOpen
-                    ? 'bg-white text-[#06163c] border border-white shadow-md'
-                    : 'bg-white/10 hover:bg-white text-white hover:text-[#06163c] border border-white/20 hover:border-white hover:shadow-[0_0_16px_rgba(255,255,255,0.4)]'
-                }`}
+                className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm hover:shadow-[0_0_16px_rgba(255,255,255,0.4)] hover:scale-110 hover:-translate-y-0.5 active:scale-90 transition-all duration-200 cursor-pointer"
                 aria-label={mobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
                 title="Navigation Menu"
               >
                 {mobileMenuOpen ? (
-                  <X className="w-5 h-5 transition-transform duration-200 group-hover:rotate-90" />
+                  <X className="w-5 h-5 text-[#06163c] transition-transform duration-200 group-hover:rotate-90" />
                 ) : (
-                  <Menu className="w-5 h-5 transition-transform duration-200 group-hover:scale-115" />
+                  <Menu className="w-5 h-5 text-[#06163c] transition-transform duration-200 group-hover:scale-115" />
                 )}
               </button>
               {/* Floating Tooltip */}
@@ -790,7 +736,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="mobile-quote-btn"
               onClick={onOpenQuoteModal}
-              className="relative p-2.5 text-[#06163c] bg-white hover:bg-slate-100 active:bg-slate-200 border border-slate-200/90 rounded-xl shadow-sm transition-all active:scale-95 cursor-pointer"
+              className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm transition-all active:scale-95 cursor-pointer"
               aria-label="View Quote Cart"
             >
               <ShoppingBag className="w-5 h-5 text-[#06163c]" />
@@ -804,7 +750,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               id="mobile-menu-toggle-btn"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2.5 text-[#06163c] bg-white hover:bg-slate-100 active:bg-slate-200 border border-slate-200/90 rounded-xl shadow-sm focus:outline-none transition-all active:scale-95 cursor-pointer"
+              className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm focus:outline-none transition-all active:scale-95 cursor-pointer"
               aria-label="Toggle Menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5 text-[#06163c]" /> : <Menu className="w-5 h-5 text-[#06163c]" />}
@@ -1145,54 +1091,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <ArrowRight className="w-4 h-4 text-slate-400" />
                 </a>
               </div>
-
-              {/* Admin ERP Direct Access */}
-              {onOpenAdminERP && (
-                <div className="pt-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      onOpenAdminERP();
-                    }}
-                    className={`w-full p-3.5 rounded-2xl border flex items-center justify-between transition-all active:scale-[0.98] cursor-pointer ${
-                      isAuthenticated && currentUser
-                        ? 'bg-gradient-to-r from-blue-50 via-sky-50 to-indigo-100 border-blue-300 text-blue-950'
-                        : 'bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-100 border-emerald-300 text-emerald-950'
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      {isAuthenticated && currentUser ? (
-                        <div className="relative shrink-0">
-                          <img
-                            src={currentUser.avatar}
-                            alt={currentUser.name}
-                            className="w-10 h-10 rounded-xl object-cover border border-blue-400"
-                          />
-                          <span className="absolute -bottom-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white" />
-                        </div>
-                      ) : (
-                        <div className="p-2.5 rounded-xl bg-emerald-600 text-white shadow-xs">
-                          <Building2 className="w-5 h-5" />
-                        </div>
-                      )}
-                      <div className="text-left">
-                        <span className="text-xs font-black block">
-                          {isAuthenticated && currentUser
-                            ? `${currentUser.name} (Admin)`
-                            : 'Factory ERP & Invoicing Center'}
-                        </span>
-                        <span className="text-[10px] text-slate-600 font-mono">
-                          {isAuthenticated && currentUser
-                            ? `${currentUser.role} • Tap to enter ERP`
-                            : 'M-Pesa STK, Quotations & Receipts (Ksh)'}
-                        </span>
-                      </div>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-blue-700" />
-                  </button>
-                </div>
-              )}
 
               {/* Direct WhatsApp & Hotline Quick Bar */}
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">

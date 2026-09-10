@@ -419,11 +419,19 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
               
               {/* Stage Top Bar */}
               <div className="flex items-center justify-between border-b border-slate-200 pb-2.5 text-xs">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>
                   <span className="font-bold text-slate-800">
                     {selectedGarment.name} • {garmentColor.name}
                   </span>
+                  {(() => {
+                    const matchedProd = products.find((p) => p.id === selectedGarment.productId);
+                    return matchedProd?.sku ? (
+                      <span className="text-[10px] font-mono font-bold text-slate-600 bg-white border border-slate-200 px-1.5 py-0.5 rounded shadow-2xs">
+                        {matchedProd.sku}
+                      </span>
+                    ) : null;
+                  })()}
                 </div>
                 <span className="font-bold text-[#06163c] bg-blue-100/70 px-2.5 py-1 rounded-md text-[11px]">
                   {brandingTechnique === 'embroidery' ? '🧵 Industrial Embroidery' : '🖨️ Silkscreen / DTF'}
@@ -621,21 +629,31 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
                   1. Garment Style:
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
-                  {GARMENT_OPTIONS.map((g) => (
-                    <button
-                      key={g.id}
-                      type="button"
-                      onClick={() => setSelectedGarment(g)}
-                      className={`p-2 rounded-xl text-left border transition-all duration-150 hover:scale-[1.02] active:scale-95 cursor-pointer ${
-                        selectedGarment.id === g.id
-                          ? 'border-[#06163c] bg-blue-50/80 ring-2 ring-blue-500/10 text-[#06163c] font-bold shadow-xs'
-                          : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'
-                      }`}
-                    >
-                      <span className="block text-xs font-bold leading-tight">{g.name}</span>
-                      <span className="block text-[10px] text-slate-400 mt-0.5">from Ksh {g.basePrice.toLocaleString()}</span>
-                    </button>
-                  ))}
+                  {GARMENT_OPTIONS.map((g) => {
+                    const matchedProd = products.find((p) => p.id === g.productId);
+                    return (
+                      <button
+                        key={g.id}
+                        type="button"
+                        onClick={() => setSelectedGarment(g)}
+                        className={`p-2 rounded-xl text-left border transition-all duration-150 hover:scale-[1.02] active:scale-95 cursor-pointer ${
+                          selectedGarment.id === g.id
+                            ? 'border-[#06163c] bg-blue-50/80 ring-2 ring-blue-500/10 text-[#06163c] font-bold shadow-xs'
+                            : 'border-slate-200 hover:border-slate-300 text-slate-700 bg-white'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="block text-xs font-bold leading-tight truncate">{g.name}</span>
+                          {matchedProd?.sku && (
+                            <span className="text-[8px] font-mono text-slate-400 font-bold shrink-0">
+                              {matchedProd.sku.split('-').slice(-2).join('-')}
+                            </span>
+                          )}
+                        </div>
+                        <span className="block text-[10px] text-slate-400 mt-0.5">from Ksh {g.basePrice.toLocaleString()}</span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 

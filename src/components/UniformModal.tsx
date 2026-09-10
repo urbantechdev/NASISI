@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { UniformProduct, QuoteItem } from '../types';
 import { useERP } from '../context/ERPContext';
-import { X, Check, ShoppingBag, SlidersHorizontal, Sparkles, Shield, Tag, Layers, CheckCircle2, MessageSquare, ArrowRight, UploadCloud, FileImage, Image as ImageIcon } from 'lucide-react';
+import { X, Check, ShoppingBag, SlidersHorizontal, Sparkles, Shield, Tag, Layers, CheckCircle2, MessageSquare, ArrowRight, UploadCloud, FileImage, Image as ImageIcon, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface UniformModalProps {
@@ -27,6 +27,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
   const [uploadedArtworkName, setUploadedArtworkName] = useState<string>('');
   const [isArtworkDragging, setIsArtworkDragging] = useState<boolean>(false);
   const artworkInputRef = useRef<HTMLInputElement>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
   const [ticketRaised, setTicketRaised] = useState<{ ticketNumber: string; whatsappUrl: string } | null>(null);
   const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>(() => {
     const initial: Record<string, number> = {};
@@ -41,6 +42,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
   useEffect(() => {
     if (product) {
       setSelectedColor(product.availableColors?.[0]?.name || '');
+      setActiveImageIndex(0);
       const initial: Record<string, number> = {};
       product.sizes.forEach((sz, idx) => {
         initial[sz] = idx === 0 ? product.minOrder : 0;
@@ -167,6 +169,12 @@ export const UniformModal: React.FC<UniformModalProps> = ({
             <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-black uppercase tracking-wider bg-blue-100 text-[#06163c] rounded-md shrink-0">
               {product.categoryLabel}
             </span>
+            {product.sku && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200 rounded-md shrink-0">
+                <Tag className="w-3 h-3 text-slate-400" />
+                <span>SKU: {product.sku}</span>
+              </span>
+            )}
             <h3 className="text-base sm:text-xl font-bold text-slate-900 font-['Outfit',sans-serif] truncate">
               {product.name}
             </h3>
@@ -232,27 +240,111 @@ export const UniformModal: React.FC<UniformModalProps> = ({
             
             {/* Left: Product Image & Fabric Info */}
             <div className="md:col-span-5 space-y-4">
-              <div className="relative rounded-xl overflow-hidden bg-gradient-to-br from-[#D1E0FF]/30 via-slate-50 to-[#D1E0FF]/15 border border-[#D1E0FF] shadow-[0_8px_25px_rgba(209,224,255,0.4)] aspect-[4/3]">
-                <img
-                  src={product.image}
-                  alt={product.name}
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                  referrerPolicy="no-referrer"
-                  onError={(e) => {
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80';
-                  }}
-                />
-                {product.badge && (
-                  <span className="absolute top-3 left-3 bg-[#06163c] text-white text-xs font-bold px-2.5 py-1 rounded shadow-sm">
-                    {product.badge}
-                  </span>
-                )}
-                <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm p-2 rounded-lg text-xs flex justify-between items-center shadow-sm">
-                  <span className="font-semibold text-slate-700">Min. Order (MOQ):</span>
-                  <span className="font-bold text-[#06163c]">{product.minOrder} units</span>
-                </div>
-              </div>
+              {(() => {
+                const productImages: string[] =
+                  product.images && product.images.length > 0
+                    ? product.images
+                    : product.image
+                    ? [product.image]
+                    : ['https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80'];
+                const currentImg = productImages[activeImageIndex] || productImages[0];
+
+                return (
+                  <div className="space-y-2.5">
+                    <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#D1E0FF]/30 via-slate-50 to-[#D1E0FF]/15 border border-[#D1E0FF] shadow-[0_8px_25px_rgba(209,224,255,0.4)] aspect-[4/3] group">
+                      <img
+                        key={currentImg}
+                        src={currentImg}
+                        alt={`${product.name} - View ${activeImageIndex + 1}`}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="eager"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80';
+                        }}
+                      />
+                      {product.badge && (
+                        <span className="absolute top-3 left-3 bg-[#06163c] text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm">
+                          {product.badge}
+                        </span>
+                      )}
+
+                      {/* Multi-angle indicator and carousel arrows */}
+                      {productImages.length > 1 && (
+                        <>
+                          <span className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+                            {activeImageIndex + 1} / {productImages.length}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : productImages.length - 1));
+                            }}
+                            className="absolute left-2.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 text-slate-800 hover:bg-[#06163c] hover:text-white shadow-md transition-all opacity-80 group-hover:opacity-100 cursor-pointer"
+                            aria-label="Previous angle"
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveImageIndex((prev) => (prev < productImages.length - 1 ? prev + 1 : 0));
+                            }}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 text-slate-800 hover:bg-[#06163c] hover:text-white shadow-md transition-all opacity-80 group-hover:opacity-100 cursor-pointer"
+                            aria-label="Next angle"
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+
+                      <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm p-2 rounded-xl text-xs flex justify-between items-center shadow-sm">
+                        <span className="font-semibold text-slate-700">Min. Order (MOQ):</span>
+                        <div className="flex items-center gap-2">
+                          {product.sku && (
+                            <span className="font-mono text-[10px] text-slate-500 font-semibold bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200/70">
+                              {product.sku}
+                            </span>
+                          )}
+                          <span className="font-bold text-[#06163c]">{product.minOrder} units</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Thumbnails row if multiple images exist */}
+                    {productImages.length > 1 && (
+                      <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5">
+                        {productImages.map((imgUrl, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setActiveImageIndex(idx)}
+                            className={`relative w-16 h-14 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
+                              activeImageIndex === idx
+                                ? 'border-[#06163c] ring-2 ring-[#06163c]/30 shadow-sm scale-105'
+                                : 'border-slate-200 opacity-70 hover:opacity-100 hover:border-slate-400'
+                            }`}
+                          >
+                            <img
+                              src={imgUrl}
+                              alt={`Angle thumbnail ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                            />
+                            <span className="absolute bottom-0.5 right-1 text-[9px] font-bold text-white bg-black/60 px-1 rounded">
+                              #{idx + 1}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
 
               {/* Fabric Specs */}
               <div className="bg-blue-50/60 rounded-xl p-4 border border-blue-100 space-y-2 text-xs">

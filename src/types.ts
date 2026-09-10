@@ -1,9 +1,16 @@
 export type UniformCategory = 
   | 'all'
+  | 'safety_industrial'
+  | 'corporate'
   | 'school'
-  | 'service'
+  | 'security'
   | 'healthcare'
   | 'hospitality'
+  | 'promotional'
+  | 'sportswear'
+  | 'specialized_workwear'
+  // Legacy aliases for backward compatibility
+  | 'service'
   | 'workwear'
   | 'knitwear';
 
@@ -28,15 +35,20 @@ export interface UniformProduct {
     wovenPatch: boolean;
     reflectiveStripes?: boolean;
     heatTransfer?: boolean;
+    customStitching?: boolean;
   };
   description: string;
   idealFor: string[];
-  image: string;
+  image: string; // primary cover image
+  images?: string[]; // multiple images collection
+  isHighPriority?: boolean; // One of the 10 High-Priority Products
+  priorityRank?: number; // 1 - 10
+  garmentType?: string; // Exact garment type from official catalogue
   badge?: string;
   popular?: boolean;
   // Synced inventory and publishing fields
   published?: boolean;
-  sku?: string;
+  sku: string; // Stock Keeping Unit (e.g. "SKU-IND-REF-101")
   stockOnHand?: number;
   stockReserved?: number;
   unitCost?: number;
@@ -246,6 +258,8 @@ export interface ERPInventoryItem {
   status: 'in_stock' | 'low_stock' | 'out_of_stock';
   productId?: string; // Links directly to platform UniformProduct
   published?: boolean; // Reflects live status on customer storefront
+  image?: string;
+  images?: string[];
 }
 
 export interface ERPCustomer {
