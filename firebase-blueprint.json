@@ -1,0 +1,280 @@
+{
+  "entities": {
+    "Product": {
+      "title": "Product",
+      "description": "Garment product in uniform catalog and inventory",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 256 },
+        "category": { "type": "string", "maxLength": 64 },
+        "categoryLabel": { "type": "string", "maxLength": 64 },
+        "tagline": { "type": "string", "maxLength": 256 },
+        "basePrice": { "type": "number" },
+        "minOrder": { "type": "number" },
+        "description": { "type": "string", "maxLength": 2048 },
+        "image": { "type": "string", "maxLength": 500000 },
+        "sku": { "type": "string", "maxLength": 64 },
+        "stockOnHand": { "type": "number" },
+        "stockReserved": { "type": "number" },
+        "unitCost": { "type": "number" },
+        "published": { "type": "boolean" },
+        "supplier": { "type": "string", "maxLength": 128 },
+        "location": { "type": "string", "maxLength": 128 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "name", "category", "basePrice", "sku"]
+    },
+    "InventoryItem": {
+      "title": "InventoryItem",
+      "description": "Warehouse and factory stock item",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "sku": { "type": "string", "maxLength": 64 },
+        "name": { "type": "string", "maxLength": 256 },
+        "category": { "type": "string", "maxLength": 64 },
+        "categoryLabel": { "type": "string", "maxLength": 64 },
+        "unit": { "type": "string", "maxLength": 32 },
+        "stockOnHand": { "type": "number" },
+        "stockReserved": { "type": "number" },
+        "reorderLevel": { "type": "number" },
+        "unitCost": { "type": "number" },
+        "sellingPrice": { "type": "number" },
+        "location": { "type": "string", "maxLength": 128 },
+        "supplier": { "type": "string", "maxLength": 128 },
+        "status": { "type": "string", "maxLength": 32 },
+        "lastRestockedDate": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "sku", "name", "stockOnHand"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "Registered institutional or corporate client account",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 256 },
+        "category": { "type": "string", "maxLength": 64 },
+        "contactPerson": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 128 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "address": { "type": "string", "maxLength": 256 },
+        "city": { "type": "string", "maxLength": 64 },
+        "totalOrdersCount": { "type": "number" },
+        "totalSpendKsh": { "type": "number" },
+        "outstandingBalanceKsh": { "type": "number" },
+        "paymentTerms": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "name", "contactPerson", "phone"]
+    },
+    "Document": {
+      "title": "Document",
+      "description": "ERP Invoice, Quotation, Receipt, or Delivery Note",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "docNumber": { "type": "string", "maxLength": 64 },
+        "type": { "type": "string", "maxLength": 32 },
+        "title": { "type": "string", "maxLength": 256 },
+        "status": { "type": "string", "maxLength": 32 },
+        "issueDate": { "type": "string", "maxLength": 64 },
+        "customerName": { "type": "string", "maxLength": 256 },
+        "contactPerson": { "type": "string", "maxLength": 128 },
+        "customerEmail": { "type": "string", "maxLength": 128 },
+        "customerPhone": { "type": "string", "maxLength": 32 },
+        "customerAddress": { "type": "string", "maxLength": 256 },
+        "subtotal": { "type": "number" },
+        "vatAmount": { "type": "number" },
+        "totalAmount": { "type": "number" },
+        "amountPaid": { "type": "number" },
+        "balanceDue": { "type": "number" },
+        "createdAt": { "type": "string", "maxLength": 64 },
+        "updatedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "docNumber", "type", "customerName", "totalAmount"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Payment receipt or ledger transaction record",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "transactionNumber": { "type": "string", "maxLength": 64 },
+        "date": { "type": "string", "maxLength": 64 },
+        "amount": { "type": "number" },
+        "method": { "type": "string", "maxLength": 32 },
+        "status": { "type": "string", "maxLength": 32 },
+        "customerName": { "type": "string", "maxLength": 256 },
+        "mpesaCode": { "type": "string", "maxLength": 64 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "transactionNumber", "amount", "method", "customerName"]
+    },
+    "ProductionOrder": {
+      "title": "ProductionOrder",
+      "description": "Factory production floor job order",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "orderNumber": { "type": "string", "maxLength": 64 },
+        "customerName": { "type": "string", "maxLength": 256 },
+        "productName": { "type": "string", "maxLength": 256 },
+        "quantity": { "type": "number" },
+        "stage": { "type": "string", "maxLength": 64 },
+        "stageProgress": { "type": "number" },
+        "startDate": { "type": "string", "maxLength": 64 },
+        "targetDeliveryDate": { "type": "string", "maxLength": 64 },
+        "assignedSupervisor": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["id", "orderNumber", "customerName", "productName", "quantity"]
+    },
+    "InquiryTicket": {
+      "title": "InquiryTicket",
+      "description": "Storefront customer inquiry or request for quotation",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "ticketNumber": { "type": "string", "maxLength": 64 },
+        "title": { "type": "string", "maxLength": 256 },
+        "customerName": { "type": "string", "maxLength": 256 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "email": { "type": "string", "maxLength": 128 },
+        "productName": { "type": "string", "maxLength": 256 },
+        "quantity": { "type": "number" },
+        "estimatedTotalKsh": { "type": "number" },
+        "status": { "type": "string", "maxLength": 32 },
+        "priority": { "type": "string", "maxLength": 32 },
+        "source": { "type": "string", "maxLength": 64 },
+        "whatsappUrl": { "type": "string", "maxLength": 512 },
+        "createdAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "ticketNumber", "customerName", "phone", "productName", "quantity"]
+    },
+    "HeroSlide": {
+      "title": "HeroSlide",
+      "description": "Storefront promotional showcase banner slide",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "src": { "type": "string", "maxLength": 500000 },
+        "title": { "type": "string", "maxLength": 256 },
+        "subtitle": { "type": "string", "maxLength": 512 },
+        "badge": { "type": "string", "maxLength": 64 },
+        "alt": { "type": "string", "maxLength": 128 },
+        "isActive": { "type": "boolean" },
+        "order": { "type": "number" }
+      },
+      "required": ["id", "src", "title", "order"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Company profile, branding logos, and app configuration",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "companyName": { "type": "string", "maxLength": 256 },
+        "tagline": { "type": "string", "maxLength": 256 },
+        "slogan": { "type": "string", "maxLength": 256 },
+        "registrationNumber": { "type": "string", "maxLength": 64 },
+        "kraPin": { "type": "string", "maxLength": 64 },
+        "email": { "type": "string", "maxLength": 128 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "whatsappNumber": { "type": "string", "maxLength": 32 },
+        "physicalAddress": { "type": "string", "maxLength": 256 },
+        "city": { "type": "string", "maxLength": 64 },
+        "country": { "type": "string", "maxLength": 64 },
+        "mpesaPaybillNumber": { "type": "string", "maxLength": 32 },
+        "mpesaTillNumber": { "type": "string", "maxLength": 32 },
+        "bankName": { "type": "string", "maxLength": 128 },
+        "bankAccountName": { "type": "string", "maxLength": 128 },
+        "bankAccountNumber": { "type": "string", "maxLength": 64 },
+        "logoUrl": { "type": "string", "maxLength": 500000 },
+        "faviconUrl": { "type": "string", "maxLength": 500000 },
+        "footerLogoUrl": { "type": "string", "maxLength": 500000 },
+        "heroConfig": { "type": "string", "maxLength": 2048 }
+      },
+      "required": ["id", "companyName"]
+    },
+    "AdminUser": {
+      "title": "AdminUser",
+      "description": "Authorized staff administrative user",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 128 },
+        "email": { "type": "string", "maxLength": 128 },
+        "role": { "type": "string", "maxLength": 64 },
+        "staffId": { "type": "string", "maxLength": 32 },
+        "phone": { "type": "string", "maxLength": 32 },
+        "department": { "type": "string", "maxLength": 64 },
+        "avatar": { "type": "string", "maxLength": 500000 },
+        "status": { "type": "string", "maxLength": 32 },
+        "joinedDate": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "name", "email", "role"]
+    },
+    "MediaAsset": {
+      "title": "MediaAsset",
+      "description": "Uploaded image, logo, or document attachment",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "maxLength": 256 },
+        "url": { "type": "string", "maxLength": 1000000 },
+        "type": { "type": "string", "maxLength": 64 },
+        "size": { "type": "number" },
+        "category": { "type": "string", "maxLength": 64 },
+        "uploadedAt": { "type": "string", "maxLength": 64 }
+      },
+      "required": ["id", "name", "url"]
+    }
+  },
+  "firestore": {
+    "/products/{productId}": {
+      "schema": "Product",
+      "description": "Uniform garment products in catalog and stock"
+    },
+    "/inventory/{inventoryId}": {
+      "schema": "InventoryItem",
+      "description": "Warehouse fabric, raw materials, and finished goods inventory"
+    },
+    "/customers/{customerId}": {
+      "schema": "Customer",
+      "description": "Corporate, school, and institution customer accounts"
+    },
+    "/documents/{documentId}": {
+      "schema": "Document",
+      "description": "Invoices, quotations, receipts, and delivery notes"
+    },
+    "/transactions/{transactionId}": {
+      "schema": "Transaction",
+      "description": "Payment transactions and reconciliation logs"
+    },
+    "/productionOrders/{orderId}": {
+      "schema": "ProductionOrder",
+      "description": "Manufacturing and stitching batch jobs"
+    },
+    "/inquiryTickets/{ticketId}": {
+      "schema": "InquiryTicket",
+      "description": "Storefront quotes and inquiry tickets"
+    },
+    "/heroSlides/{slideId}": {
+      "schema": "HeroSlide",
+      "description": "Storefront carousel slides and banners"
+    },
+    "/settings/{settingId}": {
+      "schema": "Settings",
+      "description": "Organization profile, banking details, and brand logos"
+    },
+    "/adminUsers/{userId}": {
+      "schema": "AdminUser",
+      "description": "Administrative users and staff members"
+    },
+    "/mediaAssets/{assetId}": {
+      "schema": "MediaAsset",
+      "description": "Uploaded gallery media and brand assets"
+    }
+  }
+}

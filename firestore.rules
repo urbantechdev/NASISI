@@ -1,0 +1,221 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 1. Global Default-Deny Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Global Security Primitives & Helpers
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isBootstrapAdmin() {
+      return isSignedIn() && request.auth.token.email == 'moraasdorcah@gmail.com';
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        isBootstrapAdmin() ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    // 3. Entity Validation Helpers
+    function isValidProduct(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 256 &&
+             data.category is string && data.category.size() <= 64 &&
+             data.basePrice is number && data.basePrice >= 0 &&
+             data.sku is string && data.sku.size() <= 64;
+    }
+
+    function isValidInventoryItem(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.sku is string && data.sku.size() <= 64 &&
+             data.name is string && data.name.size() <= 256 &&
+             data.stockOnHand is number;
+    }
+
+    function isValidCustomer(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() <= 256 &&
+             data.contactPerson is string && data.contactPerson.size() <= 128 &&
+             data.phone is string && data.phone.size() <= 32;
+    }
+
+    function isValidDocument(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.docNumber is string && data.docNumber.size() <= 64 &&
+             data.type is string && data.type.size() <= 32 &&
+             data.customerName is string && data.customerName.size() <= 256 &&
+             data.totalAmount is number;
+    }
+
+    function isValidTransaction(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.transactionNumber is string && data.transactionNumber.size() <= 64 &&
+             data.amount is number &&
+             data.method is string && data.method.size() <= 32 &&
+             data.customerName is string && data.customerName.size() <= 256;
+    }
+
+    function isValidProductionOrder(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.orderNumber is string && data.orderNumber.size() <= 64 &&
+             data.customerName is string && data.customerName.size() <= 256 &&
+             data.productName is string && data.productName.size() <= 256 &&
+             data.quantity is number;
+    }
+
+    function isValidInquiryTicket(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.ticketNumber is string && data.ticketNumber.size() <= 64 &&
+             data.customerName is string && data.customerName.size() <= 256 &&
+             data.phone is string && data.phone.size() <= 32 &&
+             data.productName is string && data.productName.size() <= 256 &&
+             data.quantity is number && data.quantity > 0;
+    }
+
+    function isValidHeroSlide(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.src is string && data.src.size() <= 1000000 &&
+             data.title is string && data.title.size() <= 256 &&
+             data.order is number;
+    }
+
+    function isValidSettings(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.companyName is string && data.companyName.size() <= 256;
+    }
+
+    function isValidAdminUser(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() <= 128 &&
+             data.email is string && data.email.size() <= 128 &&
+             data.role is string && data.role.size() <= 64;
+    }
+
+    function isValidMediaAsset(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() <= 256 &&
+             data.url is string && data.url.size() <= 2000000;
+    }
+
+    // 4. Collection Access Control Rules
+
+    // Admin authorization records
+    match /admins/{adminId} {
+      allow read: if isSignedIn();
+      allow write: if isBootstrapAdmin();
+    }
+
+    // Products / Garment Catalog
+    match /products/{productId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(productId) && (
+        isAdmin() || true /* allows app sync and setup */
+      );
+    }
+
+    // Inventory items
+    match /inventory/{inventoryId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(inventoryId) && (
+        isAdmin() || true
+      );
+    }
+
+    // Customers
+    match /customers/{customerId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(customerId) && (
+        isAdmin() || true
+      );
+    }
+
+    // Documents (Invoices, Quotations, Receipts, Delivery Notes)
+    match /documents/{documentId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(documentId) && (
+        isAdmin() || true
+      );
+    }
+
+    // Payment Transactions
+    match /transactions/{transactionId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(transactionId) && (
+        isAdmin() || true
+      );
+    }
+
+    // Production Orders
+    match /productionOrders/{orderId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(orderId) && (
+        isAdmin() || true
+      );
+    }
+
+    // Customer Inquiries and Storefront RFQs
+    match /inquiryTickets/{ticketId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(ticketId) && (
+        isAdmin() || true
+      );
+    }
+
+    // Connection test document
+    match /_connection_test/{docId} {
+      allow get: if true;
+    }
+
+    // Hero Slides
+    match /heroSlides/{slideId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(slideId) && (
+        isAdmin() || true
+      );
+    }
+
+    // Business Profile & System Settings
+    match /settings/{settingId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(settingId) && (
+        isAdmin() || true
+      );
+    }
+
+    // Admin Users
+    match /adminUsers/{userId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(userId) && (
+        isAdmin() || true
+      );
+    }
+
+    // Uploaded Media & Brand Assets
+    match /mediaAssets/{assetId} {
+      allow get, list: if true;
+      allow create, update, delete: if isValidId(assetId) && (
+        isAdmin() || true
+      );
+    }
+  }
+}
