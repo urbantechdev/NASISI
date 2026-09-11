@@ -1,0 +1,290 @@
+@import "tailwindcss";
+
+@keyframes smokeFloat1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 0.55;
+  }
+  50% {
+    transform: translate(30px, -20px) scale(1.18) rotate(4deg);
+    opacity: 0.85;
+  }
+}
+
+@keyframes smokeFloat2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+    opacity: 0.45;
+  }
+  50% {
+    transform: translate(-35px, 25px) scale(1.22) rotate(-5deg);
+    opacity: 0.75;
+  }
+}
+
+@keyframes smokeFloat3 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1.05);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(25px, 15px) scale(0.92);
+    opacity: 0.8;
+  }
+}
+
+/* Left-to-Right Flowing Header Smoke Animations */
+@keyframes smokeWaveL2R1 {
+  0% {
+    transform: translateX(-50%) scaleY(0.9) scaleX(0.95);
+    opacity: 0.1;
+  }
+  20% {
+    opacity: 0.85;
+  }
+  50% {
+    transform: translateX(35vw) scaleY(1.25) scaleX(1.15);
+    opacity: 0.95;
+  }
+  80% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateX(115vw) scaleY(0.9) scaleX(1);
+    opacity: 0;
+  }
+}
+
+@keyframes smokeWaveL2R2 {
+  0% {
+    transform: translateX(-40%) scaleY(1.1) scaleX(0.9);
+    opacity: 0.05;
+  }
+  25% {
+    opacity: 0.9;
+  }
+  55% {
+    transform: translateX(45vw) scaleY(0.85) scaleX(1.25);
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translateX(120vw) scaleY(1.05) scaleX(1.1);
+    opacity: 0;
+  }
+}
+
+@keyframes smokeWaveL2R3 {
+  0% {
+    transform: translateX(-60%) scale(0.9);
+    opacity: 0.1;
+  }
+  30% {
+    opacity: 0.8;
+  }
+  60% {
+    transform: translateX(50vw) scale(1.2);
+    opacity: 0.95;
+  }
+  85% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateX(125vw) scale(0.95);
+    opacity: 0;
+  }
+}
+
+.animate-smoke-1 {
+  animation: smokeFloat1 12s ease-in-out infinite alternate;
+}
+
+.animate-smoke-2 {
+  animation: smokeFloat2 16s ease-in-out infinite alternate;
+}
+
+.animate-smoke-3 {
+  animation: smokeFloat3 14s ease-in-out infinite alternate;
+}
+
+.animate-smoke-l2r-1 {
+  animation: smokeWaveL2R1 8s linear infinite;
+}
+
+.animate-smoke-l2r-2 {
+  animation: smokeWaveL2R2 12s linear infinite 2.5s;
+}
+
+.animate-smoke-l2r-3 {
+  animation: smokeWaveL2R3 10s linear infinite 5s;
+}
+
+.animate-smoke-l2r-fast {
+  animation: smokeWaveL2R1 6.5s linear infinite 1.2s;
+}
+
+/* Scanner Ray Balanced Shiny Effect Animations (Left-to-Right) */
+@keyframes scannerRaySweep {
+  0% {
+    transform: translateX(-120%) skewX(-20deg);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.65;
+  }
+  50% {
+    opacity: 0.85;
+  }
+  85% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translateX(250%) skewX(-20deg);
+    opacity: 0;
+  }
+}
+
+@keyframes scannerLaserBar {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.65;
+  }
+  88% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translateX(110vw);
+    opacity: 0;
+  }
+}
+
+@keyframes scannerWaveFollow {
+  0% {
+    transform: translateX(-80px);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.65;
+  }
+  88% {
+    opacity: 0.65;
+  }
+  100% {
+    transform: translateX(calc(100vw + 80px));
+    opacity: 0;
+  }
+}
+
+.animate-scanner-ray {
+  animation: scannerRaySweep 5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-scanner-ray-fast {
+  animation: scannerRaySweep 4.2s cubic-bezier(0.4, 0, 0.2, 1) infinite 1s;
+}
+
+.animate-scanner-laser {
+  animation: scannerLaserBar 5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-scanner-laser-delayed {
+  animation: scannerLaserBar 5s cubic-bezier(0.4, 0, 0.2, 1) infinite 0.3s;
+}
+
+.animate-scanner-wave {
+  animation: scannerWaveFollow 5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0.85;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Tactile Button & Card Micro-Interactions */
+@keyframes buttonGlowSweep {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(250%) skewX(-20deg);
+  }
+}
+
+.btn-shimmer-sweep {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-shimmer-sweep::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 60%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.28) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  transform: translateX(-180%) skewX(-20deg);
+  pointer-events: none;
+}
+
+.btn-shimmer-sweep:hover::after {
+  animation: buttonGlowSweep 0.85s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Card Glow Sweep & Ambient Depth */
+.card-ambient-hover {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+              border-color 0.25s ease;
+}
+
+.card-ambient-hover:hover {
+  transform: translateY(-8px);
+}
+
+/* Custom smooth scrollbars for modals and data containers */
+#product-form-scrollable-container::-webkit-scrollbar,
+.overflow-y-auto::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+
+#product-form-scrollable-container::-webkit-scrollbar-track,
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 6px;
+}
+
+#product-form-scrollable-container::-webkit-scrollbar-thumb,
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 6px;
+  border: 2px solid #f1f5f9;
+}
+
+#product-form-scrollable-container::-webkit-scrollbar-thumb:hover,
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+

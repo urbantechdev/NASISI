@@ -1,0 +1,698 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { UniformProduct, QuoteItem } from '../types';
+import { useERP } from '../context/ERPContext';
+import { X, Check, ShoppingBag, SlidersHorizontal, Sparkles, Shield, Tag, Layers, CheckCircle2, MessageSquare, ArrowRight, UploadCloud, FileImage, Image as ImageIcon, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
+import confetti from 'canvas-confetti';
+
+interface UniformModalProps {
+  product: UniformProduct | null;
+  onClose: () => void;
+  onAddToCart: (item: QuoteItem) => void;
+  onOpenCustomizerWithProduct: (product: UniformProduct, colorHex: string) => void;
+}
+
+export const UniformModal: React.FC<UniformModalProps> = ({
+  product,
+  onClose,
+  onAddToCart,
+  onOpenCustomizerWithProduct,
+}) => {
+  const { raiseInquiryTicket } = useERP();
+
+  const [selectedColor, setSelectedColor] = useState(product?.availableColors?.[0]?.name || '');
+  const [brandingType, setBrandingType] = useState<'embroidery' | 'screen_printing' | 'both' | 'blank'>('embroidery');
+  const [selectedPlacements, setSelectedPlacements] = useState<string[]>(['Left Chest']);
+  const [logoNotes, setLogoNotes] = useState('');
+  const [uploadedArtworkUrl, setUploadedArtworkUrl] = useState<string>('');
+  const [uploadedArtworkName, setUploadedArtworkName] = useState<string>('');
+  const [isArtworkDragging, setIsArtworkDragging] = useState<boolean>(false);
+  const artworkInputRef = useRef<HTMLInputElement>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState<number>(0);
+  const [ticketRaised, setTicketRaised] = useState<{ ticketNumber: string; whatsappUrl: string } | null>(null);
+  const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>(() => {
+    const initial: Record<string, number> = {};
+    if (product?.sizes) {
+      product.sizes.forEach((sz, idx) => {
+        initial[sz] = idx === 0 ? product.minOrder : 0;
+      });
+    }
+    return initial;
+  });
+
+  useEffect(() => {
+    if (product) {
+      setSelectedColor(product.availableColors?.[0]?.name || '');
+      setActiveImageIndex(0);
+      const initial: Record<string, number> = {};
+      product.sizes.forEach((sz, idx) => {
+        initial[sz] = idx === 0 ? product.minOrder : 0;
+      });
+      setSizeQuantities(initial);
+      setTicketRaised(null);
+    }
+  }, [product]);
+
+  const totalUnits: number = (Object.values(sizeQuantities) as number[]).reduce(
+    (a: number, b: number) => a + b,
+    0
+  );
+
+  // Volume discount calculation
+  const getDiscountPercent = (qty: number) => {
+    if (qty >= 250) return 0.32;
+    if (qty >= 100) return 0.25;
+    if (qty >= 50) return 0.18;
+    if (qty >= 25) return 0.10;
+    return 0;
+  };
+
+  const discountPercent = getDiscountPercent(totalUnits);
+  
+  // Additional branding fee estimate in Ksh
+  let brandingAddon = 0;
+  if (brandingType === 'embroidery') brandingAddon = 350;
+  else if (brandingType === 'screen_printing') brandingAddon = 250;
+  else if (brandingType === 'both') brandingAddon = 500;
+
+  const unitBase = ((product?.basePrice || 0) + brandingAddon) * (1 - discountPercent);
+  const calculatedUnitPrice = Math.round(unitBase);
+  const calculatedTotal = Math.round(calculatedUnitPrice * Math.max(totalUnits, 1));
+
+  const handleSizeChange = (size: string, value: number) => {
+    const val = Math.max(0, isNaN(value) ? 0 : value);
+    setSizeQuantities((prev) => ({
+      ...prev,
+      [size]: val,
+    }));
+  };
+
+  const togglePlacement = (placement: string) => {
+    setSelectedPlacements((prev) =>
+      prev.includes(placement) ? prev.filter((p) => p !== placement) : [...prev, placement]
+    );
+  };
+
+  const handleAdd = () => {
+    if (!product) return;
+    if (totalUnits < product.minOrder) {
+      alert(`Minimum order quantity for this item is ${product.minOrder} units.`);
+      return;
+    }
+
+    const finalNotes = [
+      logoNotes,
+      uploadedArtworkName ? `[Attached Artwork Image: ${uploadedArtworkName}]` : '',
+    ].filter(Boolean).join(' | ');
+
+    const newItem: QuoteItem = {
+      id: `${product.id}-${Date.now()}`,
+      product,
+      selectedColor,
+      quantities: sizeQuantities,
+      totalQuantity: totalUnits,
+      brandingType,
+      logoPlacement: selectedPlacements,
+      logoNotes: finalNotes,
+      unitPrice: calculatedUnitPrice,
+      totalPrice: calculatedTotal,
+    };
+
+    onAddToCart(newItem);
+
+    // Instantly raise inquiry ticket on the Dashboard and WhatsApp
+    const raised = raiseInquiryTicket({
+      productName: product.name,
+      category: product.category,
+      quantity: totalUnits,
+      selectedColor,
+      brandingType,
+      logoPlacement: selectedPlacements,
+      unitPrice: calculatedUnitPrice,
+      estimatedTotalKsh: calculatedTotal,
+      notes: finalNotes ? `Customer Notes: ${finalNotes}` : `Direct quote request for ${totalUnits} units of ${product.name} (${selectedColor}).`,
+      customerName: logoNotes?.trim() || 'Storefront Client',
+      phone: '0728102929',
+      source: 'storefront_quote_request',
+    });
+
+    setTicketRaised({
+      ticketNumber: raised.ticketNumber,
+      whatsappUrl: raised.whatsappUrl,
+    });
+
+    try {
+      confetti({
+        particleCount: 70,
+        spread: 70,
+        origin: { y: 0.7 },
+        colors: ['#06163c', '#38BDF8', '#FFFFFF', '#10B981'],
+      });
+    } catch {
+      // ignore
+    }
+  };
+
+  if (!product) return null;
+
+  const activeColorHex =
+    product.availableColors.find((c) => c.name === selectedColor)?.hex || '#06163c';
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-slate-900/75 backdrop-blur-md flex items-center justify-center p-0 sm:p-6 overflow-hidden sm:overflow-y-auto animate-fadeIn">
+      <div
+        className="relative bg-white w-full h-full sm:h-auto sm:max-h-[92vh] sm:max-w-4xl sm:rounded-2xl flex flex-col shadow-2xl border-0 sm:border sm:border-slate-200 overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Modal Header */}
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 bg-white sticky top-0 z-20 shrink-0 shadow-xs sm:shadow-none">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 pr-2">
+            <span className="px-2 sm:px-2.5 py-0.5 sm:py-1 text-[10px] sm:text-xs font-black uppercase tracking-wider bg-blue-100 text-[#06163c] rounded-md shrink-0">
+              {product.categoryLabel}
+            </span>
+            {product.sku && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200 rounded-md shrink-0">
+                <Tag className="w-3 h-3 text-slate-400" />
+                <span>SKU: {product.sku}</span>
+              </span>
+            )}
+            <h3 className="text-base sm:text-xl font-bold text-slate-900 font-['Outfit',sans-serif] truncate">
+              {product.name}
+            </h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2 sm:p-1.5 rounded-xl sm:rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 active:bg-slate-200 transition-colors shrink-0 touch-manipulation"
+            aria-label="Close product popup"
+          >
+            <X className="w-5 h-5 sm:w-5 sm:h-5" />
+          </button>
+        </div>
+
+        {/* Modal Scrollable Body */}
+        <div className="p-4 sm:p-6 overflow-y-auto space-y-5 sm:space-y-6 flex-1 overscroll-contain">
+          
+          {/* Instant Inquiry Ticket & WhatsApp Notification Banner */}
+          {ticketRaised && (
+            <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 via-teal-50 to-blue-50 border border-emerald-300 text-emerald-950 shadow-md space-y-3 animate-fadeIn">
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-start gap-2.5">
+                  <div className="p-1.5 bg-emerald-600 text-white rounded-xl shadow-xs mt-0.5">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-extrabold text-sm text-emerald-900">
+                        Inquiry Ticket #{ticketRaised.ticketNumber} Raised Instantly!
+                      </span>
+                      <span className="px-2 py-0.5 bg-emerald-200 text-emerald-900 text-[10px] font-black rounded-full uppercase tracking-wider">
+                        Live on Admin ERP
+                      </span>
+                    </div>
+                    <p className="text-xs text-emerald-800 mt-1 leading-relaxed">
+                      Your inquiry for <strong className="text-slate-900">{product.name} ({totalUnits} pcs)</strong> is active on our production dashboard. Click below to continue directly on WhatsApp or submit additional items.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <a
+                  href={ticketRaised.whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold text-xs rounded-xl shadow-sm transition-all cursor-pointer"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Open on WhatsApp (0728102929)</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-3.5 py-2 bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs rounded-xl border border-slate-200 shadow-xs transition-colors cursor-pointer"
+                >
+                  Continue Browsing
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            
+            {/* Left: Product Image & Fabric Info */}
+            <div className="md:col-span-5 space-y-4">
+              {(() => {
+                const productImages: string[] =
+                  product.images && product.images.length > 0
+                    ? product.images
+                    : product.image
+                    ? [product.image]
+                    : ['https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80'];
+                const currentImg = productImages[activeImageIndex] || productImages[0];
+
+                return (
+                  <div className="space-y-2.5">
+                    <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#D1E0FF]/30 via-slate-50 to-[#D1E0FF]/15 border border-[#D1E0FF] shadow-[0_8px_25px_rgba(209,224,255,0.4)] aspect-[4/3] group">
+                      <img
+                        key={currentImg}
+                        src={currentImg}
+                        alt={`${product.name} - View ${activeImageIndex + 1}`}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="eager"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80';
+                        }}
+                      />
+                      {product.badge && (
+                        <span className="absolute top-3 left-3 bg-[#06163c] text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm">
+                          {product.badge}
+                        </span>
+                      )}
+
+                      {/* Multi-angle indicator and carousel arrows */}
+                      {productImages.length > 1 && (
+                        <>
+                          <span className="absolute top-3 right-3 bg-black/60 backdrop-blur-sm text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+                            {activeImageIndex + 1} / {productImages.length}
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveImageIndex((prev) => (prev > 0 ? prev - 1 : productImages.length - 1));
+                            }}
+                            className="absolute left-2.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 text-slate-800 hover:bg-[#06163c] hover:text-white shadow-md transition-all opacity-80 group-hover:opacity-100 cursor-pointer"
+                            aria-label="Previous angle"
+                          >
+                            <ChevronLeft className="w-4 h-4" />
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveImageIndex((prev) => (prev < productImages.length - 1 ? prev + 1 : 0));
+                            }}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-white/90 text-slate-800 hover:bg-[#06163c] hover:text-white shadow-md transition-all opacity-80 group-hover:opacity-100 cursor-pointer"
+                            aria-label="Next angle"
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
+
+                      <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-sm p-2 rounded-xl text-xs flex justify-between items-center shadow-sm">
+                        <span className="font-semibold text-slate-700">Min. Order (MOQ):</span>
+                        <div className="flex items-center gap-2">
+                          {product.sku && (
+                            <span className="font-mono text-[10px] text-slate-500 font-semibold bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200/70">
+                              {product.sku}
+                            </span>
+                          )}
+                          <span className="font-bold text-[#06163c]">{product.minOrder} units</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Thumbnails row if multiple images exist */}
+                    {productImages.length > 1 && (
+                      <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5">
+                        {productImages.map((imgUrl, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => setActiveImageIndex(idx)}
+                            className={`relative w-16 h-14 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
+                              activeImageIndex === idx
+                                ? 'border-[#06163c] ring-2 ring-[#06163c]/30 shadow-sm scale-105'
+                                : 'border-slate-200 opacity-70 hover:opacity-100 hover:border-slate-400'
+                            }`}
+                          >
+                            <img
+                              src={imgUrl}
+                              alt={`Angle thumbnail ${idx + 1}`}
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                            />
+                            <span className="absolute bottom-0.5 right-1 text-[9px] font-bold text-white bg-black/60 px-1 rounded">
+                              #{idx + 1}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* Fabric Specs */}
+              <div className="bg-blue-50/60 rounded-xl p-4 border border-blue-100 space-y-2 text-xs">
+                <div className="flex items-center gap-1.5 font-bold text-[#06163c]">
+                  <Layers className="w-4 h-4" />
+                  <span>Fabric Specifications</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-slate-700 pt-1">
+                  <div>
+                    <span className="text-slate-400 block text-[10px]">Composition</span>
+                    <span className="font-semibold">{product.fabric.composition}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[10px]">Weight / Density</span>
+                    <span className="font-semibold">{product.fabric.weight}</span>
+                  </div>
+                </div>
+                <div className="pt-2 border-t border-blue-100/80">
+                  <span className="text-slate-400 block text-[10px] mb-1">Key Performance Features:</span>
+                  <div className="flex flex-wrap gap-1">
+                    {product.fabric.features.map((feat) => (
+                      <span
+                        key={feat}
+                        className="px-2 py-0.5 bg-white text-slate-700 rounded text-[11px] font-medium border border-blue-200"
+                      >
+                        ✓ {feat}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Mockup Studio button trigger */}
+              <button
+                type="button"
+                onClick={() => {
+                  onOpenCustomizerWithProduct(product, activeColorHex);
+                  onClose();
+                }}
+                className="btn-shimmer-sweep w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-extrabold text-[#06163c] hover:text-white bg-white hover:bg-[#06163c] border-2 border-[#06163c] shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-95 transition-all duration-200 cursor-pointer"
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+                <span>Open in Live Mockup Studio</span>
+              </button>
+            </div>
+
+            {/* Right: Customization, Sizes, and Pricing Options */}
+            <div className="md:col-span-7 space-y-5">
+              <div>
+                <p className="text-sm text-slate-600 leading-relaxed">{product.description}</p>
+              </div>
+
+              {/* 1. Color Selector */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                  1. Select Garment Color: <span className="text-[#06163c]">{selectedColor}</span>
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {product.availableColors.map((color) => (
+                    <button
+                      key={color.name}
+                      type="button"
+                      onClick={() => setSelectedColor(color.name)}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-all duration-150 hover:scale-105 active:scale-95 cursor-pointer ${
+                        selectedColor === color.name
+                          ? 'border-[#06163c] ring-2 ring-blue-900/20 bg-blue-50/50 text-[#06163c] font-bold shadow-xs'
+                          : 'border-slate-200 hover:border-slate-400 bg-white text-slate-700'
+                      }`}
+                    >
+                      <span
+                        className={`w-3.5 h-3.5 rounded-full shadow-inner ${color.bgClass}`}
+                        style={{ backgroundColor: color.hex }}
+                      />
+                      <span>{color.name}</span>
+                      {selectedColor === color.name && <Check className="w-3.5 h-3.5 text-[#06163c]" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 2. Branding & Customization Technique */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                  2. Choose Logo & Branding Service:
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {[
+                    { id: 'embroidery', label: 'Embroidery', desc: 'Precision Thread Crest', addon: '+Ksh 350/ea' },
+                    { id: 'screen_printing', label: 'Screen Print', desc: 'Durable Silkscreen', addon: '+Ksh 250/ea' },
+                    { id: 'both', label: 'Both', desc: 'Embroidery + Print', addon: '+Ksh 500/ea' },
+                    { id: 'blank', label: 'Plain / Blank', desc: 'No Logo Added', addon: '+Ksh 0' },
+                  ].map((b) => (
+                    <button
+                      key={b.id}
+                      type="button"
+                      onClick={() => setBrandingType(b.id as any)}
+                      className={`p-2.5 rounded-xl text-left border transition-all duration-200 hover:scale-[1.02] active:scale-95 cursor-pointer ${
+                        brandingType === b.id
+                          ? 'border-[#06163c] bg-blue-50/70 text-[#06163c] shadow-xs'
+                          : 'border-slate-200 hover:border-blue-300 bg-white text-slate-700'
+                      }`}
+                    >
+                      <span className="block text-xs font-bold">{b.label}</span>
+                      <span className="block text-[10px] text-slate-500">{b.desc}</span>
+                      <span className="block text-[10px] font-semibold text-[#06163c] mt-1">{b.addon}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* 3. Logo Placement */}
+              {brandingType !== 'blank' && (
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+                    Logo Placement Positions:
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {['Left Chest', 'Right Chest', 'Full Back', 'Left Sleeve', 'Back of Neck'].map((loc) => {
+                      const isSel = selectedPlacements.includes(loc);
+                      return (
+                        <button
+                          key={loc}
+                          type="button"
+                          onClick={() => togglePlacement(loc)}
+                          className={`px-3 py-1.5 text-xs rounded-lg border transition-all duration-150 hover:scale-105 active:scale-95 cursor-pointer ${
+                            isSel
+                              ? 'bg-[#06163c] text-white border-[#06163c] font-bold shadow-xs'
+                              : 'bg-white text-slate-600 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                          }`}
+                        >
+                          {isSel ? '✓ ' : '+ '} {loc}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* 4. Sizes & Quantities Matrix */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                    3. Specify Quantities per Size:
+                  </label>
+                  <span className="text-xs font-semibold text-slate-500">
+                    Total: <strong className="text-[#06163c] font-extrabold">{totalUnits} units</strong>
+                  </span>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                  {product.sizes.map((sz) => (
+                    <div key={sz} className="flex items-center justify-between bg-white p-2 rounded-lg border border-slate-200">
+                      <span className="text-xs font-semibold text-slate-700">{sz}</span>
+                      <input
+                        type="number"
+                        min="0"
+                        value={sizeQuantities[sz] || 0}
+                        onChange={(e) => handleSizeChange(sz, parseInt(e.target.value))}
+                        className="w-14 text-center text-xs font-bold border border-slate-300 rounded p-1 focus:ring-1 focus:ring-[#06163c] focus:outline-none"
+                      />
+                    </div>
+                  ))}
+                </div>
+                {totalUnits < product.minOrder && (
+                  <p className="text-[11px] text-amber-600 font-medium mt-1">
+                    ⚠️ Minimum order requirement: {product.minOrder} units (Current: {totalUnits})
+                  </p>
+                )}
+              </div>
+
+              {/* Artwork / Crest Image Upload */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-700">
+                    Upload Crest / Logo / Sample Image (Optional):
+                  </label>
+                  <span className="text-[10px] text-slate-400 font-semibold">PNG, JPG, SVG up to 10MB</span>
+                </div>
+
+                <input
+                  ref={artworkInputRef}
+                  type="file"
+                  accept="image/png, image/jpeg, image/webp, image/svg+xml"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      if (file.size > 10 * 1024 * 1024) {
+                        alert('Image file size exceeds 10MB limit.');
+                        return;
+                      }
+                      setUploadedArtworkName(file.name);
+                      const reader = new FileReader();
+                      reader.onload = (event) => {
+                        if (event.target?.result) {
+                          setUploadedArtworkUrl(event.target.result as string);
+                        }
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                />
+
+                {uploadedArtworkUrl ? (
+                  <div className="flex items-center justify-between p-2.5 bg-blue-50/80 border border-blue-200 rounded-xl">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden border border-blue-200 bg-white shrink-0 shadow-xs">
+                        <img
+                          src={uploadedArtworkUrl}
+                          alt="Uploaded artwork"
+                          className="w-full h-full object-contain p-0.5"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="block text-xs font-bold text-[#06163c] truncate">
+                          {uploadedArtworkName || 'Custom Artwork Attached'}
+                        </span>
+                        <span className="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" /> Attached for Tailoring Unit
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUploadedArtworkUrl('');
+                        setUploadedArtworkName('');
+                        if (artworkInputRef.current) artworkInputRef.current.value = '';
+                      }}
+                      className="text-xs text-red-600 hover:text-red-700 font-semibold px-2 py-1 hover:bg-red-50 rounded-lg"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    onDragOver={(e) => {
+                      e.preventDefault();
+                      setIsArtworkDragging(true);
+                    }}
+                    onDragLeave={() => setIsArtworkDragging(false)}
+                    onDrop={(e) => {
+                      e.preventDefault();
+                      setIsArtworkDragging(false);
+                      const file = e.dataTransfer.files?.[0];
+                      if (file && file.type.startsWith('image/')) {
+                        if (file.size > 10 * 1024 * 1024) {
+                          alert('Image file size exceeds 10MB limit.');
+                          return;
+                        }
+                        setUploadedArtworkName(file.name);
+                        const reader = new FileReader();
+                        reader.onload = (event) => {
+                          if (event.target?.result) {
+                            setUploadedArtworkUrl(event.target.result as string);
+                          }
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    onClick={() => artworkInputRef.current?.click()}
+                    className={`border border-dashed rounded-xl p-3 text-center cursor-pointer transition-all flex items-center justify-center gap-2.5 ${
+                      isArtworkDragging
+                        ? 'border-[#06163c] bg-blue-100/50'
+                        : 'border-slate-300 hover:border-[#06163c] bg-slate-50/60 hover:bg-blue-50/40'
+                    }`}
+                  >
+                    <UploadCloud className="w-4 h-4 text-[#06163c] shrink-0" />
+                    <span className="text-xs font-semibold text-slate-700">
+                      <strong className="text-[#06163c]">Click to attach image file</strong> or drag & drop here
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Logo Notes / Instructions */}
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-1">
+                  Branding Notes & School / Org Name (Optional):
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. St. Jude High School Crest, Gold thread border"
+                  value={logoNotes}
+                  onChange={(e) => setLogoNotes(e.target.value)}
+                  className="w-full text-xs p-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#06163c] focus:outline-none"
+                />
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        {/* Modal Sticky Bottom Calculation Bar */}
+        <div className="p-3.5 sm:p-6 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 sticky bottom-0 z-20 shrink-0 shadow-[0_-4px_12px_rgba(0,0,0,0.05)]">
+          <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4">
+            <div>
+              <span className="block text-[10px] sm:text-[11px] text-slate-500 uppercase tracking-wider font-bold">
+                Unit Price:
+              </span>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-lg sm:text-2xl font-black text-[#06163c] font-['Outfit',sans-serif]">
+                  Ksh {calculatedUnitPrice.toLocaleString()}
+                </span>
+                {discountPercent > 0 && (
+                  <span className="text-[10px] sm:text-xs bg-green-100 text-green-800 font-bold px-1.5 py-0.5 rounded">
+                    {Math.round(discountPercent * 100)}% Off
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="h-7 w-px bg-slate-200 block"></div>
+
+            <div className="text-right sm:text-left">
+              <span className="block text-[10px] sm:text-[11px] text-slate-500 uppercase tracking-wider font-bold">
+                Total ({totalUnits} pcs):
+              </span>
+              <span className="text-base sm:text-lg font-black text-slate-900 font-['Outfit',sans-serif]">
+                Ksh {calculatedTotal.toLocaleString()}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3.5 sm:px-4 py-2.5 sm:py-2.5 text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-200 hover:scale-105 active:scale-95 rounded-xl transition-all duration-150 shrink-0 cursor-pointer"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              onClick={handleAdd}
+              disabled={totalUnits < product.minOrder}
+              className={`btn-shimmer-sweep flex-1 sm:flex-initial flex items-center justify-center gap-2 px-5 sm:px-7 py-3 rounded-xl text-xs font-black text-white shadow-md transition-all duration-200 ${
+                totalUnits >= product.minOrder
+                  ? 'bg-gradient-to-r from-[#020a1c] via-[#06163c] to-[#030e28] hover:from-[#010612] hover:via-[#040f28] hover:to-[#010612] hover:scale-105 hover:shadow-xl active:scale-95 cursor-pointer border border-blue-900/40'
+                  : 'bg-slate-400 cursor-not-allowed opacity-70'
+              }`}
+            >
+              <ShoppingBag className="w-4 h-4 shrink-0" />
+              <span className="truncate">Add to Quote Request</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
