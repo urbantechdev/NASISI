@@ -136,21 +136,24 @@ export default function App() {
     } catch {
       // ignore
     }
-    // Default starter item to showcase instant quote readiness
-    return [
-      {
-        id: 'initial-blazer-demo',
-        product: UNIFORM_PRODUCTS[0],
-        selectedColor: 'Royal Blue',
-        quantities: { 'Youth M': 20, 'Adult S': 30 },
-        totalQuantity: 50,
-        brandingType: 'embroidery',
-        logoPlacement: ['Left Chest'],
-        logoNotes: 'School Crest Gold Stitching Sample',
-        unitPrice: 37.31,
-        totalPrice: 1865.5,
-      },
-    ];
+    // Default starter item only if products are present
+    if (UNIFORM_PRODUCTS && UNIFORM_PRODUCTS.length > 0 && UNIFORM_PRODUCTS[0]) {
+      return [
+        {
+          id: 'initial-blazer-demo',
+          product: UNIFORM_PRODUCTS[0],
+          selectedColor: 'Royal Blue',
+          quantities: { 'Youth M': 20, 'Adult S': 30 },
+          totalQuantity: 50,
+          brandingType: 'embroidery',
+          logoPlacement: ['Left Chest'],
+          logoNotes: 'School Crest Gold Stitching Sample',
+          unitPrice: 3800,
+          totalPrice: 190000,
+        },
+      ];
+    }
+    return [];
   });
 
   const [selectedProductForModal, setSelectedProductForModal] = useState<UniformProduct | null>(null);

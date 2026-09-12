@@ -5,7 +5,9 @@ import {
   ERPDocumentStatus,
   ERPDocumentType,
   ERPLineItem,
+  UniformProduct,
 } from '../../types';
+import { useERP } from '../../context/ERPContext';
 import { formatKsh } from '../../utils/currency';
 import {
   X,
@@ -19,7 +21,6 @@ import {
   Calendar,
   Layers,
 } from 'lucide-react';
-import { UNIFORM_PRODUCTS } from '../../data/uniformsData';
 
 interface ERPDocumentFormModalProps {
   isOpen: boolean;
@@ -38,6 +39,7 @@ export const ERPDocumentFormModal: React.FC<ERPDocumentFormModalProps> = ({
   initialType = 'invoice',
   customers,
 }) => {
+  const { products } = useERP();
   const [docType, setDocType] = useState<ERPDocumentType>(
     editDocument ? editDocument.type : initialType
   );
@@ -136,18 +138,18 @@ export const ERPDocumentFormModal: React.FC<ERPDocumentFormModalProps> = ({
   };
 
   // Add line item
-  const handleAddItem = (presetProduct?: typeof UNIFORM_PRODUCTS[0]) => {
+  const handleAddItem = (presetProduct?: UniformProduct) => {
     if (presetProduct) {
       const newItem: ERPLineItem = {
         id: `li-${Date.now()}-${Math.random()}`,
-        description: `${presetProduct.name} (${presetProduct.categoryLabel})`,
-        category: presetProduct.categoryLabel,
-        size: presetProduct.sizes[0] || 'Standard',
-        color: presetProduct.availableColors[0]?.name || 'Standard',
+        description: `${presetProduct.name} (${presetProduct.categoryLabel || 'Uniform'})`,
+        category: presetProduct.categoryLabel || 'Uniform',
+        size: (presetProduct.sizes && presetProduct.sizes[0]) || 'Standard',
+        color: (presetProduct.availableColors && presetProduct.availableColors[0]?.name) || 'Standard',
         branding: 'Custom Institutional Crest',
         quantity: presetProduct.minOrder || 20,
-        unitPrice: presetProduct.basePrice,
-        total: (presetProduct.minOrder || 20) * presetProduct.basePrice,
+        unitPrice: presetProduct.basePrice || 1000,
+        total: (presetProduct.minOrder || 20) * (presetProduct.basePrice || 1000),
         taxRate: includeVat ? 0.16 : 0,
       };
       setItems((prev) => [...prev, newItem]);
@@ -556,28 +558,21 @@ export const ERPDocumentFormModal: React.FC<ERPDocumentFormModalProps> = ({
                 3. Order Items & Garment Specifications (in Ksh):
               </label>
               <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-[11px] text-slate-500">Add Preset Uniform:</span>
-                <button
-                  type="button"
-                  onClick={() => handleAddItem(UNIFORM_PRODUCTS[0])}
-                  className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#06163c] font-bold rounded-lg border border-blue-200 text-[11px]"
-                >
-                  + Blazer (Ksh 3,800)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleAddItem(UNIFORM_PRODUCTS[1])}
-                  className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#06163c] font-bold rounded-lg border border-blue-200 text-[11px]"
-                >
-                  + Sweater (Ksh 2,200)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleAddItem(UNIFORM_PRODUCTS[4])}
-                  className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#06163c] font-bold rounded-lg border border-blue-200 text-[11px]"
-                >
-                  + Scrub (Ksh 2,850)
-                </button>
+                {products && products.length > 0 && (
+                  <>
+                    <span className="text-[11px] text-slate-500">Add Product:</span>
+                    {products.slice(0, 3).map((prod) => (
+                      <button
+                        key={prod.id}
+                        type="button"
+                        onClick={() => handleAddItem(prod)}
+                        className="px-2.5 py-1 bg-blue-50 hover:bg-blue-100 text-[#06163c] font-bold rounded-lg border border-blue-200 text-[11px]"
+                      >
+                        + {prod.name.split(' ')[0]} ({formatKsh(prod.basePrice)})
+                      </button>
+                    ))}
+                  </>
+                )}
                 <button
                   type="button"
                   onClick={() => handleAddItem()}

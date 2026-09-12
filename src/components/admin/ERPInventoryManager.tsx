@@ -47,6 +47,7 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
     togglePublishProduct,
     duplicateProduct,
     syncAllProductsToInventory,
+    wipeAllProducts,
     isFirebaseConnected,
   } = useERP();
 
@@ -54,6 +55,23 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [syncedNotice, setSyncedNotice] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [isWiping, setIsWiping] = useState(false);
+
+  const handleWipeProducts = async () => {
+    if (
+      confirm(
+        'Wipe all products and finished garments to start completely fresh? This will clear the storefront catalog and delete inventory garment records in Firestore.'
+      )
+    ) {
+      try {
+        setIsWiping(true);
+        await wipeAllProducts();
+      } finally {
+        setIsWiping(false);
+      }
+    }
+  };
 
   // Product modal state
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
@@ -125,10 +143,17 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
     }
   };
 
-  const handleSyncAll = () => {
-    syncAllProductsToInventory();
-    setSyncedNotice(true);
-    setTimeout(() => setSyncedNotice(false), 3500);
+  const handleSyncAll = async () => {
+    setIsSyncing(true);
+    try {
+      await syncAllProductsToInventory();
+      setSyncedNotice(true);
+      setTimeout(() => setSyncedNotice(false), 3500);
+    } catch {
+      alert('Error synchronizing catalog with Firebase');
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const handleQuickAdjust = (item: ERPInventoryItem, isAddition: boolean) => {
@@ -176,13 +201,26 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 w-full md:w-auto">
+        <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
+          {products && products.length > 0 && (
+            <button
+              onClick={handleWipeProducts}
+              disabled={isWiping}
+              className="px-3.5 py-2 bg-red-500/20 hover:bg-red-500/30 border border-red-400/30 text-red-200 hover:text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
+              title="Wipe all products to start fresh"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>{isWiping ? 'Wiping...' : 'Wipe All Products'}</span>
+            </button>
+          )}
+
           <button
             onClick={handleSyncAll}
-            className="px-3.5 py-2 bg-blue-600/40 hover:bg-blue-600/70 border border-blue-400/30 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs"
+            disabled={isSyncing}
+            className="px-3.5 py-2 bg-blue-600/40 hover:bg-blue-600/70 border border-blue-400/30 text-white rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs disabled:opacity-50"
           >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>{syncedNotice ? '✓ Synced!' : 'Force Re-Sync All'}</span>
+            <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
+            <span>{isSyncing ? 'Syncing...' : syncedNotice ? '✓ Synced!' : 'Force Re-Sync All'}</span>
           </button>
 
           <button
@@ -423,9 +461,30 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
               <tbody className="divide-y divide-slate-200">
                 {filteredProducts.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-12 text-center text-slate-500">
-                      <Package className="w-8 h-8 mx-auto text-slate-300 mb-2" />
-                      No catalog garments found matching search criteria.
+                    <td colSpan={8} className="py-16 text-center text-slate-500">
+                      <div className="max-w-md mx-auto space-y-3">
+                        <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto ring-8 ring-blue-50/50">
+                          <Shirt className="w-7 h-7 text-blue-600" />
+                        </div>
+                        <h4 className="font-bold text-slate-900 text-sm font-['Outfit']">
+                          {products.length === 0 ? 'Catalog Ready for New Products' : 'No garments found matching criteria'}
+                        </h4>
+                        <p className="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
+                          {products.length === 0
+                            ? 'All previous products have been wiped. You have a clean slate to create your new uniform garments, pricing, and specs.'
+                            : 'Try clearing your search query or selecting "All Garments" to see items.'}
+                        </p>
+                        {products.length === 0 && (
+                          <button
+                            type="button"
+                            onClick={handleOpenCreateProduct}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer"
+                          >
+                            <Plus className="w-4 h-4" />
+                            <span>Create Your First Garment</span>
+                          </button>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ) : (

@@ -362,7 +362,28 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
         </div>
 
         {/* Product Grid */}
-        {filteredProducts.length === 0 ? (
+        {liveProducts.length === 0 ? (
+          <div className="bg-white rounded-2xl p-12 text-center border border-dashed border-blue-200 space-y-4 max-w-lg mx-auto shadow-sm">
+            <div className="w-16 h-16 bg-blue-50 text-[#06163c] rounded-2xl flex items-center justify-center mx-auto ring-8 ring-blue-50/50">
+              <Shirt className="w-8 h-8 text-blue-600" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="text-xl font-black text-slate-900 font-['Outfit',sans-serif]">
+                Catalog Ready for New Products
+              </h3>
+              <p className="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
+                All sample products have been cleanly wiped. You can now create your custom uniform designs, finished garments, and specifications directly in the Admin Portal.
+              </p>
+            </div>
+            <a
+              href="#erp"
+              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#06163c] hover:bg-blue-900 text-white text-xs font-bold rounded-xl shadow-md transition-all duration-200 hover:scale-105 active:scale-95"
+            >
+              <span>Go to Admin Portal to Create Products</span>
+              <ChevronRight className="w-4 h-4" />
+            </a>
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center border border-slate-200 space-y-3">
             <Shirt className="w-12 h-12 text-slate-300 mx-auto" />
             <h3 className="text-lg font-bold text-slate-800">No uniforms found</h3>
@@ -374,7 +395,7 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                 setSelectedCategory('all');
                 setSearchQuery('');
               }}
-              className="px-4 py-2 text-xs font-bold text-[#06163c] bg-blue-50 rounded-lg hover:bg-blue-100"
+              className="px-4 py-2 text-xs font-bold text-[#06163c] bg-blue-50 rounded-lg hover:bg-blue-100 cursor-pointer"
             >
               Reset Filters
             </button>

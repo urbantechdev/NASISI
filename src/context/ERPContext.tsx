@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import {
   ERPBusinessProfile,
   ERPCustomer,
@@ -38,9 +38,11 @@ import {
   onAuthStateChanged,
   collection,
   doc,
+  getDocs,
   setDoc,
   deleteDoc,
   onSnapshot,
+  writeBatch,
   handleFirestoreError,
   OperationType,
   testFirestoreConnection,
@@ -90,7 +92,8 @@ interface ERPContextType {
   deleteProduct: (id: string) => void;
   togglePublishProduct: (id: string) => void;
   duplicateProduct: (id: string) => UniformProduct;
-  syncAllProductsToInventory: () => void;
+  syncAllProductsToInventory: () => Promise<void> | void;
+  wipeAllProducts: () => Promise<void>;
 
   // Document Operations
   createDocument: (doc: Omit<ERPDocument, 'id' | 'createdAt' | 'updatedAt'>) => ERPDocument;
@@ -143,9 +146,9 @@ const STORAGE_KEYS = {
   CUSTOMERS: 'nasisi_erp_customers_v2',
   DOCUMENTS: 'nasisi_erp_documents_v2',
   TRANSACTIONS: 'nasisi_erp_transactions_v2',
-  INVENTORY: 'nasisi_erp_inventory_v3',
+  INVENTORY: 'nasisi_erp_inventory_v4',
   PRODUCTION: 'nasisi_erp_production_v2',
-  PRODUCTS: 'nasisi_erp_products_v4',
+  PRODUCTS: 'nasisi_erp_products_v5',
   TICKETS: 'nasisi_erp_inquiry_tickets_v2',
   HERO_SLIDES: 'nasisi_erp_hero_slides_v2',
   HERO_CONFIG: 'nasisi_erp_hero_config_v2',
@@ -154,11 +157,11 @@ const STORAGE_KEYS = {
   PASSWORDS: 'nasisi_erp_passwords_v2',
 };
 
-// Generate initial products with inventory SKU and publishing defaults
-const INITIAL_SYNCHRONIZED_PRODUCTS: UniformProduct[] = UNIFORM_PRODUCTS.map((p, idx) => ({
+// Generate initial products with inventory SKU and publishing defaults (clean slate)
+const INITIAL_SYNCHRONIZED_PRODUCTS: UniformProduct[] = (UNIFORM_PRODUCTS || []).map((p, idx) => ({
   ...p,
   published: true,
-  sku: p.sku || `SKU-GAR-${p.category.substring(0, 3).toUpperCase()}-${String(idx + 101)}`,
+  sku: p.sku || `SKU-GAR-${(p.category || 'GEN').substring(0, 3).toUpperCase()}-${String(idx + 101)}`,
   stockOnHand: p.stockOnHand ?? (idx === 0 ? 145 : idx === 1 ? 220 : 60 + idx * 15),
   stockReserved: p.stockReserved ?? (idx % 2 === 0 ? 30 : 15),
   unitCost: p.unitCost ?? Math.round(p.basePrice * 0.58),
@@ -190,12 +193,18 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Synchronized Products state
   const [products, setProducts] = useState<UniformProduct[]>(() => {
     try {
+      // Clear legacy storage keys
+      localStorage.removeItem('nasisi_erp_products_v4');
+      localStorage.removeItem('nasisi_erp_products_v3');
+      localStorage.removeItem('nasisi_erp_products_v2');
+      localStorage.removeItem('nasisi_erp_products_v1');
+
       const saved = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
           return parsed.map((p: any, idx: number) => {
-            const canonical = UNIFORM_PRODUCTS.find((u) => u.id === p.id);
+            const canonical = (UNIFORM_PRODUCTS || []).find((u) => u.id === p.id);
             const resolvedSku = p.sku || canonical?.sku || `SKU-GAR-${(p.category || 'GEN').substring(0, 3).toUpperCase()}-${String(idx + 101)}`;
             return {
               ...p,
@@ -318,6 +327,8 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   }, []);
 
+  const initialSeededRef = useRef<boolean>(false);
+
   // Real-time Firestore Sync for Inventory
   useEffect(() => {
     const inventoryCol = collection(db, 'inventory');
@@ -329,6 +340,25 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const remoteItems: ERPInventoryItem[] = [];
           snapshot.forEach((d) => {
             const data = d.data();
+            const docId = d.id;
+            // Clean up and ignore legacy dummy finished garments that were wiped
+            const isLegacyWipedProduct =
+              docId === 'inv-1' ||
+              docId === 'inv-2' ||
+              docId.startsWith('inv-safety') ||
+              docId.startsWith('inv-corporate') ||
+              docId.startsWith('inv-school') ||
+              docId.startsWith('inv-security') ||
+              docId.startsWith('inv-med') ||
+              docId.startsWith('inv-hosp') ||
+              docId.startsWith('inv-sport') ||
+              docId.startsWith('inv-spec');
+
+            if (isLegacyWipedProduct) {
+              deleteDoc(doc(db, 'inventory', docId)).catch(() => {});
+              return;
+            }
+
             remoteItems.push({
               id: d.id,
               sku: data.sku || `SKU-${d.id.substring(0, 8)}`,
@@ -364,11 +394,138 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               });
               return merged;
             });
+
+            // Keep storefront products uniformly synchronized with remote Firestore inventory
+            setProducts((prevProds) => {
+              return prevProds.map((prod) => {
+                const matchedInv = remoteItems.find(
+                  (inv) => inv.productId === prod.id || inv.id === `inv-${prod.id}` || inv.sku === prod.sku
+                );
+                if (matchedInv) {
+                  return {
+                    ...prod,
+                    name: matchedInv.name || prod.name,
+                    sku: matchedInv.sku || prod.sku,
+                    basePrice: matchedInv.sellingPrice || prod.basePrice,
+                    stockOnHand: matchedInv.stockOnHand,
+                    stockReserved: matchedInv.stockReserved,
+                    unitCost: matchedInv.unitCost,
+                    published: matchedInv.published !== false,
+                  };
+                }
+                return prod;
+              });
+            });
+          }
+        } else if (!initialSeededRef.current) {
+          // If Firestore inventory is currently empty on first boot, uniformly seed initial items
+          initialSeededRef.current = true;
+          try {
+            const batch = writeBatch(db);
+            // Collect initial inventory items
+            const itemsToSeed = inventory.slice(0, 500);
+            if (itemsToSeed.length > 0) {
+              itemsToSeed.forEach((item) => {
+                const docRef = doc(db, 'inventory', item.id);
+                batch.set(
+                  docRef,
+                  {
+                    ...item,
+                    updatedAt: new Date().toISOString(),
+                  },
+                  { merge: true }
+                );
+              });
+              batch
+                .commit()
+                .then(() => {
+                  console.log(`[Firestore] Initial inventory seeded with ${itemsToSeed.length} items.`);
+                })
+                .catch((err) => {
+                  console.warn('Initial Firestore inventory seeding notice:', err);
+                });
+            }
+          } catch (seedErr) {
+            console.warn('Auto-seed initiation notice:', seedErr);
           }
         }
       },
       (error) => {
         handleFirestoreError(error, OperationType.LIST, 'inventory');
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  // Real-time Instant Firestore Sync for Products (Platform Catalog)
+  useEffect(() => {
+    const productsCol = collection(db, 'products');
+    const unsubscribe = onSnapshot(
+      productsCol,
+      (snapshot) => {
+        setIsFirebaseConnected(true);
+        const remoteProducts: UniformProduct[] = [];
+        snapshot.forEach((d) => {
+          const data = d.data();
+          const docId = d.id;
+
+          // Legacy wiped products cleanup
+          if (
+            docId.startsWith('prod-sample') ||
+            docId.startsWith('sample-') ||
+            docId === 'inv-1' ||
+            docId === 'inv-2'
+          ) {
+            deleteDoc(doc(db, 'products', docId)).catch(() => {});
+            return;
+          }
+
+          remoteProducts.push({
+            id: docId,
+            sku: data.sku || `SKU-${docId.toUpperCase()}`,
+            name: data.name || 'Uniform Item',
+            category: data.category || 'corporate',
+            categoryLabel: data.categoryLabel || 'Corporate',
+            tagline: data.tagline || '',
+            basePrice: Number(data.basePrice) || 0,
+            unitCost: Number(data.unitCost) || 0,
+            stockOnHand: Number(data.stockOnHand) || 0,
+            stockReserved: Number(data.stockReserved) || 0,
+            minOrder: Number(data.minOrder) || 1,
+            leadTime: data.leadTime || '3-5 business days',
+            sizes: Array.isArray(data.sizes) && data.sizes.length > 0 ? data.sizes : ['S', 'M', 'L', 'XL'],
+            availableColors: Array.isArray(data.availableColors) ? data.availableColors : [],
+            idealFor: Array.isArray(data.idealFor) ? data.idealFor : [],
+            description: data.description || `${data.name || 'Uniform Item'} manufactured to precision Kenyan standards.`,
+            customizationOptions: data.customizationOptions || {
+              embroidery: true,
+              screenPrinting: true,
+              wovenPatch: true,
+              reflectiveStripes: !!data.customizationOptions?.reflectiveStripes,
+              heatTransfer: true,
+              customStitching: true,
+            },
+            fabric: data.fabric || {
+              composition: 'Premium Uniform Fabric',
+              weight: '210 GSM',
+              features: Array.isArray(data.fabric?.features) ? data.fabric.features : ['Stain Resistant', 'Durable Stitching'],
+            },
+            badge: data.badge || undefined,
+            popular: !!data.popular,
+            image: data.image || '',
+            images: Array.isArray(data.images) && data.images.length > 0 ? data.images : data.image ? [data.image] : [],
+            published: data.published !== false,
+            location: data.location || 'Warehouse Bay A',
+            supplier: data.supplier || 'Nasisi Internal Tailoring Unit',
+          });
+        });
+
+        // Instant reflection in products state:
+        setProducts(remoteProducts);
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, 'products');
       }
     );
 
@@ -430,6 +587,78 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return INITIAL_HERO_CONFIG;
   });
 
+  // Real-time Instant Firestore Sync for Hero Slides
+  useEffect(() => {
+    const slidesCol = collection(db, 'hero_slides');
+    const unsubscribe = onSnapshot(
+      slidesCol,
+      (snapshot) => {
+        setIsFirebaseConnected(true);
+        if (snapshot.empty) {
+          // If Firestore hero_slides is empty on first boot, seed it with INITIAL_HERO_SLIDES
+          try {
+            const batch = writeBatch(db);
+            INITIAL_HERO_SLIDES.forEach((slide, idx) => {
+              batch.set(doc(db, 'hero_slides', slide.id), { ...slide, order: idx });
+            });
+            batch.commit().catch(() => {});
+          } catch {
+            // ignore
+          }
+          return;
+        }
+
+        const remoteSlides: HeroSlide[] = [];
+        snapshot.forEach((d) => {
+          const data = d.data();
+          remoteSlides.push({
+            id: d.id,
+            src: data.src || '',
+            title: data.title || '',
+            subtitle: data.subtitle || '',
+            badge: data.badge || '',
+            alt: data.alt || '',
+            isActive: data.isActive !== false,
+            order: typeof data.order === 'number' ? data.order : 0,
+          });
+        });
+
+        remoteSlides.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+        if (remoteSlides.length > 0) {
+          setHeroSlides(remoteSlides);
+        }
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, 'hero_slides');
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  // Real-time Instant Firestore Sync for Hero Config
+  useEffect(() => {
+    const configDocRef = doc(db, 'settings', 'hero_config');
+    const unsubscribe = onSnapshot(
+      configDocRef,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const data = snapshot.data();
+          setHeroConfig((prev) => ({
+            ...prev,
+            ...data,
+            showOverlayGradients: false,
+          }));
+        }
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.GET, 'settings/hero_config');
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.HERO_SLIDES, JSON.stringify(heroSlides));
   }, [heroSlides]);
@@ -445,6 +674,16 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       order: heroSlides.length,
     };
     setHeroSlides((prev) => [...prev, newSlide]);
+
+    // Instant Firestore persistence
+    setDoc(doc(db, 'hero_slides', newSlide.id), newSlide)
+      .then(() => {
+        console.log(`[Firestore] Hero slide "${newSlide.title}" (${newSlide.id}) saved instantly to database.`);
+      })
+      .catch((err) => {
+        handleFirestoreError(err, OperationType.WRITE, `hero_slides/${newSlide.id}`);
+      });
+
     return newSlide;
   };
 
@@ -452,33 +691,106 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setHeroSlides((prev) =>
       prev.map((slide) => (slide.id === id ? { ...slide, ...updates } : slide))
     );
+
+    // Instant Firestore update
+    setDoc(doc(db, 'hero_slides', id), updates, { merge: true })
+      .then(() => {
+        console.log(`[Firestore] Hero slide ${id} updated instantly in database.`);
+      })
+      .catch((err) => {
+        handleFirestoreError(err, OperationType.UPDATE, `hero_slides/${id}`);
+      });
   };
 
   const deleteHeroSlide = (id: string) => {
     setHeroSlides((prev) => prev.filter((slide) => slide.id !== id));
+
+    // Instant Firestore deletion
+    deleteDoc(doc(db, 'hero_slides', id))
+      .then(() => {
+        console.log(`[Firestore] Hero slide ${id} deleted instantly from database.`);
+      })
+      .catch((err) => {
+        handleFirestoreError(err, OperationType.DELETE, `hero_slides/${id}`);
+      });
   };
 
   const reorderHeroSlides = (newSlides: HeroSlide[]) => {
-    setHeroSlides(newSlides.map((s, idx) => ({ ...s, order: idx })));
+    const ordered = newSlides.map((s, idx) => ({ ...s, order: idx }));
+    setHeroSlides(ordered);
+
+    // Instant Firestore reorder batch update
+    try {
+      const batch = writeBatch(db);
+      ordered.forEach((slide) => {
+        batch.set(
+          doc(db, 'hero_slides', slide.id),
+          { order: slide.order },
+          { merge: true }
+        );
+      });
+      batch.commit()
+        .then(() => {
+          console.log(`[Firestore] Reordered ${ordered.length} hero slides instantly in database.`);
+        })
+        .catch((err) => {
+          handleFirestoreError(err, OperationType.WRITE, 'hero_slides/reorder');
+        });
+    } catch (err) {
+      console.warn('Reorder hero slides batch notice:', err);
+    }
   };
 
   const updateHeroConfig = (updates: Partial<HeroConfig>) => {
     setHeroConfig((prev) => ({ ...prev, ...updates }));
+
+    // Instant Firestore settings update
+    setDoc(doc(db, 'settings', 'hero_config'), updates, { merge: true })
+      .then(() => {
+        console.log('[Firestore] Hero configuration updated instantly in database.');
+      })
+      .catch((err) => {
+        handleFirestoreError(err, OperationType.UPDATE, 'settings/hero_config');
+      });
   };
 
-  const resetHeroToDefault = () => {
+  const resetHeroToDefault = async () => {
     setHeroSlides(INITIAL_HERO_SLIDES);
     setHeroConfig(INITIAL_HERO_CONFIG);
     localStorage.removeItem(STORAGE_KEYS.HERO_SLIDES);
     localStorage.removeItem(STORAGE_KEYS.HERO_CONFIG);
+
+    try {
+      const batch = writeBatch(db);
+      INITIAL_HERO_SLIDES.forEach((slide, idx) => {
+        batch.set(doc(db, 'hero_slides', slide.id), { ...slide, order: idx });
+      });
+      batch.set(doc(db, 'settings', 'hero_config'), INITIAL_HERO_CONFIG);
+      await batch.commit();
+      console.log('[Firestore] Reset hero slides to initial defaults in database.');
+    } catch (err) {
+      console.warn('Reset hero slides notice:', err);
+    }
   };
 
-  const syncHeroSlidesFromRepo = () => {
+  const syncHeroSlidesFromRepo = async () => {
     setHeroSlides(INITIAL_HERO_SLIDES);
     setHeroConfig(INITIAL_HERO_CONFIG);
     localStorage.setItem(STORAGE_KEYS.HERO_SLIDES, JSON.stringify(INITIAL_HERO_SLIDES));
     localStorage.setItem(STORAGE_KEYS.HERO_CONFIG, JSON.stringify(INITIAL_HERO_CONFIG));
     localStorage.setItem('nasisi_hero_repo_sync_v4', 'true');
+
+    try {
+      const batch = writeBatch(db);
+      INITIAL_HERO_SLIDES.forEach((slide, idx) => {
+        batch.set(doc(db, 'hero_slides', slide.id), { ...slide, order: idx });
+      });
+      batch.set(doc(db, 'settings', 'hero_config'), INITIAL_HERO_CONFIG);
+      await batch.commit();
+      console.log('[Firestore] Synced hero slides from repo to database.');
+    } catch (err) {
+      console.warn('Sync hero slides notice:', err);
+    }
   };
 
   // =========================================================================
@@ -978,45 +1290,79 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setProducts((prev) => [newProduct, ...prev]);
 
     // 2. Synchronize to Inventory as a Finished Garment SKU
+    const invId = `inv-${id}`;
+    const newInvItem: ERPInventoryItem = {
+      id: invId,
+      productId: id,
+      sku,
+      name: newProduct.name,
+      category: 'finished_garment',
+      categoryLabel: newProduct.categoryLabel || 'Finished Garment',
+      size: newProduct.sizes?.[0] || 'Standard',
+      color: newProduct.availableColors?.[0]?.name || 'Standard',
+      unit: 'pieces',
+      stockOnHand: newProduct.stockOnHand ?? 50,
+      stockReserved: newProduct.stockReserved ?? 0,
+      reorderLevel: 20,
+      unitCost: newProduct.unitCost ?? Math.round(newProduct.basePrice * 0.58),
+      sellingPrice: newProduct.basePrice,
+      location: newProduct.location || 'Warehouse Main Bay',
+      supplier: newProduct.supplier || 'Nasisi Internal Tailoring Unit',
+      lastRestockedDate: new Date().toISOString().split('T')[0],
+      status:
+        (newProduct.stockOnHand ?? 50) <= 0
+          ? 'out_of_stock'
+          : (newProduct.stockOnHand ?? 50) <= 20
+          ? 'low_stock'
+          : 'in_stock',
+      published: newProduct.published !== false,
+    };
+
     setInventory((prev) => {
-      const filtered = prev.filter((i) => i.productId !== id && i.id !== `inv-${id}` && i.sku !== sku);
-      const newInvItem: ERPInventoryItem = {
-        id: `inv-${id}`,
-        productId: id,
-        sku,
-        name: newProduct.name,
-        category: 'finished_garment',
-        categoryLabel: newProduct.categoryLabel || 'Finished Garment',
-        size: newProduct.sizes?.[0] || 'Standard',
-        color: newProduct.availableColors?.[0]?.name || 'Standard',
-        unit: 'pieces',
-        stockOnHand: newProduct.stockOnHand ?? 50,
-        stockReserved: newProduct.stockReserved ?? 0,
-        reorderLevel: 20,
-        unitCost: newProduct.unitCost ?? Math.round(newProduct.basePrice * 0.58),
-        sellingPrice: newProduct.basePrice,
-        location: newProduct.location || 'Warehouse Main Bay',
-        supplier: newProduct.supplier || 'Nasisi Internal Tailoring Unit',
-        lastRestockedDate: new Date().toISOString().split('T')[0],
-        status:
-          (newProduct.stockOnHand ?? 50) <= 0
-            ? 'out_of_stock'
-            : (newProduct.stockOnHand ?? 50) <= 20
-            ? 'low_stock'
-            : 'in_stock',
-        published: newProduct.published !== false,
-      };
+      const filtered = prev.filter((i) => i.productId !== id && i.id !== invId && i.sku !== sku);
       return [newInvItem, ...filtered];
     });
+
+    // 3. Persist INSTANTLY and uniformly to Firestore (both 'products' and 'inventory' collections)
+    Promise.all([
+      setDoc(
+        doc(db, 'products', id),
+        {
+          ...newProduct,
+          updatedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+        },
+        { merge: true }
+      ),
+      setDoc(
+        doc(db, 'inventory', invId),
+        {
+          ...newInvItem,
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      ),
+    ])
+      .then(() => {
+        console.log(`[Firestore] Product "${newProduct.name}" (${id}) saved instantly to database.`);
+      })
+      .catch((err) => {
+        handleFirestoreError(err, OperationType.WRITE, `products/${id}`);
+      });
 
     return newProduct;
   };
 
   const updateProduct = (id: string, updates: Partial<UniformProduct>) => {
+    let updatedInvItem: ERPInventoryItem | null = null;
+    let invDocId = `inv-${id}`;
+    let mergedProduct: UniformProduct | null = null;
+
     setProducts((prev) =>
       prev.map((p) => {
         if (p.id === id) {
-          return { ...p, ...updates };
+          mergedProduct = { ...p, ...updates };
+          return mergedProduct;
         }
         return p;
       })
@@ -1030,11 +1376,12 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           item.id === `inv-${id}` ||
           (item.sku && updates.sku && item.sku === updates.sku)
         ) {
+          invDocId = item.id;
           const newStock = updates.stockOnHand !== undefined ? updates.stockOnHand : item.stockOnHand;
           const reorder = item.reorderLevel;
           const status = newStock <= 0 ? 'out_of_stock' : newStock <= reorder ? 'low_stock' : 'in_stock';
 
-          return {
+          const updated: ERPInventoryItem = {
             ...item,
             name: updates.name ?? item.name,
             sku: updates.sku ?? item.sku,
@@ -1048,20 +1395,73 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             published: updates.published !== undefined ? updates.published : item.published,
             status,
           };
+          updatedInvItem = updated;
+          return updated;
         }
         return item;
       })
     );
+
+    // Persist INSTANTLY to Firestore ('products' and 'inventory')
+    const writes: Promise<void>[] = [
+      setDoc(
+        doc(db, 'products', id),
+        {
+          ...(mergedProduct || updates),
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      ),
+    ];
+
+    if (updatedInvItem) {
+      writes.push(
+        setDoc(
+          doc(db, 'inventory', invDocId),
+          {
+            ...updatedInvItem,
+            updatedAt: new Date().toISOString(),
+          },
+          { merge: true }
+        )
+      );
+    }
+
+    Promise.all(writes)
+      .then(() => {
+        console.log(`[Firestore] Product ${id} updated instantly in database.`);
+      })
+      .catch((err) => {
+        handleFirestoreError(err, OperationType.UPDATE, `products/${id}`);
+      });
   };
 
   const deleteProduct = (id: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
-    // Also remove corresponding item from inventory
-    setInventory((prev) => prev.filter((item) => item.productId !== id && item.id !== `inv-${id}`));
+    let invDocId = `inv-${id}`;
+    setInventory((prev) => {
+      const match = prev.find((item) => item.productId === id || item.id === `inv-${id}`);
+      if (match) invDocId = match.id;
+      return prev.filter((item) => item.productId !== id && item.id !== `inv-${id}`);
+    });
+
+    // Delete documents in Firestore instantly from both collections
+    Promise.all([
+      deleteDoc(doc(db, 'products', id)),
+      deleteDoc(doc(db, 'inventory', invDocId)),
+    ])
+      .then(() => {
+        console.log(`[Firestore] Product ${id} deleted instantly from database.`);
+      })
+      .catch((err) => {
+        handleFirestoreError(err, OperationType.DELETE, `products/${id}`);
+      });
   };
 
   const togglePublishProduct = (id: string) => {
     let nextPublishedState = true;
+    let invDocId = `inv-${id}`;
+
     setProducts((prev) =>
       prev.map((p) => {
         if (p.id === id) {
@@ -1075,11 +1475,38 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setInventory((prev) =>
       prev.map((item) => {
         if (item.productId === id || item.id === `inv-${id}`) {
+          invDocId = item.id;
           return { ...item, published: nextPublishedState };
         }
         return item;
       })
     );
+
+    // Persist published status INSTANTLY to Firestore ('products' and 'inventory')
+    Promise.all([
+      setDoc(
+        doc(db, 'products', id),
+        {
+          published: nextPublishedState,
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      ),
+      setDoc(
+        doc(db, 'inventory', invDocId),
+        {
+          published: nextPublishedState,
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      ),
+    ])
+      .then(() => {
+        console.log(`[Firestore] Product ${id} publish state changed to ${nextPublishedState} in database.`);
+      })
+      .catch((err) => {
+        handleFirestoreError(err, OperationType.UPDATE, `products/${id}`);
+      });
   };
 
   const duplicateProduct = (id: string): UniformProduct => {
@@ -1103,7 +1530,8 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return addProduct(cloned);
   };
 
-  const syncAllProductsToInventory = () => {
+  const syncAllProductsToInventory = async (): Promise<void> => {
+    let unified: ERPInventoryItem[] = [];
     setInventory((prev) => {
       const updated = [...prev];
       products.forEach((prod) => {
@@ -1143,8 +1571,123 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           updated.unshift(itemPayload);
         }
       });
+      unified = updated;
       return updated;
     });
+
+    // Batch write all items to Firestore for complete uniformity
+    try {
+      if (unified.length > 0) {
+        const batch = writeBatch(db);
+        unified.slice(0, 500).forEach((item) => {
+          const docRef = doc(db, 'inventory', item.id);
+          batch.set(
+            docRef,
+            {
+              ...item,
+              updatedAt: new Date().toISOString(),
+            },
+            { merge: true }
+          );
+        });
+        await batch.commit();
+        console.log(`[Firestore] Uniformly synced ${unified.length} inventory items to cloud database.`);
+      }
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, 'inventory/batch_sync');
+    }
+  };
+
+  const wipeAllProducts = async (): Promise<void> => {
+    // 1. Clear products state and local storage
+    setProducts([]);
+    try {
+      localStorage.removeItem(STORAGE_KEYS.PRODUCTS);
+      localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify([]));
+      localStorage.removeItem('nasisi_erp_products_v4');
+      localStorage.removeItem('nasisi_erp_products_v3');
+      localStorage.removeItem('nasisi_erp_products_v2');
+      localStorage.removeItem('nasisi_erp_products_v1');
+    } catch {
+      // ignore
+    }
+
+    // 2. Remove all finished garments and product inventory from inventory state
+    const deletedInvIds: string[] = [];
+    setInventory((prev) => {
+      const remaining = prev.filter((item) => {
+        const isProductItem =
+          item.category === 'finished_garment' ||
+          Boolean(item.productId) ||
+          item.id.startsWith('inv-prod') ||
+          item.id.startsWith('inv-safety') ||
+          item.id.startsWith('inv-corporate') ||
+          item.id.startsWith('inv-school') ||
+          item.id.startsWith('inv-security') ||
+          item.id.startsWith('inv-med') ||
+          item.id.startsWith('inv-hosp') ||
+          item.id.startsWith('inv-sport') ||
+          item.id.startsWith('inv-spec') ||
+          item.id === 'inv-1' ||
+          item.id === 'inv-2';
+
+        if (isProductItem) {
+          deletedInvIds.push(item.id);
+          return false;
+        }
+        return true;
+      });
+      try {
+        localStorage.setItem(STORAGE_KEYS.INVENTORY, JSON.stringify(remaining));
+      } catch {
+        // ignore
+      }
+      return remaining;
+    });
+
+    // 3. Delete finished garment inventory documents from Firestore collection
+    try {
+      const snap = await getDocs(collection(db, 'inventory'));
+      const batch = writeBatch(db);
+      let count = 0;
+      snap.forEach((docSnap) => {
+        const data = docSnap.data();
+        const docId = docSnap.id;
+        const isProductItem =
+          data.category === 'finished_garment' ||
+          Boolean(data.productId) ||
+          deletedInvIds.includes(docId) ||
+          docId.startsWith('inv-prod') ||
+          docId.startsWith('inv-safety') ||
+          docId.startsWith('inv-corporate') ||
+          docId.startsWith('inv-school') ||
+          docId.startsWith('inv-security') ||
+          docId.startsWith('inv-med') ||
+          docId.startsWith('inv-hosp') ||
+          docId.startsWith('inv-sport') ||
+          docId.startsWith('inv-spec') ||
+          docId === 'inv-1' ||
+          docId === 'inv-2';
+
+        if (isProductItem) {
+          batch.delete(doc(db, 'inventory', docId));
+          count++;
+        }
+      });
+      // 4. Also wipe the products collection in Firestore
+      const prodSnap = await getDocs(collection(db, 'products'));
+      prodSnap.forEach((docSnap) => {
+        batch.delete(doc(db, 'products', docSnap.id));
+        count++;
+      });
+
+      if (count > 0) {
+        await batch.commit();
+        console.log(`[Firestore] Wiped ${count} product & inventory items from cloud database.`);
+      }
+    } catch (err) {
+      console.warn('Wipe products from Firestore notice:', err);
+    }
   };
 
   // Document Operations
@@ -1457,11 +2000,22 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             updated.status = 'in_stock';
           }
 
-          // If linked to product, sync selling price
-          if (it.productId && updates.sellingPrice) {
+          // If linked to product, sync selling price, stock, sku, and publication state
+          if (it.productId) {
             setProducts((prodList) =>
               prodList.map((p) =>
-                p.id === it.productId ? { ...p, basePrice: updates.sellingPrice! } : p
+                p.id === it.productId
+                  ? {
+                      ...p,
+                      name: updates.name ?? p.name,
+                      sku: updates.sku ?? p.sku,
+                      basePrice: updates.sellingPrice !== undefined ? updates.sellingPrice : p.basePrice,
+                      stockOnHand: updates.stockOnHand !== undefined ? updates.stockOnHand : p.stockOnHand,
+                      stockReserved: updates.stockReserved !== undefined ? updates.stockReserved : p.stockReserved,
+                      unitCost: updates.unitCost !== undefined ? updates.unitCost : p.unitCost,
+                      published: updates.published !== undefined ? updates.published : p.published,
+                    }
+                  : p
               )
             );
           }
@@ -1833,6 +2387,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         togglePublishProduct,
         duplicateProduct,
         syncAllProductsToInventory,
+        wipeAllProducts,
         createDocument,
         updateDocument,
         deleteDocument,

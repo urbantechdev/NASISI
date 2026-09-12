@@ -46,6 +46,7 @@ export interface UniformProduct {
   garmentType?: string; // Exact garment type from official catalogue
   badge?: string;
   popular?: boolean;
+  leadTime?: string;
   // Synced inventory and publishing fields
   published?: boolean;
   sku: string; // Stock Keeping Unit (e.g. "SKU-IND-REF-101")
@@ -379,6 +380,8 @@ export type AdminRole =
   | 'Operations Manager' 
   | 'Finance Controller' 
   | 'Production Supervisor'
+  | 'Sales & Client Rep'
+  | 'Inventory & Dispatch Manager'
   | 'Customer';
 
 export interface AdminUserActivity {
@@ -401,7 +404,7 @@ export interface AdminUser {
   avatar?: string;
   bio?: string;
   location?: string;
-  status: 'active' | 'away' | 'offline';
+  status: 'active' | 'away' | 'offline' | 'suspended';
   lastLogin?: string;
   joinedDate: string;
   twoFactorEnabled: boolean;

@@ -28,6 +28,32 @@
       },
       "required": ["id", "sku", "name", "category", "stockOnHand", "unitCost", "sellingPrice"]
     },
+    "UniformProduct": {
+      "title": "UniformProduct",
+      "description": "Finished uniform apparel product displayed on the storefront and managed in ERP catalog",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "sku": { "type": "string" },
+        "name": { "type": "string" },
+        "category": { "type": "string" },
+        "categoryLabel": { "type": "string" },
+        "tagline": { "type": "string" },
+        "basePrice": { "type": "number" },
+        "unitCost": { "type": "number" },
+        "stockOnHand": { "type": "number" },
+        "stockReserved": { "type": "number" },
+        "minOrder": { "type": "number" },
+        "leadTime": { "type": "string" },
+        "image": { "type": "string" },
+        "published": { "type": "boolean" },
+        "location": { "type": "string" },
+        "supplier": { "type": "string" },
+        "updatedAt": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "sku", "name", "category", "basePrice"]
+    },
     "UserProfile": {
       "title": "UserProfile",
       "description": "Authenticated user profile for admin staff or store customers",
@@ -43,12 +69,41 @@
         "lastLogin": { "type": "string" }
       },
       "required": ["uid", "email"]
+    },
+    "HeroSlide": {
+      "title": "HeroSlide",
+      "description": "Hero banner slide item synchronized with storefront display",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "src": { "type": "string" },
+        "title": { "type": "string" },
+        "subtitle": { "type": "string" },
+        "ctaText": { "type": "string" },
+        "ctaLink": { "type": "string" },
+        "order": { "type": "number" },
+        "active": { "type": "boolean" },
+        "badge": { "type": "string" }
+      },
+      "required": ["id", "src", "title"]
     }
   },
   "firestore": {
+    "/products/{productId}": {
+      "schema": "UniformProduct",
+      "description": "Real-time uniform apparel catalog synchronized instantly across storefront and administrative ERP"
+    },
     "/inventory/{inventoryId}": {
       "schema": "InventoryItem",
       "description": "Real-time enterprise uniform and raw materials inventory synchronized with Firestore"
+    },
+    "/hero_slides/{slideId}": {
+      "schema": "HeroSlide",
+      "description": "Real-time hero carousel slides synchronized instantly across storefront and admin manager"
+    },
+    "/settings/{settingId}": {
+      "schema": "object",
+      "description": "Global storefront settings including hero configuration"
     },
     "/users/{userId}": {
       "schema": "UserProfile",
