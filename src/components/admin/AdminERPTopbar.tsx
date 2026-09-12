@@ -84,21 +84,8 @@ export const AdminERPTopbar: React.FC<AdminERPTopbarProps> = ({
 
         {/* Right: Badges and Action Controls (Clean 2-tier stacked right block) */}
         <div className="flex flex-col items-end justify-center gap-2 sm:gap-2.5 py-1">
-          {/* Top Tier: KRA PIN, Paybill & Customer Storefront Switcher */}
+          {/* Top Tier: Customer Storefront Switcher & Profile */}
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* KRA PIN Badge */}
-            <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-slate-50 border border-slate-200 rounded-xl text-xs">
-              <span className="text-slate-500 font-medium">KRA PIN:</span>
-              <span className="font-mono text-slate-800 font-bold">{businessProfile.kraPin}</span>
-            </div>
-
-            {/* Paybill reference badge */}
-            <div className="hidden xl:flex items-center gap-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200/60 rounded-xl text-xs text-emerald-800">
-              <Phone className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="text-emerald-700 font-medium">Paybill:</span>
-              <span className="font-mono font-bold text-emerald-900">{businessProfile.mpesaPaybillNumber}</span>
-            </div>
-
             {/* Customer Storefront Switcher */}
             <motion.button
               whileHover={{ scale: 1.02 }}
@@ -168,7 +155,7 @@ export const AdminERPTopbar: React.FC<AdminERPTopbarProps> = ({
               type="button"
               onClick={() => onOpenNewDocModal('invoice')}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer"
-              title="Create KRA-compliant Tax Invoice"
+              title="Create Tax Invoice"
             >
               <Plus className="w-4 h-4" />
               <span>New Invoice</span>

@@ -86,7 +86,7 @@ export const ERPCustomerManager: React.FC<ERPCustomerManagerProps> = ({
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <h2 className="text-xl font-bold text-slate-900 font-['Outfit']">
-              Institutional Clients & KRA Tax Directory
+              Institutional Clients & Accounts Directory
             </h2>
             <p className="text-xs text-slate-500">
               Manage school bursars, hospital procurement heads, credit limits, and contact profiles in Kenya.
@@ -108,7 +108,7 @@ export const ERPCustomerManager: React.FC<ERPCustomerManagerProps> = ({
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search by Institution name, Contact person, Phone, Email, or KRA PIN..."
+              placeholder="Search by Institution name, Contact person, Phone, or Email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -179,11 +179,6 @@ export const ERPCustomerManager: React.FC<ERPCustomerManagerProps> = ({
                   <Mail className="w-3.5 h-3.5 text-slate-400" />
                   <span className="truncate">{cust.email}</span>
                 </p>
-                {cust.kraPin && (
-                  <p className="font-mono font-bold text-slate-800 text-[11px] pt-0.5">
-                    KRA PIN: {cust.kraPin}
-                  </p>
-                )}
               </div>
 
               {/* Financial balances */}

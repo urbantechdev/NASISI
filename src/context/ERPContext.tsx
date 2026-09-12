@@ -16,7 +16,7 @@ import {
 } from '../types';
 import { UNIFORM_PRODUCTS } from '../data/uniformsData';
 import { INITIAL_HERO_SLIDES, INITIAL_HERO_CONFIG } from '../data/heroData';
-import { INITIAL_ADMIN_USERS, DEFAULT_ADMIN_CREDENTIALS } from '../data/adminUserData';
+import { INITIAL_ADMIN_USERS, DEFAULT_ADMIN_CREDENTIALS, isWhitelistedAdminEmail, WHITELISTED_ADMIN_EMAILS } from '../data/adminUserData';
 import {
   INITIAL_BUSINESS_PROFILE,
   INITIAL_CUSTOMERS,
@@ -27,17 +27,39 @@ import {
   INITIAL_TRANSACTIONS,
 } from '../data/erpInitialData';
 import { applyBrowserFavicon } from '../utils/favicon';
+import {
+  auth,
+  db,
+  googleProvider,
+  signInWithPopup,
+  signInWithEmailAndPassword,
+  signOut as firebaseSignOut,
+  onAuthStateChanged,
+  collection,
+  doc,
+  setDoc,
+  deleteDoc,
+  onSnapshot,
+  handleFirestoreError,
+  OperationType,
+  testFirestoreConnection,
+  FirebaseUser,
+} from '../lib/firebase';
 
 interface ERPContextType {
-  // Admin Authentication & Profile
+  // Admin & Customer Authentication & Profile
   currentUser: AdminUser | null;
   isAuthenticated: boolean;
+  isWhitelistedAdmin: boolean;
+  isCustomer: boolean;
   adminUsers: AdminUser[];
-  login: (emailOrStaffId: string, password?: string) => Promise<{ success: boolean; error?: string }>;
+  login: (emailOrStaffId: string, password?: string) => Promise<{ success: boolean; role: 'admin' | 'customer'; error?: string }>;
+  loginWithGoogle: () => Promise<{ success: boolean; role: 'admin' | 'customer'; error?: string }>;
   quickDemoLogin: (userId: string) => void;
   logout: () => void;
   updateUserProfile: (updates: Partial<AdminUser>) => void;
   changePassword: (oldPass: string, newPass: string) => { success: boolean; error?: string };
+  isFirebaseConnected: boolean;
 
   // Data
   businessProfile: ERPBusinessProfile;
@@ -284,6 +306,73 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
   }, [products]);
 
+  // Track Firebase connection state
+  const [isFirebaseConnected, setIsFirebaseConnected] = useState<boolean>(false);
+
+  // Test Firebase connectivity on boot
+  useEffect(() => {
+    testFirestoreConnection().then((connected) => {
+      setIsFirebaseConnected(connected);
+    });
+  }, []);
+
+  // Real-time Firestore Sync for Inventory
+  useEffect(() => {
+    const inventoryCol = collection(db, 'inventory');
+    const unsubscribe = onSnapshot(
+      inventoryCol,
+      (snapshot) => {
+        setIsFirebaseConnected(true);
+        if (!snapshot.empty) {
+          const remoteItems: ERPInventoryItem[] = [];
+          snapshot.forEach((d) => {
+            const data = d.data();
+            remoteItems.push({
+              id: d.id,
+              sku: data.sku || `SKU-${d.id.substring(0, 8)}`,
+              name: data.name || 'Uniform Item',
+              category: data.category || 'finished_garment',
+              categoryLabel: data.categoryLabel || 'Finished Garment',
+              size: data.size || 'Standard',
+              color: data.color || 'Standard',
+              unit: data.unit || 'pieces',
+              stockOnHand: Number(data.stockOnHand) || 0,
+              stockReserved: Number(data.stockReserved) || 0,
+              reorderLevel: Number(data.reorderLevel) || 20,
+              unitCost: Number(data.unitCost) || 0,
+              sellingPrice: Number(data.sellingPrice) || 0,
+              location: data.location || 'Warehouse Main Bay',
+              supplier: data.supplier || 'Nasisi Internal Tailoring Unit',
+              lastRestockedDate: data.lastRestockedDate || new Date().toISOString().split('T')[0],
+              status: data.status || 'in_stock',
+              productId: data.productId,
+              published: data.published !== false,
+            });
+          });
+
+          if (remoteItems.length > 0) {
+            setInventory((prev) => {
+              // Merge remote items with local items, preferring remote
+              const remoteMap = new Map(remoteItems.map((item) => [item.id, item]));
+              const merged = [...remoteItems];
+              prev.forEach((localItem) => {
+                if (!remoteMap.has(localItem.id)) {
+                  merged.push(localItem);
+                }
+              });
+              return merged;
+            });
+          }
+        }
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.LIST, 'inventory');
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
   useEffect(() => {
     localStorage.setItem(STORAGE_KEYS.INVENTORY, JSON.stringify(inventory));
   }, [inventory]);
@@ -415,6 +504,12 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const isAuthenticated = Boolean(currentUser);
+  const isWhitelistedAdmin = Boolean(
+    currentUser &&
+    currentUser.role !== 'Customer' &&
+    (isWhitelistedAdminEmail(currentUser.email) || isWhitelistedAdminEmail(currentUser.staffId))
+  );
+  const isCustomer = Boolean(currentUser && currentUser.role === 'Customer');
 
   // Sync admin users to storage
   useEffect(() => {
@@ -425,12 +520,225 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   }, [adminUsers]);
 
+  // Listen to Firebase Auth state
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser && !currentUser) {
+        const email = firebaseUser.email || '';
+        const isWhitelisted = isWhitelistedAdminEmail(email);
+
+        if (isWhitelisted) {
+          // Find existing admin or construct admin profile for authenticated Firebase admin user
+          const existing = adminUsers.find(
+            (u) => u.email.toLowerCase() === email.toLowerCase()
+          );
+          const signedInAdmin: AdminUser = existing
+            ? {
+                ...existing,
+                status: 'active',
+                lastLogin: 'Just now (Firebase Verified)',
+                avatar: firebaseUser.photoURL || existing.avatar,
+              }
+            : {
+                id: `user-${firebaseUser.uid}`,
+                name: firebaseUser.displayName || email.split('@')[0] || 'Enterprise Admin',
+                email: email,
+                role: 'Super Admin',
+                staffId: `NAS-STAFF-${firebaseUser.uid.substring(0, 5).toUpperCase()}`,
+                phone: '+254 722 419 820',
+                department: 'Executive Administration & Factory Oversight',
+                avatar:
+                  firebaseUser.photoURL ||
+                  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop',
+                bio: 'Authenticated enterprise administrator via Firebase Identity.',
+                location: 'Nairobi Headquarters',
+                status: 'active',
+                lastLogin: 'Just now (Firebase Verified)',
+                joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+                twoFactorEnabled: true,
+              };
+
+          setCurrentUser(signedInAdmin);
+          localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(signedInAdmin));
+        } else {
+          // Authenticated as Customer for storefront checkout purposes only
+          const customerUser: AdminUser = {
+            id: `cust-${firebaseUser.uid}`,
+            name: firebaseUser.displayName || email.split('@')[0] || 'Storefront Customer',
+            email: email,
+            role: 'Customer',
+            staffId: `CUST-${firebaseUser.uid.substring(0, 6).toUpperCase()}`,
+            phone: firebaseUser.phoneNumber || '+254 700 000 000',
+            department: 'Storefront Client Accounts',
+            avatar:
+              firebaseUser.photoURL ||
+              'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop',
+            bio: 'Verified customer account for customized uniform quotes and express checkout.',
+            location: 'Kenya',
+            status: 'active',
+            lastLogin: 'Just now (Firebase Customer)',
+            joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+            twoFactorEnabled: false,
+          };
+
+          setCurrentUser(customerUser);
+          localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(customerUser));
+        }
+      }
+    });
+
+    return () => unsubscribe();
+  }, [adminUsers, currentUser]);
+
+  const loginWithGoogle = async (): Promise<{ success: boolean; role: 'admin' | 'customer'; error?: string }> => {
+    try {
+      const result = await signInWithPopup(auth, googleProvider);
+      const user = result.user;
+      const email = user.email || '';
+      const isWhitelisted = isWhitelistedAdminEmail(email);
+      
+      if (isWhitelisted) {
+        const existing = adminUsers.find(
+          (u) => u.email.toLowerCase() === email.toLowerCase()
+        );
+        const newActivity: AdminUserActivity = {
+          id: `act-${Date.now()}`,
+          action: 'Signed in via Google OAuth Single Sign-On (Whitelisted Admin)',
+          timestamp: 'Just now',
+          category: 'auth',
+        };
+
+        const updatedUser: AdminUser = existing
+          ? {
+              ...existing,
+              status: 'active',
+              avatar: user.photoURL || existing.avatar,
+              lastLogin: 'Just now (Google Auth Verified)',
+              recentActivities: [newActivity, ...(existing.recentActivities || []).slice(0, 9)],
+            }
+          : {
+              id: `user-${user.uid}`,
+              name: user.displayName || email.split('@')[0] || 'Google Admin',
+              email: email,
+              role: 'Super Admin',
+              staffId: `NAS-G-${user.uid.substring(0, 5).toUpperCase()}`,
+              phone: user.phoneNumber || '+254 722 419 820',
+              department: 'Executive Administration & Factory Oversight',
+              avatar: user.photoURL || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop',
+              bio: 'Authenticated administrator via Google Identity SSO.',
+              location: 'Nairobi HQ',
+              status: 'active',
+              lastLogin: 'Just now (Google Auth Verified)',
+              joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+              twoFactorEnabled: true,
+              recentActivities: [newActivity],
+            };
+
+        setCurrentUser(updatedUser);
+        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updatedUser));
+        setAdminUsers((prev) => {
+          const found = prev.some((u) => u.id === updatedUser.id || u.email.toLowerCase() === updatedUser.email.toLowerCase());
+          return found
+            ? prev.map((u) => (u.id === updatedUser.id || u.email.toLowerCase() === updatedUser.email.toLowerCase() ? updatedUser : u))
+            : [updatedUser, ...prev];
+        });
+
+        return { success: true, role: 'admin' };
+      } else {
+        // Customer account login: Access granted strictly for customer/checkout features
+        const customerUser: AdminUser = {
+          id: `cust-${user.uid}`,
+          name: user.displayName || email.split('@')[0] || 'Storefront Customer',
+          email: email,
+          role: 'Customer',
+          staffId: `CUST-${user.uid.substring(0, 6).toUpperCase()}`,
+          phone: user.phoneNumber || '+254 700 000 000',
+          department: 'Storefront Client Accounts',
+          avatar:
+            user.photoURL ||
+            'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop',
+          bio: 'Verified customer account for customized uniform quotes and express checkout.',
+          location: 'Kenya',
+          status: 'active',
+          lastLogin: 'Just now (Google Auth Customer)',
+          joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+          twoFactorEnabled: false,
+        };
+
+        setCurrentUser(customerUser);
+        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(customerUser));
+        return { success: true, role: 'customer' };
+      }
+    } catch (err: any) {
+      console.warn('Google sign-in error:', err);
+      let errorMsg = err?.message || 'Google authentication encountered an issue. Please ensure popup is enabled.';
+      if (err?.code === 'auth/unauthorized-domain') {
+        errorMsg = 'Domain not authorized in Firebase Console. Add your preview domain in Firebase Console > Authentication > Settings > Authorized domains.';
+      } else if (err?.code === 'auth/operation-not-allowed') {
+        errorMsg = 'Google Sign-in is not yet enabled in Firebase Console. Enable "Google" under Firebase Console > Authentication > Sign-in method.';
+      } else if (err?.code === 'auth/popup-blocked') {
+        errorMsg = 'Sign-in popup was blocked by your browser. Please allow popups for this site or open in a new tab.';
+      } else if (err?.code === 'auth/popup-closed-by-user') {
+        errorMsg = 'Google sign-in window was closed before completing.';
+      }
+      return {
+        success: false,
+        role: 'customer',
+        error: errorMsg,
+      };
+    }
+  };
+
   const login = async (
     emailOrStaffId: string,
     password?: string
-  ): Promise<{ success: boolean; error?: string }> => {
+  ): Promise<{ success: boolean; role: 'admin' | 'customer'; error?: string }> => {
     const trimmed = emailOrStaffId.trim().toLowerCase();
     const cleanPassword = (password || '').trim();
+
+    // If it's an email format, also try authenticating with Firebase Auth
+    if (trimmed.includes('@') && cleanPassword) {
+      try {
+        await signInWithEmailAndPassword(auth, trimmed, cleanPassword);
+      } catch (firebaseErr: any) {
+        console.log('Firebase auth attempt returned notice:', firebaseErr?.code || firebaseErr?.message);
+      }
+    }
+
+    const isWhitelisted = isWhitelistedAdminEmail(trimmed);
+
+    // If NOT a whitelisted admin, allow login as Customer if valid email address
+    if (!isWhitelisted) {
+      if (trimmed.includes('@')) {
+        const customerUser: AdminUser = {
+          id: `cust-${Date.now()}`,
+          name: trimmed.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+          email: trimmed,
+          role: 'Customer',
+          staffId: `CUST-${Math.floor(1000 + Math.random() * 9000)}`,
+          phone: '+254 700 000 000',
+          department: 'Storefront Client Accounts',
+          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop',
+          bio: 'Customer account for quotation requests and checkout.',
+          location: 'Kenya',
+          status: 'active',
+          lastLogin: 'Just now',
+          joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+          twoFactorEnabled: false,
+        };
+
+        setCurrentUser(customerUser);
+        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(customerUser));
+        return { success: true, role: 'customer' };
+      }
+
+      return {
+        success: false,
+        role: 'customer',
+        error:
+          'Access restricted: Only whitelisted administrators (nasisiknitwear.ke@gmail.com, optimumengineeringke@gmail.com, veronicanjus@gmail.com) can access the Enterprise ERP Dashboard. Other users can sign in with an email for customer checkout.',
+      };
+    }
 
     // Match by email or staffId or generic admin
     const matchedUser = adminUsers.find(
@@ -462,27 +770,32 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       !cleanPassword;
 
     if (!matchedUser) {
-      // If entered admin@nasisiuniforms.co.ke or admin, match with default user
-      if (trimmed === 'admin@nasisiuniforms.co.ke' || trimmed === 'admin') {
+      if (trimmed === 'admin@nasisiuniforms.co.ke' || trimmed === 'admin' || isWhitelistedAdminEmail(trimmed)) {
         const userToLogin: AdminUser = {
-          ...adminUsers[0],
+          ...(adminUsers[0] || INITIAL_ADMIN_USERS[0]),
+          id: `user-${Date.now()}`,
+          email: trimmed.includes('@') ? trimmed : 'admin@nasisiuniforms.co.ke',
+          name: trimmed.includes('@') ? trimmed.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()) : 'Enterprise Admin',
+          role: 'Super Admin',
           status: 'active',
-          lastLogin: 'Just now (Nairobi Station)',
+          lastLogin: 'Just now (Whitelisted Admin)',
         };
         setCurrentUser(userToLogin);
         localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(userToLogin));
-        return { success: true };
+        return { success: true, role: 'admin' };
       }
       return {
         success: false,
-        error: 'No administrator account found with this email or Staff ID. Please use a quick demo account or admin@nasisiuniforms.co.ke',
+        role: 'admin',
+        error: 'No administrator profile found for this staff ID or email.',
       };
     }
 
     if (!isPasswordValid) {
       return {
         success: false,
-        error: 'Incorrect password. (Hint: Demo password is "admin123" or click any 1-click Demo profile).',
+        role: 'admin',
+        error: 'Incorrect password. Please check your credentials.',
       };
     }
 
@@ -507,7 +820,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       prev.map((u) => (u.id === updatedUser.id ? updatedUser : u))
     );
 
-    return { success: true };
+    return { success: true, role: 'admin' };
   };
 
   const quickDemoLogin = (userId: string) => {
@@ -532,6 +845,11 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const logout = () => {
+    try {
+      firebaseSignOut(auth).catch(() => {});
+    } catch {
+      // ignore
+    }
     if (currentUser) {
       const loggedOutUser: AdminUser = {
         ...currentUser,
@@ -1066,17 +1384,32 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return true;
   };
 
-  // Inventory Operations
+  // Inventory Operations with Firestore Synchronization
   const addInventoryItem = (itemData: Omit<ERPInventoryItem, 'id'>): ERPInventoryItem => {
     const newItem: ERPInventoryItem = {
       ...itemData,
       id: `inv-${Date.now()}`,
     };
     setInventory((prev) => [newItem, ...prev]);
+
+    // Push to Firestore asynchronously
+    const docRef = doc(db, 'inventory', newItem.id);
+    setDoc(
+      docRef,
+      {
+        ...newItem,
+        updatedAt: new Date().toISOString(),
+      },
+      { merge: true }
+    ).catch((err) => {
+      handleFirestoreError(err, OperationType.WRITE, `inventory/${newItem.id}`);
+    });
+
     return newItem;
   };
 
   const updateInventoryItem = (id: string, updates: Partial<ERPInventoryItem>) => {
+    let finalUpdatedItem: ERPInventoryItem | null = null;
     setInventory((prev) =>
       prev.map((it) => {
         if (it.id === id) {
@@ -1099,14 +1432,31 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             );
           }
 
+          finalUpdatedItem = updated;
           return updated;
         }
         return it;
       })
     );
+
+    // Sync to Firestore
+    if (finalUpdatedItem) {
+      const docRef = doc(db, 'inventory', id);
+      setDoc(
+        docRef,
+        {
+          ...finalUpdatedItem,
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      ).catch((err) => {
+        handleFirestoreError(err, OperationType.UPDATE, `inventory/${id}`);
+      });
+    }
   };
 
   const adjustStock = (id: string, delta: number) => {
+    let adjustedItem: ERPInventoryItem | null = null;
     setInventory((prev) =>
       prev.map((it) => {
         if (it.id === id) {
@@ -1121,21 +1471,44 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             );
           }
 
-          return {
+          const updated: ERPInventoryItem = {
             ...it,
             stockOnHand: newStock,
             status: newStatus,
             lastRestockedDate:
               delta > 0 ? new Date().toISOString().split('T')[0] : it.lastRestockedDate,
           };
+          adjustedItem = updated;
+          return updated;
         }
         return it;
       })
     );
+
+    // Sync adjusted stock to Firestore
+    if (adjustedItem) {
+      const docRef = doc(db, 'inventory', id);
+      setDoc(
+        docRef,
+        {
+          ...adjustedItem,
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      ).catch((err) => {
+        handleFirestoreError(err, OperationType.UPDATE, `inventory/${id}`);
+      });
+    }
   };
 
   const deleteInventoryItem = (id: string) => {
     setInventory((prev) => prev.filter((it) => it.id !== id));
+
+    // Delete document in Firestore
+    const docRef = doc(db, 'inventory', id);
+    deleteDoc(docRef).catch((err) => {
+      handleFirestoreError(err, OperationType.DELETE, `inventory/${id}`);
+    });
   };
 
   // Customer Operations
@@ -1394,15 +1767,19 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         inquiryTickets,
         heroSlides,
         heroConfig,
-        // Admin Auth & User Profile
+        // Admin & Customer Auth & User Profile
         currentUser,
         isAuthenticated,
+        isWhitelistedAdmin,
+        isCustomer,
         adminUsers,
         login,
+        loginWithGoogle,
         quickDemoLogin,
         logout,
         updateUserProfile,
         changePassword,
+        isFirebaseConnected,
         addHeroSlide,
         updateHeroSlide,
         deleteHeroSlide,

@@ -300,32 +300,63 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
         </div>
 
         {/* Category Filter Pills (Centered & Horizontally Scrollable) */}
-        <div className="flex items-center justify-start lg:justify-center gap-2 overflow-x-auto pb-2 mb-8 sm:mb-10 scrollbar-none">
+        <div className="flex items-center justify-start lg:justify-center gap-2.5 overflow-x-auto py-2 px-1 mb-8 sm:mb-10 scrollbar-none">
           {categories.map((cat) => {
             const IconComponent = cat.icon;
             const isSelected = selectedCategory === cat.id;
             return (
-              <button
+              <motion.button
                 key={cat.id}
+                id={`category-btn-${cat.id}`}
+                whileHover={{ y: -3, scale: 1.03 }}
+                whileTap={{ scale: 0.95 }}
+                transition={{ type: 'spring', stiffness: 450, damping: 24 }}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`group px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 flex items-center gap-2 hover:-translate-y-0.5 active:scale-95 cursor-pointer shrink-0 ${
+                className={`group relative px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all duration-200 flex items-center gap-2.5 cursor-pointer shrink-0 select-none overflow-hidden ${
                   isSelected
-                    ? 'bg-[#06163c] text-white shadow-md ring-2 ring-blue-500/20 scale-[1.02]'
-                    : 'bg-white text-slate-600 hover:text-[#06163c] hover:bg-blue-50/80 border border-slate-200 hover:border-blue-300 hover:shadow-xs'
+                    ? 'bg-gradient-to-r from-[#06163c] to-[#0d2a6b] text-white shadow-[0_8px_20px_rgba(6,22,60,0.25)] ring-2 ring-blue-400/40'
+                    : 'bg-white text-slate-600 hover:text-[#06163c] hover:bg-gradient-to-r hover:from-blue-50/90 hover:to-indigo-50/90 border border-slate-200/90 hover:border-blue-400 hover:shadow-[0_6px_18px_rgba(37,99,235,0.12)]'
                 }`}
               >
-                <IconComponent className={`w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110 ${isSelected ? 'text-white' : 'text-slate-500 group-hover:text-[#06163c]'}`} />
-                <span>{cat.label}</span>
+                {/* Subtle sheen highlight on hover */}
+                <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
+
+                {/* Icon with interactive spring tilt and zoom */}
+                <span className="relative flex items-center justify-center">
+                  <IconComponent
+                    className={`w-4 h-4 transition-all duration-300 ease-out group-hover:scale-125 group-hover:rotate-6 ${
+                      isSelected
+                        ? 'text-cyan-300 drop-shadow-[0_0_8px_rgba(103,232,249,0.5)]'
+                        : 'text-slate-400 group-hover:text-blue-600'
+                    }`}
+                  />
+                </span>
+
+                {/* Category Label */}
+                <span className="relative z-10 transition-colors duration-200">
+                  {cat.label}
+                </span>
+
+                {/* Count Badge with hover pulse and color transition */}
                 <span
-                  className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold transition-colors duration-200 ${
+                  className={`relative z-10 text-[10px] px-2 py-0.5 rounded-full font-extrabold transition-all duration-300 group-hover:scale-110 ${
                     isSelected
-                      ? 'bg-white/20 text-white'
-                      : 'bg-slate-100 text-slate-500 group-hover:bg-blue-100 group-hover:text-[#06163c]'
+                      ? 'bg-white/20 text-cyan-200 border border-white/20'
+                      : 'bg-slate-100 text-slate-500 group-hover:bg-blue-600 group-hover:text-white group-hover:shadow-[0_2px_8px_rgba(37,99,235,0.3)]'
                   }`}
                 >
                   {cat.count}
                 </span>
-              </button>
+
+                {/* Selected bottom indicator accent */}
+                {isSelected && (
+                  <motion.div
+                    layoutId="activeCategoryPill"
+                    className="absolute bottom-0 left-3 right-3 h-[2px] bg-gradient-to-r from-cyan-400 via-sky-300 to-blue-400 rounded-full shadow-[0_0_8px_rgba(56,189,248,0.8)]"
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </motion.button>
             );
           })}
         </div>

@@ -30,7 +30,7 @@ export const ERPAddCustomerModal: React.FC<ERPAddCustomerModalProps> = ({
     contactPerson: '',
     phone: '+254 7',
     email: '',
-    kraPin: 'P0',
+    kraPin: '',
     address: '',
     city: 'Nairobi',
     creditLimitKsh: 500000,
@@ -121,11 +121,11 @@ export const ERPAddCustomerModal: React.FC<ERPAddCustomerModalProps> = ({
 
             <div>
               <label className="block font-bold text-slate-700 mb-1">
-                KRA PIN Number *
+                KRA PIN Number (Optional)
               </label>
               <input
                 type="text"
-                placeholder="e.g. P051839201Z"
+                placeholder="Optional (e.g. P051839201Z)"
                 value={formData.kraPin}
                 onChange={(e) => setFormData({ ...formData, kraPin: e.target.value.toUpperCase() })}
                 className="w-full p-2.5 border border-slate-300 rounded-xl font-mono uppercase focus:ring-2 focus:ring-blue-500 focus:outline-none"

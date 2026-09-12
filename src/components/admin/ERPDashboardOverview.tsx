@@ -107,14 +107,12 @@ export const ERPDashboardOverview: React.FC<ERPDashboardOverviewProps> = ({
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
               Kenya Shilling ERP Engine (Ksh)
             </span>
-            <span>•</span>
-            <span className="text-blue-200">KRA PIN: {businessProfile.kraPin}</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold font-['Outfit',sans-serif] tracking-tight">
             Operations & Financials Command Center
           </h2>
           <p className="text-sm text-blue-100/90 leading-relaxed">
-            Real-time management for garment inventory, Kenyan tax invoicing, M-Pesa Paybill / Till reconciliation, and factory production workflows.
+            Real-time management for garment inventory, invoicing, M-Pesa Till reconciliation, and factory production workflows.
           </p>
         </div>
 

@@ -235,7 +235,7 @@ export const ERPCompanySettings: React.FC = () => {
               <textarea
                 name="invoiceTerms"
                 rows={3}
-                defaultValue="Goods once produced to custom client embroidery specifications cannot be refunded. Payment via official Paybill or Bank Account only."
+                defaultValue="Goods once produced to custom client embroidery specifications cannot be refunded. Payment via official M-Pesa Till or Bank Account only."
                 className="w-full p-2.5 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
             </div>

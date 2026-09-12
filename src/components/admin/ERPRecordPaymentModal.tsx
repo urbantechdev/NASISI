@@ -189,7 +189,7 @@ export const ERPRecordPaymentModal: React.FC<ERPRecordPaymentModalProps> = ({
                 />
               </div>
               <div className="text-[11px] text-green-800">
-                Paybill: <strong>{businessProfile.mpesaPaybillNumber}</strong> • Till: <strong>{businessProfile.mpesaTillNumber}</strong>
+                Buy Goods Till: <strong>{businessProfile.mpesaTillNumber}</strong>
               </div>
             </div>
           )}

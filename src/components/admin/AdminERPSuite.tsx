@@ -20,6 +20,7 @@ import { ERPAddCustomerModal } from './ERPAddCustomerModal';
 import { ERPRecordPaymentModal } from './ERPRecordPaymentModal';
 import { ERPAddStockModal } from './ERPAddStockModal';
 import { AdminLoginPage } from './AdminLoginPage';
+import { CustomerRestrictedAccessPage } from './CustomerRestrictedAccessPage';
 import { AdminUserProfileModal } from './AdminUserProfileModal';
 import { ERPCustomer, ERPDocument, ERPDocumentType } from '../../types';
 
@@ -36,7 +37,9 @@ export const AdminERPSuite: React.FC<AdminERPSuiteProps> = ({
     createDocument,
     updateDocument,
     businessProfile,
+    currentUser,
     isAuthenticated,
+    isWhitelistedAdmin,
     logout,
   } = useERP();
 
@@ -64,8 +67,19 @@ export const AdminERPSuite: React.FC<AdminERPSuiteProps> = ({
   };
 
   // If not authenticated, show the secure Enterprise Admin Login portal!
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !currentUser) {
     return <AdminLoginPage onBackToStorefront={onSwitchToStorefront} />;
+  }
+
+  // If signed in as Customer or not on authorized admin whitelist, enforce access control!
+  if (!isWhitelistedAdmin || currentUser.role === 'Customer') {
+    return (
+      <CustomerRestrictedAccessPage
+        currentUser={currentUser}
+        onBackToStorefront={onSwitchToStorefront}
+        onSwitchToAdminLogin={handleLogout}
+      />
+    );
   }
 
   // Document actions
@@ -253,7 +267,7 @@ export const AdminERPSuite: React.FC<AdminERPSuiteProps> = ({
               </span>
             </div>
             <span className="font-mono text-slate-400 text-[11px] bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-700/60">
-              Standard 16% VAT • Kenya Shillings (Ksh) • Real-time KRA Reconciliation
+              Standard 16% VAT • Kenya Shillings (Ksh) • Real-time Tax Reconciliation
             </span>
           </div>
         </footer>

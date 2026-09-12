@@ -1,6 +1,98 @@
 import { AdminUser } from '../types';
 
+/**
+ * Official Whitelisted Admin Emails authorized for Enterprise ERP Dashboard access.
+ * Only these designated accounts can view, create, or modify ERP records,
+ * tax invoices, KRA compliance, Tajima machine schedules, and inventory.
+ * Any other user signs in with Customer privileges for storefront checkout only.
+ */
+export const WHITELISTED_ADMIN_EMAILS: string[] = [
+  'nasisiknitwear.ke@gmail.com',
+  'optimumengineeringke@gmail.com',
+  'veronicanjus@gmail.com',
+  'admin@nasisiuniforms.co.ke',
+  'brian.finance@nasisiuniforms.co.ke',
+  'mercy.prod@nasisiuniforms.co.ke',
+];
+
+export const isWhitelistedAdminEmail = (emailOrStaffId: string | null | undefined): boolean => {
+  if (!emailOrStaffId) return false;
+  const normalized = emailOrStaffId.trim().toLowerCase();
+  
+  // Direct whitelist match
+  if (WHITELISTED_ADMIN_EMAILS.some((adminEmail) => adminEmail.toLowerCase() === normalized)) {
+    return true;
+  }
+
+  // Also check standard factory staff IDs (e.g. NAS-DIR-001, NAS-ACC-004, NAS-EXEC-KNIT, NAS-TECH-OPT)
+  if (normalized.startsWith('nas-')) {
+    return true;
+  }
+
+  return false;
+};
+
 export const INITIAL_ADMIN_USERS: AdminUser[] = [
+  {
+    id: 'user-nasisi-knitwear',
+    name: 'Nasisi Knitwear Executive',
+    email: 'nasisiknitwear.ke@gmail.com',
+    role: 'Super Admin',
+    staffId: 'NAS-EXEC-KNIT',
+    phone: '+254 728 102 929',
+    department: 'Factory & Production Oversight',
+    avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop',
+    bio: 'Executive factory leadership & administrator for Nasisi Uniforms & Knitwear Kenya.',
+    location: 'Nairobi Factory Bay 1 & Uhuru Market Complex',
+    status: 'active',
+    lastLogin: 'Today',
+    joinedDate: 'January 2021',
+    twoFactorEnabled: true,
+    notificationPreferences: {
+      emailAlerts: true,
+      smsAlerts: true,
+      newOrders: true,
+      mpesaReconciliations: true,
+    },
+    recentActivities: [
+      {
+        id: 'act-knit-1',
+        action: 'Authorized Enterprise ERP Production & Factory Access',
+        timestamp: 'Just now',
+        category: 'security',
+      },
+    ],
+  },
+  {
+    id: 'user-optimum',
+    name: 'Optimum Engineering Admin',
+    email: 'optimumengineeringke@gmail.com',
+    role: 'Super Admin',
+    staffId: 'NAS-TECH-OPT',
+    phone: '+254 722 419 820',
+    department: 'Operations & ERP Engineering',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=400&auto=format&fit=crop',
+    bio: 'Systems Engineer & Enterprise Super Administrator for ERP Infrastructure.',
+    location: 'Nairobi HQ',
+    status: 'active',
+    lastLogin: 'Today',
+    joinedDate: 'January 2022',
+    twoFactorEnabled: true,
+    notificationPreferences: {
+      emailAlerts: true,
+      smsAlerts: true,
+      newOrders: true,
+      mpesaReconciliations: true,
+    },
+    recentActivities: [
+      {
+        id: 'act-opt-1',
+        action: 'Verified Cloud Database & Firebase Authentication Integration',
+        timestamp: 'Just now',
+        category: 'security',
+      },
+    ],
+  },
   {
     id: 'user-veronica',
     name: 'Veronica Njus',

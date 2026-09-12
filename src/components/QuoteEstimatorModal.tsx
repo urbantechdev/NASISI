@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { QuoteItem, QuoteSubmission } from '../types';
 import { useERP } from '../context/ERPContext';
 import {
@@ -37,7 +37,7 @@ export const QuoteEstimatorModal: React.FC<QuoteEstimatorModalProps> = ({
   onRemoveItem,
   onClearCart,
 }) => {
-  const { raiseInquiryTicket, createDocument } = useERP();
+  const { raiseInquiryTicket, createDocument, currentUser } = useERP();
 
   const [orgName, setOrgName] = useState('');
   const [contactName, setContactName] = useState('');
@@ -50,6 +50,21 @@ export const QuoteEstimatorModal: React.FC<QuoteEstimatorModalProps> = ({
   const [raisedTicketNumber, setRaisedTicketNumber] = useState<string | null>(null);
   const [whatsappShareUrl, setWhatsappShareUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // Auto-fill logged in customer details for express checkout & quote inquiries
+  useEffect(() => {
+    if (currentUser) {
+      if (currentUser.name && !contactName) {
+        setContactName(currentUser.name);
+      }
+      if (currentUser.email && !email) {
+        setEmail(currentUser.email);
+      }
+      if (currentUser.phone && !phone) {
+        setPhone(currentUser.phone);
+      }
+    }
+  }, [currentUser, isOpen]);
 
   const subtotal = quoteItems.reduce((sum, item) => sum + item.totalPrice, 0);
   const totalUnits = quoteItems.reduce((sum, item) => sum + item.totalQuantity, 0);
@@ -404,9 +419,17 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
               {/* Organization and Contact details form */}
               {quoteItems.length > 0 && (
                 <form onSubmit={handleSubmit} className="space-y-4 pt-4 border-t border-slate-200">
-                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
-                    School / Business Details for Official Quotation:
-                  </h4>
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
+                      School / Business Details for Official Quotation:
+                    </h4>
+                    {currentUser && (
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                        <CheckCircle2 className="w-3 h-3 text-blue-600" />
+                        <span>Autofilled from {currentUser.name} ({currentUser.email})</span>
+                      </span>
+                    )}
+                  </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
                     <div>

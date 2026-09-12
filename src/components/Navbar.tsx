@@ -35,6 +35,8 @@ import {
   Factory,
   Zap,
   Check,
+  User,
+  LogOut,
 } from 'lucide-react';
 import { QuoteItem, UniformProduct } from '../types';
 
@@ -61,7 +63,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenTerms,
   onOpenCookies,
 }) => {
-  const { products, currentUser, isAuthenticated } = useERP();
+  const {
+    products,
+    currentUser,
+    isAuthenticated,
+    isWhitelistedAdmin,
+    isCustomer,
+    logout,
+  } = useERP();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
@@ -410,10 +419,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                               key={item.id}
                               href={item.href}
                               onClick={() => setServicesDropdownOpen(false)}
-                              className="group flex items-start gap-2.5 p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200/80 transition-all"
+                              className="group flex items-start gap-2.5 p-2 rounded-xl hover:bg-blue-50/70 border border-transparent hover:border-blue-200/80 hover:shadow-xs hover:scale-[1.02] hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer"
                             >
-                              <div className="w-7 h-7 rounded-lg bg-slate-100 group-hover:bg-[#06163c] text-[#06163c] group-hover:text-white flex items-center justify-center shrink-0 transition-colors mt-0.5">
-                                <Icon className="w-3.5 h-3.5" />
+                              <div className="w-7 h-7 rounded-lg bg-slate-100 group-hover:bg-[#06163c] text-[#06163c] group-hover:text-white flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-200 mt-0.5 shadow-2xs">
+                                <Icon className="w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110" />
                               </div>
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5">
@@ -421,12 +430,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                                     {item.title}
                                   </span>
                                   {item.badge && (
-                                    <span className="px-1 py-0.2 text-[8px] font-extrabold uppercase tracking-wide bg-blue-50 text-[#06163c] rounded">
+                                    <span className="px-1 py-0.2 text-[8px] font-extrabold uppercase tracking-wide bg-blue-50 text-[#06163c] group-hover:bg-blue-100 rounded transition-colors">
                                       {item.badge}
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-[10.5px] text-slate-500 leading-snug line-clamp-2 mt-0.5">
+                                <p className="text-[10.5px] text-slate-500 leading-snug line-clamp-2 mt-0.5 group-hover:text-slate-600 transition-colors">
                                   {item.description}
                                 </p>
                               </div>
@@ -452,10 +461,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                               key={item.id}
                               href={item.href}
                               onClick={() => setServicesDropdownOpen(false)}
-                              className="group flex items-start gap-2.5 p-2 rounded-xl hover:bg-blue-50/50 border border-transparent hover:border-blue-100 transition-all"
+                              className="group flex items-start gap-2.5 p-2 rounded-xl hover:bg-blue-50/70 border border-transparent hover:border-blue-200/80 hover:shadow-xs hover:scale-[1.02] hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer"
                             >
-                              <div className="w-7 h-7 rounded-lg bg-blue-100/70 group-hover:bg-[#06163c] text-[#06163c] group-hover:text-white flex items-center justify-center shrink-0 transition-colors mt-0.5">
-                                <Icon className="w-3.5 h-3.5" />
+                              <div className="w-7 h-7 rounded-lg bg-blue-100/70 group-hover:bg-[#06163c] text-[#06163c] group-hover:text-white flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-200 mt-0.5 shadow-2xs">
+                                <Icon className="w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110" />
                               </div>
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5">
@@ -463,12 +472,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                                     {item.title}
                                   </span>
                                   {item.badge && (
-                                    <span className="px-1 py-0.2 text-[8px] font-extrabold uppercase tracking-wide bg-amber-100 text-amber-900 rounded">
+                                    <span className="px-1 py-0.2 text-[8px] font-extrabold uppercase tracking-wide bg-amber-100 text-amber-900 group-hover:bg-amber-200 rounded transition-colors">
                                       {item.badge}
                                     </span>
                                   )}
                                 </div>
-                                <p className="text-[10.5px] text-slate-500 leading-snug line-clamp-2 mt-0.5">
+                                <p className="text-[10.5px] text-slate-500 leading-snug line-clamp-2 mt-0.5 group-hover:text-slate-600 transition-colors">
                                   {item.description}
                                 </p>
                               </div>
@@ -501,10 +510,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                               key={item.id}
                               type="button"
                               onClick={handleClick}
-                              className="w-full text-left group flex items-start gap-2.5 p-2 rounded-xl hover:bg-emerald-50/50 border border-transparent hover:border-emerald-200 transition-all cursor-pointer"
+                              className="w-full text-left group flex items-start gap-2.5 p-2 rounded-xl hover:bg-emerald-50/70 border border-transparent hover:border-emerald-200/80 hover:shadow-xs hover:scale-[1.02] hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer"
                             >
-                              <div className="w-7 h-7 rounded-lg bg-emerald-100/70 group-hover:bg-emerald-700 text-emerald-800 group-hover:text-white flex items-center justify-center shrink-0 transition-colors mt-0.5">
-                                <Icon className="w-3.5 h-3.5" />
+                              <div className="w-7 h-7 rounded-lg bg-emerald-100/70 group-hover:bg-emerald-700 text-emerald-800 group-hover:text-white flex items-center justify-center shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-all duration-200 mt-0.5 shadow-2xs">
+                                <Icon className="w-3.5 h-3.5 transition-transform duration-200 group-hover:scale-110" />
                               </div>
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5">
@@ -512,7 +521,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                                     {item.title}
                                   </span>
                                   {item.badge && (
-                                    <span className="px-1 py-0.2 text-[8px] font-extrabold uppercase tracking-wide bg-emerald-100 text-emerald-800 rounded">
+                                    <span className="px-1 py-0.2 text-[8px] font-extrabold uppercase tracking-wide bg-emerald-100 text-emerald-800 group-hover:bg-emerald-200 rounded transition-colors">
                                       {item.badge}
                                     </span>
                                   )}
@@ -707,7 +716,83 @@ export const Navbar: React.FC<NavbarProps> = ({
               </div>
             </div>
 
-            {/* 4. Desktop Hamburger Menu Toggle Button */}
+            {/* 4. Staff ERP / Account Profile Button */}
+            {currentUser ? (
+              <div className="relative group">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (isWhitelistedAdmin && onOpenAdminERP) {
+                      onOpenAdminERP();
+                    }
+                  }}
+                  className={`btn-shimmer-sweep relative flex items-center gap-1.5 h-10 px-2.5 sm:px-3 rounded-xl border shadow-sm transition-all duration-200 cursor-pointer ${
+                    isWhitelistedAdmin
+                      ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 border-amber-300 font-bold'
+                      : 'bg-white/10 hover:bg-white/20 text-white border-white/20 font-medium'
+                  }`}
+                  title={isWhitelistedAdmin ? 'Open Enterprise ERP Dashboard' : `Customer: ${currentUser.name}`}
+                >
+                  {isWhitelistedAdmin ? (
+                    <>
+                      <ShieldCheck className="w-4 h-4 text-slate-950" />
+                      <span className="text-xs">ERP Admin</span>
+                    </>
+                  ) : (
+                    <>
+                      <User className="w-4 h-4 text-blue-200" />
+                      <span className="text-xs max-w-[70px] truncate">{currentUser.name.split(' ')[0]}</span>
+                    </>
+                  )}
+                </button>
+                {/* Floating Tooltip / Logout Action on hover */}
+                <div className="absolute top-full right-0 mt-2 w-52 p-3 bg-white text-slate-900 rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none group-hover:pointer-events-auto shadow-xl border border-slate-200 z-50">
+                  <div className="text-xs font-bold truncate">{currentUser.name}</div>
+                  <div className="text-[10px] text-slate-500 truncate font-mono">{currentUser.email}</div>
+                  <div className="mt-1">
+                    <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${isWhitelistedAdmin ? 'bg-amber-100 text-amber-900' : 'bg-blue-100 text-blue-900'}`}>
+                      {isWhitelistedAdmin ? 'Whitelisted Admin' : 'Customer Account'}
+                    </span>
+                  </div>
+                  {isWhitelistedAdmin && onOpenAdminERP && (
+                    <button
+                      type="button"
+                      onClick={onOpenAdminERP}
+                      className="w-full mt-2 pt-2 border-t border-slate-100 flex items-center gap-1.5 text-xs text-blue-700 hover:text-blue-800 font-semibold cursor-pointer text-left"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      <span>Enterprise Dashboard</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => logout()}
+                    className="w-full mt-2 pt-2 border-t border-slate-100 flex items-center gap-1.5 text-xs text-red-600 hover:text-red-700 font-semibold cursor-pointer text-left"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="relative group">
+                <button
+                  type="button"
+                  onClick={onOpenAdminERP}
+                  className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-sm hover:scale-105 active:scale-90 transition-all duration-200 cursor-pointer"
+                  aria-label="Staff Login & ERP Access"
+                  title="Staff Login & ERP Access"
+                >
+                  <ShieldCheck className="w-5 h-5 text-blue-200" />
+                </button>
+                <div className="absolute top-full right-0 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-50">
+                  <span>Staff Login</span>
+                  <div className="absolute -top-1 right-3.5 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
+                </div>
+              </div>
+            )}
+
+            {/* 5. Desktop Hamburger Menu Toggle Button */}
             <div className="relative group">
               <button
                 id="navbar-desktop-hamburger-btn"
@@ -969,11 +1054,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                                   setMobileMenuOpen(false);
                                   setMobileServicesOpen(false);
                                 }}
-                                className="flex items-start gap-2.5 px-2.5 py-2 text-xs font-semibold text-slate-700 hover:text-[#06163c] hover:bg-white rounded-lg transition-colors"
+                                className="group flex items-start gap-2.5 px-2.5 py-2 text-xs font-semibold text-slate-700 hover:text-[#06163c] hover:bg-white rounded-xl hover:shadow-2xs active:scale-98 transition-all"
                               >
-                                <SubIcon className="w-4 h-4 text-[#06163c] mt-0.5 shrink-0" />
+                                <SubIcon className="w-4 h-4 text-[#06163c] mt-0.5 shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-transform" />
                                 <div className="min-w-0">
-                                  <div className="font-bold text-slate-900 leading-tight">{sub.title}</div>
+                                  <div className="font-bold text-slate-900 leading-tight group-hover:text-[#06163c] transition-colors">{sub.title}</div>
                                   <div className="text-[10px] text-slate-500 line-clamp-1">{sub.description}</div>
                                 </div>
                               </a>
@@ -1090,6 +1175,75 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span>Contact Factory</span>
                   <ArrowRight className="w-4 h-4 text-slate-400" />
                 </a>
+
+                {/* Account & ERP Portal Section */}
+                <div className="pt-2 border-t border-slate-200/80">
+                  {currentUser ? (
+                    <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">
+                          {isWhitelistedAdmin ? 'Enterprise Administrator' : 'Customer Account'}
+                        </span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${isWhitelistedAdmin ? 'bg-amber-100 text-amber-900 border border-amber-200' : 'bg-blue-100 text-blue-900 border border-blue-200'}`}>
+                          {isWhitelistedAdmin ? 'Admin Access' : 'Express Checkout'}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2.5 mb-3">
+                        <img
+                          src={currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=120'}
+                          alt={currentUser.name}
+                          className="w-9 h-9 rounded-xl object-cover border border-slate-200"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-slate-900 truncate">{currentUser.name}</p>
+                          <p className="text-[11px] text-slate-500 truncate font-mono">{currentUser.email}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        {isWhitelistedAdmin && onOpenAdminERP && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMobileMenuOpen(false);
+                              onOpenAdminERP();
+                            }}
+                            className="w-full py-2.5 px-3 bg-[#06163c] hover:bg-[#0c235c] text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                          >
+                            <ShieldCheck className="w-4 h-4 text-amber-400" />
+                            <span>Open ERP Admin Dashboard</span>
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            logout();
+                          }}
+                          className="w-full py-2 px-3 bg-white hover:bg-slate-100 border border-slate-200 text-red-600 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                        >
+                          <LogOut className="w-3.5 h-3.5" />
+                          <span>Sign Out</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        if (onOpenAdminERP) onOpenAdminERP();
+                      }}
+                      className="w-full flex items-center justify-between px-3.5 py-3 text-sm font-bold text-slate-800 hover:text-[#06163c] hover:bg-slate-100/80 rounded-xl transition-colors cursor-pointer text-left"
+                    >
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-[#06163c]" />
+                        <span>Staff ERP Login & Portal</span>
+                      </div>
+                      <ArrowRight className="w-4 h-4 text-slate-400" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Direct WhatsApp & Hotline Quick Bar */}

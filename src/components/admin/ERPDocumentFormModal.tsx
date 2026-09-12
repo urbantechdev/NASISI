@@ -419,17 +419,6 @@ export const ERPDocumentFormModal: React.FC<ERPDocumentFormModalProps> = ({
                   className="w-full p-2 bg-white border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 />
               </div>
-
-              <div>
-                <label className="block text-slate-600 font-semibold mb-1 text-[11px]">KRA PIN Number</label>
-                <input
-                  type="text"
-                  placeholder="P051122334A"
-                  value={customerKraPin}
-                  onChange={(e) => setCustomerKraPin(e.target.value)}
-                  className="w-full p-2 bg-white border border-slate-300 rounded-lg font-mono uppercase focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -224,25 +224,15 @@ export const ERPDocumentPrintModal: React.FC<ERPDocumentPrintModalProps> = ({
               <p className="text-slate-600">{doc.customerAddress}</p>
               {doc.customerCity && <p className="text-slate-600">{doc.customerCity}, Kenya</p>}
               <p className="text-slate-600">Tel: {doc.customerPhone} | {doc.customerEmail}</p>
-              {doc.customerKraPin && (
-                <p className="font-mono text-slate-800 font-bold bg-white px-2 py-0.5 rounded border border-slate-200 inline-block text-[11px] mt-1">
-                  Customer KRA PIN: {doc.customerKraPin}
-                </p>
-              )}
             </div>
 
             {/* Issuer Tax & Reg Details */}
             <div className="bg-slate-50/70 p-4 rounded-xl border border-slate-200 space-y-1.5 text-right sm:text-right">
               <span className="text-[10px] uppercase font-extrabold text-slate-400 tracking-wider block">
-                Issuer Registration & KRA Tax Details:
+                Issuer Registration Details:
               </span>
               <p className="font-bold text-slate-900">{bp.companyName}</p>
               <p className="text-slate-600">Company Reg No: {bp.registrationNumber}</p>
-              <div className="pt-1">
-                <span className="font-mono text-slate-900 font-black bg-blue-50 px-2 py-1 rounded border border-blue-200 text-xs inline-block">
-                  KRA PIN: {bp.kraPin}
-                </span>
-              </div>
               <p className="text-[11px] text-slate-500">VAT Status: Standard Rated (16% VAT)</p>
               {doc.vehicleRegistration && (
                 <p className="font-bold text-[#06163c] pt-1">
@@ -315,15 +305,6 @@ export const ERPDocumentPrintModal: React.FC<ERPDocumentPrintModalProps> = ({
                   Official Kenyan Payment Options:
                 </h5>
                 <div className="space-y-1.5 text-xs text-slate-700">
-                  <div className="flex items-center gap-2 bg-white p-2 rounded-lg border border-blue-200">
-                    <span className="font-black text-green-700 bg-green-100 px-1.5 py-0.5 rounded text-[10px]">
-                      M-PESA PAYBILL
-                    </span>
-                    <span className="font-mono text-xs">
-                      Business No: <strong>{bp.mpesaPaybillNumber}</strong> | Acc No: <strong>{bp.mpesaAccountNumber}</strong>
-                    </span>
-                  </div>
-
                   <div className="flex items-center gap-2 bg-white p-2 rounded-lg border border-blue-200">
                     <span className="font-black text-green-700 bg-green-100 px-1.5 py-0.5 rounded text-[10px]">
                       M-PESA TILL

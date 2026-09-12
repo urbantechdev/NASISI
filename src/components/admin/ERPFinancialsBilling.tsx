@@ -208,7 +208,7 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search by Document Number, Customer Name, KRA PIN or M-Pesa Code..."
+              placeholder="Search by Document Number, Customer Name, or M-Pesa Code..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full pl-9 pr-4 py-2 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
@@ -285,11 +285,6 @@ export const ERPFinancialsBilling: React.FC<ERPFinancialsBillingProps> = ({
                       <span className="text-[11px] text-slate-500 block truncate max-w-xs">
                         {doc.title}
                       </span>
-                      {doc.customerKraPin && (
-                        <span className="text-[10px] text-slate-400 font-mono">
-                          PIN: {doc.customerKraPin}
-                        </span>
-                      )}
                     </td>
 
                     <td className="py-3.5 px-3 text-slate-600 font-mono text-[11px]">

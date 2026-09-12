@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'motion/react';
 import { PORTFOLIO_ITEMS } from '../data/uniformsData';
 import { Sparkles, CheckCircle2, ShieldCheck, Tag, Building2, Users } from 'lucide-react';
 
@@ -30,20 +31,36 @@ export const PortfolioShowcase: React.FC = () => {
         </div>
 
         {/* Filter Chips */}
-        <div className="flex justify-center gap-2 mb-10 overflow-x-auto pb-2">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setFilter(cat)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold transition-all capitalize ${
-                filter === cat
-                  ? 'bg-[#06163c] text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {cat === 'all' ? 'All Deliveries' : cat}
-            </button>
-          ))}
+        <div className="flex justify-center gap-2.5 mb-10 overflow-x-auto pb-2 px-1">
+          {categories.map((cat) => {
+            const isSelected = filter === cat;
+            return (
+              <motion.button
+                key={cat}
+                id={`portfolio-filter-${cat.toLowerCase().replace(/[^a-z0-9]/g, '-')}`}
+                whileHover={{ y: -2, scale: 1.04 }}
+                whileTap={{ scale: 0.96 }}
+                transition={{ type: 'spring', stiffness: 450, damping: 25 }}
+                onClick={() => setFilter(cat)}
+                className={`group relative px-4 py-2 rounded-xl text-xs font-bold transition-all duration-200 capitalize cursor-pointer shrink-0 ${
+                  isSelected
+                    ? 'bg-gradient-to-r from-[#06163c] to-[#0d2a6b] text-white shadow-[0_6px_16px_rgba(6,22,60,0.22)] ring-2 ring-blue-400/30'
+                    : 'bg-slate-100/90 text-slate-600 hover:text-[#06163c] hover:bg-blue-50 border border-transparent hover:border-blue-200 hover:shadow-xs'
+                }`}
+              >
+                <span className="relative z-10">
+                  {cat === 'all' ? 'All Deliveries' : cat}
+                </span>
+                {isSelected && (
+                  <motion.div
+                    layoutId="portfolioActivePill"
+                    className="absolute bottom-0 left-2 right-2 h-[2px] bg-gradient-to-r from-cyan-400 to-blue-400 rounded-full"
+                    transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+                  />
+                )}
+              </motion.button>
+            );
+          })}
         </div>
 
         {/* Grid */}

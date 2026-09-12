@@ -47,6 +47,7 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
     togglePublishProduct,
     duplicateProduct,
     syncAllProductsToInventory,
+    isFirebaseConnected,
   } = useERP();
 
   const [activeView, setActiveView] = useState<'garments' | 'materials' | 'all'>('garments');
@@ -159,6 +160,14 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
               </h3>
               <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-mono font-bold border border-emerald-400/30">
                 100% LIVE SYNCED
+              </span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold border flex items-center gap-1 ${
+                isFirebaseConnected 
+                  ? 'bg-emerald-500/20 text-emerald-300 border-emerald-400/30' 
+                  : 'bg-amber-500/20 text-amber-300 border-amber-400/30'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${isFirebaseConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
+                {isFirebaseConnected ? 'Firestore DB Connected' : 'Firestore DB Ready'}
               </span>
             </div>
             <p className="text-xs text-blue-200 mt-0.5">

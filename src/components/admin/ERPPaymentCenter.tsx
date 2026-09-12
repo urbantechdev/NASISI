@@ -125,7 +125,7 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
         >
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold uppercase tracking-wider text-green-900">
-              M-Pesa (Paybill & Till)
+              M-Pesa (Buy Goods Till)
             </span>
             <Phone className="w-4 h-4 text-green-700" />
           </div>
@@ -133,7 +133,7 @@ export const ERPPaymentCenter: React.FC<ERPPaymentCenterProps> = ({
             {formatKsh(mpesaTotal)}
           </span>
           <span className="text-[11px] text-green-700">
-            Paybill: {businessProfile.mpesaPaybillNumber} | Till: {businessProfile.mpesaTillNumber}
+            Buy Goods Till: {businessProfile.mpesaTillNumber}
           </span>
         </motion.div>
 

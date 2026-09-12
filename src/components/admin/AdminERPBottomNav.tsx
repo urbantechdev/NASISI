@@ -49,7 +49,7 @@ export const AdminERPBottomNav: React.FC<AdminERPBottomNavProps> = ({
     {
       label: 'Create Tax Invoice',
       shortLabel: 'Tax Invoice',
-      description: '16% KRA VAT Tax Invoice',
+      description: '16% VAT Invoice',
       icon: Plus,
       onClick: () => {
         setIsQuickActionsSheetOpen(false);
@@ -88,7 +88,7 @@ export const AdminERPBottomNav: React.FC<AdminERPBottomNavProps> = ({
     {
       label: 'Record M-Pesa',
       shortLabel: 'M-Pesa',
-      description: 'Reconcile Paybill & issue receipt',
+      description: 'Reconcile Till & issue receipt',
       icon: CreditCard,
       onClick: () => {
         setIsQuickActionsSheetOpen(false);

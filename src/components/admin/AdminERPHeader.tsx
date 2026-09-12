@@ -74,7 +74,7 @@ export const AdminERPHeader: React.FC<AdminERPHeaderProps> = ({
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 font-medium">
-                {businessProfile.companyName} • KRA PIN: {businessProfile.kraPin}
+                {businessProfile.companyName}
               </p>
             </div>
           </div>

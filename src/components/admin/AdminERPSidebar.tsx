@@ -89,7 +89,7 @@ export const AdminERPSidebar: React.FC<AdminERPSidebarProps> = ({
     {
       id: 'billing',
       label: 'Invoices & Billing',
-      description: 'KRA Invoices, Quotes & Receipts',
+      description: 'Invoices, Quotes & Receipts',
       icon: FileSpreadsheet,
       badge: unpaidInvoicesCount,
       badgeColor: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
@@ -97,7 +97,7 @@ export const AdminERPSidebar: React.FC<AdminERPSidebarProps> = ({
     {
       id: 'payments',
       label: 'M-Pesa & Payments',
-      description: 'Paybill, Till & Bank reconciliation',
+      description: 'Till & Bank reconciliation',
       icon: CreditCard,
     },
     {
@@ -131,7 +131,7 @@ export const AdminERPSidebar: React.FC<AdminERPSidebarProps> = ({
     {
       id: 'settings',
       label: 'Brand Logos & Settings',
-      description: 'Change logo, favicon, footer & KRA PIN',
+      description: 'Change logo, favicon, footer & profile',
       icon: Settings,
     },
   ];

@@ -378,7 +378,8 @@ export type AdminRole =
   | 'Managing Director' 
   | 'Operations Manager' 
   | 'Finance Controller' 
-  | 'Production Supervisor';
+  | 'Production Supervisor'
+  | 'Customer';
 
 export interface AdminUserActivity {
   id: string;

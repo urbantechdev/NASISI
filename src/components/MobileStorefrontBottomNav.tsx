@@ -98,13 +98,15 @@ export const MobileStorefrontBottomNav: React.FC<MobileStorefrontBottomNavProps>
 
         {/* 2. Categories / Explorer */}
         <motion.button
-          whileTap={{ scale: 0.9 }}
+          whileHover={{ scale: 1.08, y: -2 }}
+          whileTap={{ scale: 0.92 }}
+          transition={{ type: 'spring', stiffness: 450, damping: 25 }}
           type="button"
           onClick={() => scrollToSection('catalog')}
-          className="flex flex-col items-center justify-center py-1 text-slate-600 hover:text-[#06163c] transition-colors"
+          className="group flex flex-col items-center justify-center py-1 text-slate-600 hover:text-[#06163c] transition-colors cursor-pointer"
         >
-          <Layers className="w-5 h-5 text-slate-700" />
-          <span className="text-[10px] font-bold mt-0.5 tracking-tight">Categories</span>
+          <Layers className="w-5 h-5 text-slate-700 group-hover:text-[#06163c] group-hover:scale-115 group-hover:rotate-6 transition-all duration-200" />
+          <span className="text-[10px] font-bold mt-0.5 tracking-tight group-hover:text-[#06163c] transition-colors">Categories</span>
         </motion.button>
 
         {/* 3. Center Icon - 3D Customizer / Mockup Studio (PERCHED ON TOP OF NAV DOCK) */}
