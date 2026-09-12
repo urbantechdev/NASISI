@@ -7,6 +7,7 @@ interface FooterProps {
   onOpenPrivacyPolicy?: () => void;
   onOpenTerms?: () => void;
   onOpenCookies?: () => void;
+  onOpenLocation?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -14,6 +15,7 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenPrivacyPolicy,
   onOpenTerms,
   onOpenCookies,
+  onOpenLocation,
 }) => {
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -56,10 +58,20 @@ export const Footer: React.FC<FooterProps> = ({
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-9">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 sm:pt-9 pb-24 sm:pb-9">
         {/* On Mobile: Only show Logo and Title. On Desktop/Tablet: Show full 5-column grid */}
-        <div className="sm:hidden flex flex-col items-center justify-center text-center space-y-1.5 pb-2">
+        <div className="sm:hidden flex flex-col items-center justify-center text-center space-y-2.5 pb-2">
           <NasisiLogo size="xl" variant="full" isFooter={true} />
+          {onOpenLocation && (
+            <button
+              type="button"
+              onClick={onOpenLocation}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-[#06163c] text-xs font-bold shadow-2xs hover:bg-blue-100 transition-colors cursor-pointer"
+            >
+              <MapPin className="w-3.5 h-3.5 text-blue-600" />
+              <span>Factory Location & Google Map</span>
+            </button>
+          )}
         </div>
 
         {/* Desktop / Tablet Grid (Hidden on Mobile) */}
@@ -138,10 +150,31 @@ export const Footer: React.FC<FooterProps> = ({
                   <Mail className="w-3.5 h-3.5 text-[#06163c]" />
                   <span>orders@nasisiuniforms.com</span>
                 </p>
-                <p className="flex items-start gap-2 pt-1">
-                  <MapPin className="w-3.5 h-3.5 text-[#06163c] flex-shrink-0 mt-0.5" />
-                  <span>Uhuru Market Workshop, Nairobi, Kenya</span>
-                </p>
+                <div className="pt-1">
+                  {onOpenLocation ? (
+                    <button
+                      type="button"
+                      onClick={onOpenLocation}
+                      className="flex items-start gap-2 text-left hover:text-[#06163c] transition-colors group cursor-pointer"
+                      title="View Factory Showroom on Google Map"
+                    >
+                      <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
+                      <div>
+                        <span className="font-semibold text-slate-800 group-hover:text-blue-700 underline decoration-dotted">
+                          Commercial St / Enterprise Rd, Industrial Area
+                        </span>
+                        <span className="block text-[11px] text-blue-600 font-bold mt-0.5">
+                          View Location on Google Map &rarr;
+                        </span>
+                      </div>
+                    </button>
+                  ) : (
+                    <p className="flex items-start gap-2">
+                      <MapPin className="w-3.5 h-3.5 text-[#06163c] flex-shrink-0 mt-0.5" />
+                      <span>Commercial St / Enterprise Rd, Industrial Area, Nairobi, Kenya</span>
+                    </p>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -181,6 +214,19 @@ export const Footer: React.FC<FooterProps> = ({
                   Cookie Policy
                 </button>
               )}
+              {onOpenLocation && (
+                <>
+                  <span>•</span>
+                  <button
+                    type="button"
+                    onClick={onOpenLocation}
+                    className="hover:text-[#06163c] hover:underline font-semibold cursor-pointer text-blue-700 flex items-center gap-1"
+                  >
+                    <MapPin className="w-3 h-3 text-blue-600" />
+                    <span>Location & Google Map</span>
+                  </button>
+                </>
+              )}
             </div>
           </div>
           
@@ -198,11 +244,11 @@ export const Footer: React.FC<FooterProps> = ({
                 id="footer-admin-lock-btn"
                 type="button"
                 onClick={onOpenAdminERP}
-                className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-[#06163c] hover:bg-slate-100 active:scale-95 transition-all border border-slate-200 inline-flex items-center justify-center cursor-pointer shadow-2xs"
+                className="p-2 rounded-lg text-slate-500 hover:text-[#06163c] bg-slate-50 hover:bg-slate-100 active:scale-95 transition-all border border-slate-200 inline-flex items-center justify-center cursor-pointer shadow-2xs group"
                 title="Admin Access"
                 aria-label="Admin Access"
               >
-                <Lock className="w-4 h-4 text-slate-500 hover:text-[#06163c] transition-colors" />
+                <Lock className="w-4 h-4 text-slate-600 group-hover:text-[#06163c] transition-colors" />
               </button>
             )}
             <button

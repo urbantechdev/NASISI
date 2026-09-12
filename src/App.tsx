@@ -20,29 +20,23 @@ import { CookieConsentBanner } from './components/CookieConsentBanner';
 export type AppViewMode = 'storefront' | 'erp' | 'privacy' | 'terms' | 'cookies';
 
 export default function App() {
-  // View mode: storefront vs erp vs independent legal pages (privacy, terms, cookies)
+  // View mode: storefront website always loads first. Admin is accessed through the lock icon at the footer.
   const [viewMode, setViewMode] = useState<AppViewMode>(() => {
-    // Check initial URL hash
+    // Clear any lingering erp mode or hashes so storefront website ALWAYS loads first
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.toLowerCase();
       if (hash === '#privacy' || hash === '#policy') return 'privacy';
       if (hash === '#terms' || hash === '#tos') return 'terms';
       if (hash === '#cookies' || hash === '#cookie-policy') return 'cookies';
-      if (hash === '#erp' || hash === '#admin') return 'erp';
-    }
-    try {
-      const saved = localStorage.getItem('nasisi_view_mode');
-      if (
-        saved === 'erp' ||
-        saved === 'storefront' ||
-        saved === 'privacy' ||
-        saved === 'terms' ||
-        saved === 'cookies'
-      ) {
-        return saved as AppViewMode;
+      // If URL contains admin/erp hash on startup, clear it so website loads first
+      if (hash === '#erp' || hash === '#admin') {
+        window.history.replaceState(null, '', window.location.pathname);
       }
-    } catch {
-      // ignore
+      try {
+        localStorage.removeItem('nasisi_view_mode');
+      } catch {
+        // ignore
+      }
     }
     return 'storefront';
   });
@@ -168,7 +162,12 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('nasisi_view_mode', viewMode);
+      // Storefront website must always load first on initial visits & refreshes
+      if (viewMode !== 'erp') {
+        localStorage.setItem('nasisi_view_mode', viewMode);
+      } else {
+        localStorage.removeItem('nasisi_view_mode');
+      }
     } catch {
       // ignore
     }

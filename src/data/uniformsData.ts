@@ -11,6 +11,9 @@ import highVisSafetyVestImg from '../assets/images/high_vis_safety_vest_17876668
 import industrialWorkwearOverallImg from '../assets/images/industrial_workwear_overall_1787666910504.jpg';
 import varsityLettermanJacketImg from '../assets/images/varsity_letterman_jacket_1787666981298.jpg';
 import fleecePulloverHoodieImg from '../assets/images/fleece_pullover_hoodie_1787666996711.jpg';
+import schoolBlazerAlternativeImg from '../assets/images/school_blazer_1787463441853.jpg';
+import medicalScrubsAlternativeImg from '../assets/images/medical_scrubs_1787463454201.jpg';
+import varsityJacketAlternativeImg from '../assets/images/varsity_jacket_1787463467084.jpg';
 
 // Official Slogans from Garment Product Catalogue
 export const CATALOGUE_SLOGAN = 'We stitch it. You wear it. We print it. You represent.';
@@ -84,8 +87,8 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     image: highVisSafetyVestImg,
     images: [
       highVisSafetyVestImg,
-      'https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80',
+      highVisSafetyVestImg,
+      industrialWorkwearOverallImg,
       industrialWorkwearOverallImg,
     ],
     badge: 'Priority #1 Safety Wear',
@@ -134,8 +137,8 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     image: industrialWorkwearOverallImg,
     images: [
       industrialWorkwearOverallImg,
-      'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80',
+      industrialWorkwearOverallImg,
+      industrialWorkwearOverallImg,
       highVisSafetyVestImg,
     ],
     badge: 'Priority #3 Work Overalls',
@@ -176,9 +179,9 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'Mandatory compliant safety overall for civil infrastructure, road works, and high-traffic distribution centers. Offers full 360-degree reflectivity in low-light and rain.',
     idealFor: ['Civil Contractors', 'Night Highway Crews', 'Port Authority Workers', 'Railway Maintenance'],
-    image: 'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80',
+    image: industrialWorkwearOverallImg,
     images: [
-      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80',
+      industrialWorkwearOverallImg,
       industrialWorkwearOverallImg,
       highVisSafetyVestImg,
     ],
@@ -216,11 +219,11 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'The preferred two-piece uniform combination for technicians, machine operators, and site supervisors. Separable jacket and trousers allow flexible working comfort in varied temperatures.',
     idealFor: ['Technical Supervisors', 'Field Engineers', 'Assembly Lines', 'Maintenance Departments'],
-    image: 'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80',
+    image: industrialWorkwearOverallImg,
     images: [
-      'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80',
       industrialWorkwearOverallImg,
-      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80',
+      industrialWorkwearOverallImg,
+      industrialWorkwearOverallImg,
     ],
   },
   {
@@ -253,9 +256,9 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'Standard knee-length workshop and warehouse coat designed to protect daily clothing from grime, oil, and dust. Ideal for inspectors, warehouse storekeepers, and science workshop managers.',
     idealFor: ['Warehouse Storekeepers', 'Quality Inspectors', 'Workshop Supervisors', 'Hardware Stores'],
-    image: 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?auto=format&fit=crop&w=800&q=80',
+    image: canvasBaristaApronImg,
     images: [
-      'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?auto=format&fit=crop&w=800&q=80',
+      canvasBaristaApronImg,
       canvasBaristaApronImg,
       industrialWorkwearOverallImg,
     ],
@@ -303,10 +306,10 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'Elevate your firm’s image. Impeccably tailored long and short sleeve business shirts with contrast inner collar tape, mother-of-pearl buttons, and precision computerized logo embroidery over the left chest pocket.',
     idealFor: ['Banking & Financial Institutions', 'Consulting & Legal Offices', 'Front Office & Corporate Receptions', 'Sales & Executive Teams'],
-    image: 'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=800&q=80',
+    image: corporateServicePoloImg,
     images: [
-      'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?auto=format&fit=crop&w=800&q=80',
+      corporateServicePoloImg,
+      academicSchoolBlazerImg,
       corporateServicePoloImg,
       academicSchoolBlazerImg,
     ],
@@ -357,8 +360,8 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     images: [
       corporateServicePoloImg,
       schoolPiquePoloImg,
-      'https://images.unsplash.com/photo-1581655353564-df123a1eb820?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=800&q=80',
+      schoolPiquePoloImg,
+      corporateServicePoloImg,
     ],
     badge: 'Priority #6 Branded Polos',
     popular: true,
@@ -392,11 +395,11 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'Formal flat-front trousers and knee-length pencil skirts engineered for all-day desk and mobility comfort. Features Teflon stain barrier and continuous shape retention.',
     idealFor: ['Bank Branches', 'Aviation Flight Crews', 'Hotel Front Desks', 'Corporate Headquarters'],
-    image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80',
+    image: schoolBlazerAlternativeImg,
     images: [
-      'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80',
+      schoolBlazerAlternativeImg,
       academicSchoolBlazerImg,
-      'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=800&q=80',
+      corporateServicePoloImg,
     ],
   },
   {
@@ -431,8 +434,8 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     image: academicSchoolBlazerImg,
     images: [
       academicSchoolBlazerImg,
-      'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1598033129183-c4f50c736f10?auto=format&fit=crop&w=800&q=80',
+      schoolBlazerAlternativeImg,
+      corporateServicePoloImg,
     ],
   },
 
@@ -477,7 +480,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
       academicSchoolBlazerImg,
       schoolKnitSweaterImg,
       schoolPiquePoloImg,
-      'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80',
+      schoolBlazerAlternativeImg,
     ],
     badge: 'Priority #4 School Uniforms',
     popular: true,
@@ -625,9 +628,9 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'Institutional-grade bottom wear engineered to withstand playgrounds and classrooms alike. Accompanied by custom jacquard woven school ties and knee-high socks.',
     idealFor: ['All School Grades', 'Cadet & Prefect Units', 'Term Re-orders'],
-    image: 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80',
+    image: schoolBlazerAlternativeImg,
     images: [
-      'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80',
+      schoolBlazerAlternativeImg,
       academicSchoolBlazerImg,
       schoolKnitSweaterImg,
     ],
@@ -676,10 +679,10 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'Authoritative, sharp, and combat-durable. Features reinforced button placket, epaulettes for ranking slides, and heavy-duty ripstop weave that stops accidental tears from spreading.',
     idealFor: ['Private Security Firms', 'Commercial Facility Guards', 'Bank Security Personnel', 'Event Security Crews'],
-    image: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=800&q=80',
+    image: fleecePulloverHoodieImg,
     images: [
-      'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80',
+      fleecePulloverHoodieImg,
+      industrialWorkwearOverallImg,
       industrialWorkwearOverallImg,
       corporateServicePoloImg,
     ],
@@ -719,7 +722,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     image: schoolKnitSweaterImg,
     images: [
       schoolKnitSweaterImg,
-      'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=800&q=80',
+      fleecePulloverHoodieImg,
       fleecePulloverHoodieImg,
     ],
   },
@@ -755,7 +758,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     image: highVisSafetyVestImg,
     images: [
       highVisSafetyVestImg,
-      'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=800&q=80',
+      fleecePulloverHoodieImg,
       industrialWorkwearOverallImg,
     ],
   },
@@ -806,8 +809,8 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     image: medicalScrubSetImg,
     images: [
       medicalScrubSetImg,
-      'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?auto=format&fit=crop&w=800&q=80',
+      medicalScrubsAlternativeImg,
+      canvasBaristaApronImg,
       canvasBaristaApronImg,
     ],
     badge: 'Priority #8 Medical Scrubs',
@@ -846,11 +849,11 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'Crafted for physicians, pharmacists, and research scientists. Crisp tailored lines with personalized gold or blue embroidered doctor title and clinic logo.',
     idealFor: ['Hospital Consultants', 'Medical Research Labs', 'Pharmacists', 'University Science Faculties'],
-    image: 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?auto=format&fit=crop&w=800&q=80',
+    image: canvasBaristaApronImg,
     images: [
-      'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?auto=format&fit=crop&w=800&q=80',
+      canvasBaristaApronImg,
       medicalScrubSetImg,
-      'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80',
+      medicalScrubsAlternativeImg,
     ],
   },
   {
@@ -881,11 +884,11 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'Bulk hospital procurement solutions covering maternity wards, patient recovery rooms, and sterile operating theatre gowns.',
     idealFor: ['General Hospital Wards', 'Surgical Theatres', 'Maternity Units', 'Senior Care Homes'],
-    image: 'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80',
+    image: medicalScrubsAlternativeImg,
     images: [
-      'https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=800&q=80',
+      medicalScrubsAlternativeImg,
       medicalScrubSetImg,
-      'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?auto=format&fit=crop&w=800&q=80',
+      canvasBaristaApronImg,
     ],
   },
 
@@ -934,8 +937,8 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     images: [
       chefJacketExecutiveImg,
       canvasBaristaApronImg,
-      'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=800&q=80',
+      chefJacketExecutiveImg,
+      canvasBaristaApronImg,
     ],
     badge: 'Priority #9 Hospitality Uniforms',
     popular: true,
@@ -980,7 +983,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     images: [
       canvasBaristaApronImg,
       chefJacketExecutiveImg,
-      'https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&w=800&q=80',
+      canvasBaristaApronImg,
     ],
     badge: 'Trending Design',
   },
@@ -1013,9 +1016,9 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'Full hotel operations apparel covering banquet servers, wine stewards, bellhops, and housekeeping floor crews. Built for active walking and graceful presentation.',
     idealFor: ['Boutique Hotels', 'Conference Centers', 'Catering Companies', 'Resort Service Staff'],
-    image: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=800&q=80',
+    image: chefJacketExecutiveImg,
     images: [
-      'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?auto=format&fit=crop&w=800&q=80',
+      chefJacketExecutiveImg,
       canvasBaristaApronImg,
       chefJacketExecutiveImg,
     ],
@@ -1065,9 +1068,9 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'The #1 choice for marketing activations, product launches, corporate runs, and staff uniforms. The ultra-smooth bio-washed surface guarantees vibrant colors that never crack or wash out.',
     idealFor: ['Brand Marketing Campaigns', 'Corporate Giveaways & Roadshows', 'Event Staff & Volunteers', 'Charity Runs & Marathon Kits'],
-    image: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80',
+    image: corporateServicePoloImg,
     images: [
-      'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80',
+      corporateServicePoloImg,
       corporateServicePoloImg,
       fleecePulloverHoodieImg,
       varsityLettermanJacketImg,
@@ -1116,7 +1119,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     images: [
       fleecePulloverHoodieImg,
       varsityLettermanJacketImg,
-      'https://images.unsplash.com/photo-1556905055-8f358a7a47b2?auto=format&fit=crop&w=800&q=80',
+      varsityJacketAlternativeImg,
     ],
     popular: true,
   },
@@ -1194,9 +1197,9 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'Classic 6-panel promotional headwear with high-relief 3D embroidery on front panel and optional arched lettering over rear strap.',
     idealFor: ['Corporate Giveaways', 'Golf Days & Tournaments', 'Staff Uniforms', 'Outdoor Teams'],
-    image: 'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=800&q=80',
+    image: schoolTracksuitJacketImg,
     images: [
-      'https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=800&q=80',
+      schoolTracksuitJacketImg,
       corporateServicePoloImg,
       varsityLettermanJacketImg,
     ],
@@ -1243,11 +1246,11 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     },
     description: 'Professional-grade team kits for football clubs, corporate league teams, and school sports departments. Permanent vibrant sublimation printing guarantees sponsors’ logos, player names, and numbers will never fade or peel.',
     idealFor: ['Football & Rugby Clubs', 'Corporate League Teams', 'School Inter-House Tournaments', 'Sports Academies'],
-    image: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=800&q=80',
+    image: schoolTracksuitJacketImg,
     images: [
-      'https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=800&q=80',
       schoolTracksuitJacketImg,
-      'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80',
+      schoolTracksuitJacketImg,
+      corporateServicePoloImg,
     ],
     badge: 'Priority #10 Sportswear',
     popular: true,
@@ -1285,7 +1288,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     image: schoolTracksuitJacketImg,
     images: [
       schoolTracksuitJacketImg,
-      'https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=800&q=80',
+      schoolTracksuitJacketImg,
       fleecePulloverHoodieImg,
     ],
   },
@@ -1331,7 +1334,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     image: industrialWorkwearOverallImg,
     images: [
       industrialWorkwearOverallImg,
-      'https://images.unsplash.com/photo-1581092335397-9583fe92d232?auto=format&fit=crop&w=800&q=80',
+      industrialWorkwearOverallImg,
       highVisSafetyVestImg,
     ],
     badge: 'Specialized Spec',
@@ -1370,7 +1373,7 @@ export const UNIFORM_PRODUCTS: UniformProduct[] = [
     image: highVisSafetyVestImg,
     images: [
       highVisSafetyVestImg,
-      'https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=800&q=80',
+      industrialWorkwearOverallImg,
       industrialWorkwearOverallImg,
     ],
   },

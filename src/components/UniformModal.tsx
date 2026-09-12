@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { UniformProduct, QuoteItem } from '../types';
 import { useERP } from '../context/ERPContext';
+import academicSchoolBlazerImg from '../assets/images/academic_school_blazer_1787666599640.jpg';
 import { X, Check, ShoppingBag, SlidersHorizontal, Sparkles, Shield, Tag, Layers, CheckCircle2, MessageSquare, ArrowRight, UploadCloud, FileImage, Image as ImageIcon, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -246,7 +247,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                     ? product.images
                     : product.image
                     ? [product.image]
-                    : ['https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80'];
+                    : [academicSchoolBlazerImg];
                 const currentImg = productImages[activeImageIndex] || productImages[0];
 
                 return (
@@ -260,7 +261,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                         loading="eager"
                         referrerPolicy="no-referrer"
                         onError={(e) => {
-                          e.currentTarget.src = 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80';
+                          e.currentTarget.src = academicSchoolBlazerImg;
                         }}
                       />
                       {product.badge && (

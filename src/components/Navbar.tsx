@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { NasisiLogo } from './NasisiLogo';
 import { useERP } from '../context/ERPContext';
+import { getInitialsAvatar } from '../data/adminUserData';
 import {
   ShoppingBag,
   Menu,
@@ -751,7 +752,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <div className="text-[10px] text-slate-500 truncate font-mono">{currentUser.email}</div>
                   <div className="mt-1">
                     <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${isWhitelistedAdmin ? 'bg-amber-100 text-amber-900' : 'bg-blue-100 text-blue-900'}`}>
-                      {isWhitelistedAdmin ? 'Whitelisted Admin' : 'Customer Account'}
+                      {isWhitelistedAdmin ? 'Enterprise Admin' : 'Customer Account'}
                     </span>
                   </div>
                   {isWhitelistedAdmin && onOpenAdminERP && (
@@ -1190,7 +1191,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </div>
                       <div className="flex items-center gap-2.5 mb-3">
                         <img
-                          src={currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=120'}
+                          src={currentUser.avatar || getInitialsAvatar(currentUser.name, isWhitelistedAdmin ? '#06163c' : '#0284c7')}
                           alt={currentUser.name}
                           className="w-9 h-9 rounded-xl object-cover border border-slate-200"
                         />

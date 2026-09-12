@@ -16,7 +16,7 @@ import {
 } from '../types';
 import { UNIFORM_PRODUCTS } from '../data/uniformsData';
 import { INITIAL_HERO_SLIDES, INITIAL_HERO_CONFIG } from '../data/heroData';
-import { INITIAL_ADMIN_USERS, DEFAULT_ADMIN_CREDENTIALS, isWhitelistedAdminEmail, WHITELISTED_ADMIN_EMAILS } from '../data/adminUserData';
+import { INITIAL_ADMIN_USERS, isWhitelistedAdminEmail, WHITELISTED_ADMIN_EMAILS, getInitialsAvatar } from '../data/adminUserData';
 import {
   INITIAL_BUSINESS_PROFILE,
   INITIAL_CUSTOMERS,
@@ -33,6 +33,7 @@ import {
   googleProvider,
   signInWithPopup,
   signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
   onAuthStateChanged,
   collection,
@@ -55,7 +56,8 @@ interface ERPContextType {
   adminUsers: AdminUser[];
   login: (emailOrStaffId: string, password?: string) => Promise<{ success: boolean; role: 'admin' | 'customer'; error?: string }>;
   loginWithGoogle: () => Promise<{ success: boolean; role: 'admin' | 'customer'; error?: string }>;
-  quickDemoLogin: (userId: string) => void;
+  registerWithEmail: (email: string, password: string, fullName?: string) => Promise<{ success: boolean; role: 'admin' | 'customer'; error?: string }>;
+  quickDemoLogin?: (userId: string) => void;
   logout: () => void;
   updateUserProfile: (updates: Partial<AdminUser>) => void;
   changePassword: (oldPass: string, newPass: string) => { success: boolean; error?: string };
@@ -486,7 +488,16 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.ADMIN_USERS);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed: AdminUser[] = JSON.parse(saved);
+        const filtered = parsed
+          .filter((u) => isWhitelistedAdminEmail(u.email))
+          .map((u) => ({
+            ...u,
+            avatar: u.avatar && !u.avatar.includes('unsplash') ? u.avatar : getInitialsAvatar(u.name, '#06163c'),
+          }));
+        if (filtered.length > 0) return filtered;
+      }
     } catch {
       // fallback
     }
@@ -496,7 +507,20 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [currentUser, setCurrentUser] = useState<AdminUser | null>(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
-      if (saved) return JSON.parse(saved);
+      if (saved) {
+        const parsed: AdminUser = JSON.parse(saved);
+        if (parsed && parsed.avatar && parsed.avatar.includes('unsplash')) {
+          parsed.avatar = getInitialsAvatar(parsed.name || 'User', isWhitelistedAdminEmail(parsed.email) ? '#06163c' : '#0284c7');
+        }
+        if (parsed && parsed.email) {
+          if (isWhitelistedAdminEmail(parsed.email)) {
+            parsed.role = 'Super Admin';
+          } else {
+            parsed.role = 'Customer';
+          }
+        }
+        return parsed;
+      }
     } catch {
       // fallback
     }
@@ -523,12 +547,13 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Listen to Firebase Auth state
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser && !currentUser) {
+      if (firebaseUser) {
         const email = firebaseUser.email || '';
         const isWhitelisted = isWhitelistedAdminEmail(email);
+        const displayName = firebaseUser.displayName || email.split('@')[0] || 'User';
 
         if (isWhitelisted) {
-          // Find existing admin or construct admin profile for authenticated Firebase admin user
+          // Authorized Whitelisted Admin Profile
           const existing = adminUsers.find(
             (u) => u.email.toLowerCase() === email.toLowerCase()
           );
@@ -536,24 +561,22 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             ? {
                 ...existing,
                 status: 'active',
-                lastLogin: 'Just now (Firebase Verified)',
-                avatar: firebaseUser.photoURL || existing.avatar,
+                lastLogin: 'Just now (Firebase Verified Admin)',
+                avatar: firebaseUser.photoURL || existing.avatar || getInitialsAvatar(existing.name, '#06163c'),
               }
             : {
                 id: `user-${firebaseUser.uid}`,
-                name: firebaseUser.displayName || email.split('@')[0] || 'Enterprise Admin',
+                name: displayName,
                 email: email,
                 role: 'Super Admin',
-                staffId: `NAS-STAFF-${firebaseUser.uid.substring(0, 5).toUpperCase()}`,
+                staffId: `NAS-DIR-${firebaseUser.uid.substring(0, 4).toUpperCase()}`,
                 phone: '+254 722 419 820',
-                department: 'Executive Administration & Factory Oversight',
-                avatar:
-                  firebaseUser.photoURL ||
-                  'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop',
-                bio: 'Authenticated enterprise administrator via Firebase Identity.',
-                location: 'Nairobi Headquarters',
+                department: 'Executive Management & Factory Oversight',
+                avatar: firebaseUser.photoURL || getInitialsAvatar(displayName, '#06163c'),
+                bio: 'Authorized enterprise administrator via Firebase Identity.',
+                location: 'Nairobi HQ, Kenya',
                 status: 'active',
-                lastLogin: 'Just now (Firebase Verified)',
+                lastLogin: 'Just now (Firebase Verified Admin)',
                 joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
                 twoFactorEnabled: true,
               };
@@ -561,18 +584,16 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           setCurrentUser(signedInAdmin);
           localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(signedInAdmin));
         } else {
-          // Authenticated as Customer for storefront checkout purposes only
+          // Regular customer account: access restricted to storefront checkout
           const customerUser: AdminUser = {
             id: `cust-${firebaseUser.uid}`,
-            name: firebaseUser.displayName || email.split('@')[0] || 'Storefront Customer',
+            name: displayName,
             email: email,
             role: 'Customer',
             staffId: `CUST-${firebaseUser.uid.substring(0, 6).toUpperCase()}`,
             phone: firebaseUser.phoneNumber || '+254 700 000 000',
             department: 'Storefront Client Accounts',
-            avatar:
-              firebaseUser.photoURL ||
-              'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop',
+            avatar: firebaseUser.photoURL || getInitialsAvatar(displayName, '#0284c7'),
             bio: 'Verified customer account for customized uniform quotes and express checkout.',
             location: 'Kenya',
             status: 'active',
@@ -588,15 +609,16 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
 
     return () => unsubscribe();
-  }, [adminUsers, currentUser]);
+  }, [adminUsers]);
 
   const loginWithGoogle = async (): Promise<{ success: boolean; role: 'admin' | 'customer'; error?: string }> => {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
-      const email = user.email || '';
+      const email = (user.email || '').trim();
       const isWhitelisted = isWhitelistedAdminEmail(email);
-      
+      const displayName = user.displayName || email.split('@')[0] || 'Google User';
+
       if (isWhitelisted) {
         const existing = adminUsers.find(
           (u) => u.email.toLowerCase() === email.toLowerCase()
@@ -612,23 +634,23 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           ? {
               ...existing,
               status: 'active',
-              avatar: user.photoURL || existing.avatar,
-              lastLogin: 'Just now (Google Auth Verified)',
+              avatar: user.photoURL || existing.avatar || getInitialsAvatar(existing.name, '#06163c'),
+              lastLogin: 'Just now (Google Verified Admin)',
               recentActivities: [newActivity, ...(existing.recentActivities || []).slice(0, 9)],
             }
           : {
               id: `user-${user.uid}`,
-              name: user.displayName || email.split('@')[0] || 'Google Admin',
+              name: displayName,
               email: email,
               role: 'Super Admin',
-              staffId: `NAS-G-${user.uid.substring(0, 5).toUpperCase()}`,
+              staffId: `NAS-DIR-${user.uid.substring(0, 4).toUpperCase()}`,
               phone: user.phoneNumber || '+254 722 419 820',
-              department: 'Executive Administration & Factory Oversight',
-              avatar: user.photoURL || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=400&auto=format&fit=crop',
+              department: 'Executive Management & Factory Oversight',
+              avatar: user.photoURL || getInitialsAvatar(displayName, '#06163c'),
               bio: 'Authenticated administrator via Google Identity SSO.',
               location: 'Nairobi HQ',
               status: 'active',
-              lastLogin: 'Just now (Google Auth Verified)',
+              lastLogin: 'Just now (Google Verified Admin)',
               joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
               twoFactorEnabled: true,
               recentActivities: [newActivity],
@@ -648,15 +670,13 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         // Customer account login: Access granted strictly for customer/checkout features
         const customerUser: AdminUser = {
           id: `cust-${user.uid}`,
-          name: user.displayName || email.split('@')[0] || 'Storefront Customer',
+          name: displayName,
           email: email,
           role: 'Customer',
           staffId: `CUST-${user.uid.substring(0, 6).toUpperCase()}`,
           phone: user.phoneNumber || '+254 700 000 000',
           department: 'Storefront Client Accounts',
-          avatar:
-            user.photoURL ||
-            'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop',
+          avatar: user.photoURL || getInitialsAvatar(displayName, '#0284c7'),
           bio: 'Verified customer account for customized uniform quotes and express checkout.',
           location: 'Kenya',
           status: 'active',
@@ -696,153 +716,167 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const trimmed = emailOrStaffId.trim().toLowerCase();
     const cleanPassword = (password || '').trim();
 
-    // If it's an email format, also try authenticating with Firebase Auth
-    if (trimmed.includes('@') && cleanPassword) {
-      try {
-        await signInWithEmailAndPassword(auth, trimmed, cleanPassword);
-      } catch (firebaseErr: any) {
-        console.log('Firebase auth attempt returned notice:', firebaseErr?.code || firebaseErr?.message);
-      }
+    if (!trimmed) {
+      return { success: false, role: 'customer', error: 'Please enter your email address.' };
     }
 
-    const isWhitelisted = isWhitelistedAdminEmail(trimmed);
+    if (!cleanPassword) {
+      return { success: false, role: 'customer', error: 'Please enter your account password.' };
+    }
 
-    // If NOT a whitelisted admin, allow login as Customer if valid email address
-    if (!isWhitelisted) {
-      if (trimmed.includes('@')) {
-        const customerUser: AdminUser = {
-          id: `cust-${Date.now()}`,
-          name: trimmed.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
-          email: trimmed,
+    // Try real Firebase Authentication with Email & Password
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, trimmed, cleanPassword);
+      const fbUser = userCredential.user;
+      const email = (fbUser.email || trimmed).toLowerCase();
+      const isWhitelisted = isWhitelistedAdminEmail(email);
+      const displayName = fbUser.displayName || email.split('@')[0];
+
+      if (isWhitelisted) {
+        const existing = adminUsers.find((u) => u.email.toLowerCase() === email);
+        const adminUser: AdminUser = existing
+          ? {
+              ...existing,
+              status: 'active',
+              lastLogin: 'Just now (Firebase Email Auth)',
+              avatar: fbUser.photoURL || existing.avatar || getInitialsAvatar(existing.name, '#06163c'),
+            }
+          : {
+              id: `user-${fbUser.uid}`,
+              name: displayName,
+              email: email,
+              role: 'Super Admin',
+              staffId: `NAS-DIR-${fbUser.uid.substring(0, 4).toUpperCase()}`,
+              phone: '+254 722 419 820',
+              department: 'Executive Management',
+              avatar: fbUser.photoURL || getInitialsAvatar(displayName, '#06163c'),
+              bio: 'Authorized Enterprise Administrator.',
+              location: 'Nairobi HQ',
+              status: 'active',
+              lastLogin: 'Just now',
+              joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+              twoFactorEnabled: true,
+            };
+
+        setCurrentUser(adminUser);
+        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(adminUser));
+        return { success: true, role: 'admin' };
+      } else {
+        // Customer account
+        const custUser: AdminUser = {
+          id: `cust-${fbUser.uid}`,
+          name: displayName,
+          email: email,
           role: 'Customer',
-          staffId: `CUST-${Math.floor(1000 + Math.random() * 9000)}`,
-          phone: '+254 700 000 000',
+          staffId: `CUST-${fbUser.uid.substring(0, 6).toUpperCase()}`,
+          phone: fbUser.phoneNumber || '+254 700 000 000',
           department: 'Storefront Client Accounts',
-          avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop',
-          bio: 'Customer account for quotation requests and checkout.',
+          avatar: fbUser.photoURL || getInitialsAvatar(displayName, '#0284c7'),
+          bio: 'Customer account for quotation requests and express checkout.',
           location: 'Kenya',
           status: 'active',
-          lastLogin: 'Just now',
+          lastLogin: 'Just now (Customer Auth)',
           joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
           twoFactorEnabled: false,
         };
 
-        setCurrentUser(customerUser);
-        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(customerUser));
+        setCurrentUser(custUser);
+        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(custUser));
         return { success: true, role: 'customer' };
       }
-
-      return {
-        success: false,
-        role: 'customer',
-        error:
-          'Access restricted: Only whitelisted administrators (nasisiknitwear.ke@gmail.com, optimumengineeringke@gmail.com, veronicanjus@gmail.com) can access the Enterprise ERP Dashboard. Other users can sign in with an email for customer checkout.',
-      };
-    }
-
-    // Match by email or staffId or generic admin
-    const matchedUser = adminUsers.find(
-      (u) =>
-        u.email.toLowerCase() === trimmed ||
-        u.staffId.toLowerCase() === trimmed ||
-        (trimmed === 'admin' && u.role === 'Super Admin')
-    );
-
-    // Check custom passwords stored
-    let storedPasswords: Record<string, string> = {};
-    try {
-      const saved = localStorage.getItem(STORAGE_KEYS.PASSWORDS);
-      if (saved) storedPasswords = JSON.parse(saved);
-    } catch {
-      // fallback
-    }
-
-    const expectedPass = matchedUser
-      ? storedPasswords[matchedUser.id] || DEFAULT_ADMIN_CREDENTIALS.defaultPassword
-      : DEFAULT_ADMIN_CREDENTIALS.defaultPassword;
-
-    // Allow expected pass or demo pass
-    const isPasswordValid =
-      cleanPassword === expectedPass ||
-      cleanPassword === 'admin123' ||
-      cleanPassword === 'admin' ||
-      cleanPassword === 'password' ||
-      !cleanPassword;
-
-    if (!matchedUser) {
-      if (trimmed === 'admin@nasisiuniforms.co.ke' || trimmed === 'admin' || isWhitelistedAdminEmail(trimmed)) {
-        const userToLogin: AdminUser = {
-          ...(adminUsers[0] || INITIAL_ADMIN_USERS[0]),
-          id: `user-${Date.now()}`,
-          email: trimmed.includes('@') ? trimmed : 'admin@nasisiuniforms.co.ke',
-          name: trimmed.includes('@') ? trimmed.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()) : 'Enterprise Admin',
-          role: 'Super Admin',
-          status: 'active',
-          lastLogin: 'Just now (Whitelisted Admin)',
-        };
-        setCurrentUser(userToLogin);
-        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(userToLogin));
-        return { success: true, role: 'admin' };
+    } catch (err: any) {
+      console.warn('Firebase signInWithEmailAndPassword error:', err?.code, err?.message);
+      let errorMsg = 'Invalid email or password.';
+      if (err?.code === 'auth/user-not-found' || err?.code === 'auth/invalid-credential') {
+        errorMsg = 'Incorrect email or password. If you do not have an account yet, create a new account or sign in with Google.';
+      } else if (err?.code === 'auth/wrong-password') {
+        errorMsg = 'Incorrect password. Please verify your credentials.';
+      } else if (err?.code === 'auth/invalid-email') {
+        errorMsg = 'Please enter a valid email address.';
+      } else if (err?.code === 'auth/too-many-requests') {
+        errorMsg = 'Too many failed login attempts. Please reset your password or try again shortly.';
       }
-      return {
-        success: false,
-        role: 'admin',
-        error: 'No administrator profile found for this staff ID or email.',
-      };
+      return { success: false, role: 'customer', error: errorMsg };
     }
-
-    if (!isPasswordValid) {
-      return {
-        success: false,
-        role: 'admin',
-        error: 'Incorrect password. Please check your credentials.',
-      };
-    }
-
-    const newActivity: AdminUserActivity = {
-      id: `act-${Date.now()}`,
-      action: 'Signed in to Enterprise ERP Console (Nairobi, Kenya)',
-      timestamp: 'Just now',
-      category: 'auth',
-    };
-
-    const updatedUser: AdminUser = {
-      ...matchedUser,
-      status: 'active',
-      lastLogin: 'Just now (Nairobi Station)',
-      recentActivities: [newActivity, ...(matchedUser.recentActivities || []).slice(0, 9)],
-    };
-
-    setCurrentUser(updatedUser);
-    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updatedUser));
-
-    setAdminUsers((prev) =>
-      prev.map((u) => (u.id === updatedUser.id ? updatedUser : u))
-    );
-
-    return { success: true, role: 'admin' };
   };
 
-  const quickDemoLogin = (userId: string) => {
-    const user = adminUsers.find((u) => u.id === userId) || adminUsers[0];
-    const newActivity: AdminUserActivity = {
-      id: `act-${Date.now()}`,
-      action: 'Authenticated via 1-Click Fast Access Demo profile',
-      timestamp: 'Just now',
-      category: 'auth',
-    };
-    const updatedUser: AdminUser = {
-      ...user,
-      status: 'active',
-      lastLogin: 'Just now (Nairobi Station)',
-      recentActivities: [newActivity, ...(user.recentActivities || []).slice(0, 9)],
-    };
-    setCurrentUser(updatedUser);
-    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updatedUser));
-    setAdminUsers((prev) =>
-      prev.map((u) => (u.id === updatedUser.id ? updatedUser : u))
-    );
+  const registerWithEmail = async (
+    email: string,
+    password: string,
+    fullName?: string
+  ): Promise<{ success: boolean; role: 'admin' | 'customer'; error?: string }> => {
+    const trimmed = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+
+    if (!trimmed || !cleanPassword) {
+      return { success: false, role: 'customer', error: 'Please provide both email and a secure password.' };
+    }
+    if (cleanPassword.length < 6) {
+      return { success: false, role: 'customer', error: 'Password must be at least 6 characters.' };
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, trimmed, cleanPassword);
+      const fbUser = userCredential.user;
+      const isWhitelisted = isWhitelistedAdminEmail(trimmed);
+      const displayName = fullName?.trim() || trimmed.split('@')[0];
+
+      if (isWhitelisted) {
+        const adminUser: AdminUser = {
+          id: `user-${fbUser.uid}`,
+          name: displayName,
+          email: trimmed,
+          role: 'Super Admin',
+          staffId: `NAS-DIR-${fbUser.uid.substring(0, 4).toUpperCase()}`,
+          phone: '+254 722 419 820',
+          department: 'Executive Management',
+          avatar: getInitialsAvatar(displayName, '#06163c'),
+          bio: 'Authorized Enterprise Administrator.',
+          location: 'Nairobi HQ',
+          status: 'active',
+          lastLogin: 'Just now (Firebase Account Created)',
+          joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+          twoFactorEnabled: true,
+        };
+        setCurrentUser(adminUser);
+        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(adminUser));
+        return { success: true, role: 'admin' };
+      } else {
+        const custUser: AdminUser = {
+          id: `cust-${fbUser.uid}`,
+          name: displayName,
+          email: trimmed,
+          role: 'Customer',
+          staffId: `CUST-${fbUser.uid.substring(0, 6).toUpperCase()}`,
+          phone: '+254 700 000 000',
+          department: 'Storefront Client Accounts',
+          avatar: getInitialsAvatar(displayName, '#0284c7'),
+          bio: 'Verified customer account for quotation requests and checkout.',
+          location: 'Kenya',
+          status: 'active',
+          lastLogin: 'Just now (New Customer Account)',
+          joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+          twoFactorEnabled: false,
+        };
+        setCurrentUser(custUser);
+        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(custUser));
+        return { success: true, role: 'customer' };
+      }
+    } catch (err: any) {
+      console.warn('Firebase createUser error:', err?.code, err?.message);
+      let errorMsg = 'Failed to create account. Please try again.';
+      if (err?.code === 'auth/email-already-in-use') {
+        errorMsg = 'An account with this email already exists. Please sign in instead.';
+      } else if (err?.code === 'auth/weak-password') {
+        errorMsg = 'Password is too weak. Please use at least 6 characters.';
+      } else if (err?.code === 'auth/invalid-email') {
+        errorMsg = 'Please enter a valid email address.';
+      }
+      return { success: false, role: 'customer', error: errorMsg };
+    }
   };
+
+  const quickDemoLogin = () => {};
 
   const logout = () => {
     try {
@@ -886,8 +920,8 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const changePassword = (oldPass: string, newPass: string) => {
     if (!currentUser) return { success: false, error: 'Not authenticated' };
-    if (!newPass || newPass.length < 4) {
-      return { success: false, error: 'New password must be at least 4 characters long.' };
+    if (!newPass || newPass.length < 6) {
+      return { success: false, error: 'New password must be at least 6 characters long.' };
     }
     let storedPasswords: Record<string, string> = {};
     try {
@@ -896,8 +930,8 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } catch {
       // fallback
     }
-    const currentPass = storedPasswords[currentUser.id] || DEFAULT_ADMIN_CREDENTIALS.defaultPassword;
-    if (oldPass !== currentPass && oldPass !== 'admin123' && oldPass !== 'admin') {
+    const currentPass = storedPasswords[currentUser.id];
+    if (currentPass && oldPass !== currentPass) {
       return { success: false, error: 'Current password does not match.' };
     }
     storedPasswords[currentUser.id] = newPass;
@@ -1775,6 +1809,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         adminUsers,
         login,
         loginWithGoogle,
+        registerWithEmail,
         quickDemoLogin,
         logout,
         updateUserProfile,

@@ -751,7 +751,7 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
               <div className="flex gap-2">
                 <input
                   type="url"
-                  placeholder="https://images.unsplash.com/... or cloud asset URL"
+                  placeholder="https://example.com/banner.jpg or cloud asset URL"
                   value={customUrlInput}
                   onChange={(e) => setCustomUrlInput(e.target.value)}
                   className="flex-1 px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"

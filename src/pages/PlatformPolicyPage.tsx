@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ShieldCheck,
   Lock,
@@ -20,6 +20,7 @@ import {
   Share2,
 } from 'lucide-react';
 import { NasisiLogo } from '../components/NasisiLogo';
+import { updateSEO } from '../utils/seo';
 
 interface PlatformPolicyPageProps {
   onBackToStorefront: () => void;
@@ -34,6 +35,11 @@ export const PlatformPolicyPage: React.FC<PlatformPolicyPageProps> = ({
 }) => {
   const [activeSection, setActiveSection] = useState<string>('overview');
   const [searchQuery, setSearchQuery] = useState<string>('');
+
+  useEffect(() => {
+    updateSEO('privacy');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const lastUpdated = 'February 2026';
   const effectiveDate = 'January 1, 2026';
