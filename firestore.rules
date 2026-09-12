@@ -11,12 +11,9 @@ service cloud.firestore {
     function isWhitelistedAdmin() {
       return isSignedIn() && (
         request.auth.token.email in [
-          'nasisiknitwear.ke@gmail.com',
           'veronicanjus@gmail.com',
-          'optimumengineeringke@gmail.com',
-          'admin@nasisiuniforms.co.ke',
-          'brian.finance@nasisiuniforms.co.ke',
-          'mercy.prod@nasisiuniforms.co.ke'
+          'nasisiknitwear.ke@gmail.com',
+          'optimumengineeringke@gmail.com'
         ]
       );
     }
