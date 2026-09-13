@@ -146,9 +146,9 @@ const STORAGE_KEYS = {
   CUSTOMERS: 'nasisi_erp_customers_v2',
   DOCUMENTS: 'nasisi_erp_documents_v2',
   TRANSACTIONS: 'nasisi_erp_transactions_v2',
-  INVENTORY: 'nasisi_erp_inventory_v4',
+  INVENTORY: 'nasisi_erp_inventory_v5',
   PRODUCTION: 'nasisi_erp_production_v2',
-  PRODUCTS: 'nasisi_erp_products_v5',
+  PRODUCTS: 'nasisi_erp_products_v6',
   TICKETS: 'nasisi_erp_inquiry_tickets_v2',
   HERO_SLIDES: 'nasisi_erp_hero_slides_v2',
   HERO_CONFIG: 'nasisi_erp_hero_config_v2',
@@ -194,6 +194,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [products, setProducts] = useState<UniformProduct[]>(() => {
     try {
       // Clear legacy storage keys
+      localStorage.removeItem('nasisi_erp_products_v5');
       localStorage.removeItem('nasisi_erp_products_v4');
       localStorage.removeItem('nasisi_erp_products_v3');
       localStorage.removeItem('nasisi_erp_products_v2');

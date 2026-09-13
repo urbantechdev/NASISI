@@ -348,7 +348,8 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-0 sm:p-5 md:p-8 overflow-hidden sm:overflow-y-auto animate-fadeIn"
+      id="customizer-modal-overlay"
+      className="fixed inset-0 z-[9999] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-0 sm:p-5 md:p-8 overflow-hidden sm:overflow-y-auto animate-fadeIn"
       role="dialog"
       aria-modal="true"
       aria-labelledby="mockup-modal-title"
