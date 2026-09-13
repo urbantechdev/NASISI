@@ -30,9 +30,9 @@ export interface UniformProduct {
     features: string[];
   };
   customizationOptions: {
-    embroidery?: boolean;
-    screenPrinting?: boolean;
-    wovenPatch?: boolean;
+    embroidery: boolean;
+    screenPrinting: boolean;
+    wovenPatch: boolean;
     reflectiveStripes?: boolean;
     heatTransfer?: boolean;
     customStitching?: boolean;
@@ -352,8 +352,6 @@ export interface ERPBusinessProfile {
   logoUrl?: string; // Main brand logo (URL or Base64 data URL)
   faviconUrl?: string; // Browser tab favicon (URL or Base64 data URL)
   footerLogoUrl?: string; // Footer logo (URL or Base64 data URL)
-  titleWatermarkUrl?: string; // Specific logo behind title (falls back to logoUrl)
-  watermarkOpacity?: number; // Opacity for title and footer background watermarks (e.g. 0.08)
   logoDisplayMode?: 'image-only' | 'image-and-text'; // Display preference
 }
 

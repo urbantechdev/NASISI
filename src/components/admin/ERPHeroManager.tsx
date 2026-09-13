@@ -604,7 +604,7 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden animate-fadeIn my-8">
         {/* Modal Header */}
         <div className="bg-gradient-to-r from-[#020a1c] via-[#06163c] to-[#030e28] text-white p-5 flex items-center justify-between border-b border-blue-900/40">

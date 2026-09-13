@@ -37,8 +37,6 @@ export const INITIAL_BUSINESS_PROFILE: ERPBusinessProfile = {
   logoUrl: '',
   faviconUrl: '',
   footerLogoUrl: '',
-  titleWatermarkUrl: '',
-  watermarkOpacity: 0.08,
   logoDisplayMode: 'image-only',
 };
 

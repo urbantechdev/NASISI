@@ -31,10 +31,8 @@ export const ADDITIONAL_SERVICES_LIST = [
   'Custom Stitching',
 ];
 
-import { CATALOGUE_PRODUCTS } from './catalogueProducts';
-
-// Catalogue Products (Ready catalogue loaded without images for manual upload)
-export const UNIFORM_PRODUCTS: UniformProduct[] = CATALOGUE_PRODUCTS;
+// Catalogue Products (Wiped - ready for user to create new)
+export const UNIFORM_PRODUCTS: UniformProduct[] = [];
 
 // 5 Official In-House Services (Catalogue Page 3)
 export const CORE_SERVICES = [
