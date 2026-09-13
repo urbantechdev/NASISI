@@ -20,23 +20,29 @@ import { CookieConsentBanner } from './components/CookieConsentBanner';
 export type AppViewMode = 'storefront' | 'erp' | 'privacy' | 'terms' | 'cookies';
 
 export default function App() {
-  // View mode: storefront website always loads first. Admin is accessed through the lock icon at the footer.
+  // View mode: storefront vs erp vs independent legal pages (privacy, terms, cookies)
   const [viewMode, setViewMode] = useState<AppViewMode>(() => {
-    // Clear any lingering erp mode or hashes so storefront website ALWAYS loads first
+    // Check initial URL hash
     if (typeof window !== 'undefined') {
       const hash = window.location.hash.toLowerCase();
       if (hash === '#privacy' || hash === '#policy') return 'privacy';
       if (hash === '#terms' || hash === '#tos') return 'terms';
       if (hash === '#cookies' || hash === '#cookie-policy') return 'cookies';
-      // If URL contains admin/erp hash on startup, clear it so website loads first
-      if (hash === '#erp' || hash === '#admin') {
-        window.history.replaceState(null, '', window.location.pathname);
+      if (hash === '#erp' || hash === '#admin') return 'erp';
+    }
+    try {
+      const saved = localStorage.getItem('nasisi_view_mode');
+      if (
+        saved === 'erp' ||
+        saved === 'storefront' ||
+        saved === 'privacy' ||
+        saved === 'terms' ||
+        saved === 'cookies'
+      ) {
+        return saved as AppViewMode;
       }
-      try {
-        localStorage.removeItem('nasisi_view_mode');
-      } catch {
-        // ignore
-      }
+    } catch {
+      // ignore
     }
     return 'storefront';
   });
@@ -136,24 +142,21 @@ export default function App() {
     } catch {
       // ignore
     }
-    // Default starter item only if products are present
-    if (UNIFORM_PRODUCTS && UNIFORM_PRODUCTS.length > 0 && UNIFORM_PRODUCTS[0]) {
-      return [
-        {
-          id: 'initial-blazer-demo',
-          product: UNIFORM_PRODUCTS[0],
-          selectedColor: 'Royal Blue',
-          quantities: { 'Youth M': 20, 'Adult S': 30 },
-          totalQuantity: 50,
-          brandingType: 'embroidery',
-          logoPlacement: ['Left Chest'],
-          logoNotes: 'School Crest Gold Stitching Sample',
-          unitPrice: 3800,
-          totalPrice: 190000,
-        },
-      ];
-    }
-    return [];
+    // Default starter item to showcase instant quote readiness
+    return [
+      {
+        id: 'initial-blazer-demo',
+        product: UNIFORM_PRODUCTS[0],
+        selectedColor: 'Royal Blue',
+        quantities: { 'Youth M': 20, 'Adult S': 30 },
+        totalQuantity: 50,
+        brandingType: 'embroidery',
+        logoPlacement: ['Left Chest'],
+        logoNotes: 'School Crest Gold Stitching Sample',
+        unitPrice: 37.31,
+        totalPrice: 1865.5,
+      },
+    ];
   });
 
   const [selectedProductForModal, setSelectedProductForModal] = useState<UniformProduct | null>(null);
@@ -165,12 +168,7 @@ export default function App() {
 
   useEffect(() => {
     try {
-      // Storefront website must always load first on initial visits & refreshes
-      if (viewMode !== 'erp') {
-        localStorage.setItem('nasisi_view_mode', viewMode);
-      } else {
-        localStorage.removeItem('nasisi_view_mode');
-      }
+      localStorage.setItem('nasisi_view_mode', viewMode);
     } catch {
       // ignore
     }

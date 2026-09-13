@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Ruler, Check, Layers, Sparkles, Shirt, Shield, Info } from 'lucide-react';
+import { X, Ruler, Layers, Sparkles, Check, Info, ShieldAlert } from 'lucide-react';
 
 interface SizeAndFabricGuideProps {
   isOpen: boolean;
@@ -7,340 +7,250 @@ interface SizeAndFabricGuideProps {
 }
 
 export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, onClose }) => {
-  const [activeTab, setActiveTab] = useState<'sizes' | 'fabrics' | 'measuring'>('sizes');
-  const [categoryTab, setCategoryTab] = useState<'adult_unisex' | 'youth_school' | 'ladies_tailored'>('adult_unisex');
+  const [activeTab, setActiveTab] = useState<'sizes' | 'fabrics' | 'care'>('sizes');
+  const [sizeCategory, setSizeCategory] = useState<'school_junior' | 'adult'>('school_junior');
+
+  const juniorSizes = [
+    { size: 'Age 3-4 (XS Junior)', chest: '22" - 24"', waist: '20" - 21"', length: '16"', height: '98 - 104 cm' },
+    { size: 'Age 5-6 (S Junior)', chest: '24" - 26"', waist: '22" - 23"', length: '18"', height: '110 - 116 cm' },
+    { size: 'Age 7-8 (M Junior)', chest: '26" - 28"', waist: '23" - 24"', length: '20"', height: '122 - 128 cm' },
+    { size: 'Age 9-10 (L Junior)', chest: '28" - 30"', waist: '24" - 25"', length: '22"', height: '134 - 140 cm' },
+    { size: 'Age 11-12 (XL Junior)', chest: '30" - 32"', waist: '25" - 26"', length: '24"', height: '146 - 152 cm' },
+    { size: 'Age 13-14 (Youth S)', chest: '32" - 34"', waist: '26" - 28"', length: '26"', height: '158 - 164 cm' },
+  ];
+
+  const adultSizes = [
+    { size: 'Small (S)', chest: '36" - 38"', waist: '30" - 32"', neck: '14.5"', length: '28"' },
+    { size: 'Medium (M)', chest: '39" - 41"', waist: '32" - 34"', neck: '15.5"', length: '29"' },
+    { size: 'Large (L)', chest: '42" - 44"', waist: '35" - 37"', neck: '16.5"', length: '30"' },
+    { size: 'X-Large (XL)', chest: '45" - 47"', waist: '38" - 40"', neck: '17.5"', length: '31"' },
+    { size: '2X-Large (2XL)', chest: '48" - 50"', waist: '41" - 43"', neck: '18.5"', length: '32"' },
+    { size: '3X-Large (3XL)', chest: '51" - 54"', waist: '44" - 47"', neck: '19.5"', length: '33"' },
+    { size: '4XL / 5XL (Custom)', chest: '55"+', waist: '48"+', neck: '20.5"+', length: '34"' },
+  ];
 
   if (!isOpen) return null;
 
   return (
-    <div
-      id="size-guide-modal-overlay"
-      className="fixed inset-0 z-[9999] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-0 sm:p-4 md:p-6 overflow-hidden sm:overflow-y-auto animate-fadeIn"
-    >
+    <div className="fixed inset-0 z-[100] bg-slate-900/75 backdrop-blur-md flex items-center justify-center p-0 sm:p-6 overflow-hidden sm:overflow-y-auto animate-fadeIn">
       <div
-        id="size-guide-modal-window"
-        className="relative w-full sm:max-w-4xl max-h-[100vh] sm:max-h-[92vh] bg-white text-slate-900 sm:rounded-3xl shadow-[0_25px_80px_rgba(0,0,0,0.5)] border border-slate-200/90 flex flex-col overflow-hidden animate-scaleIn"
+        className="relative bg-white w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-3xl sm:rounded-3xl flex flex-col shadow-2xl border-0 sm:border sm:border-slate-200 overflow-hidden"
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4.5 bg-[#06163c] text-white shrink-0 border-b border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center text-cyan-300">
-              <Ruler className="w-5 h-5" />
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-200 bg-white sticky top-0 z-20 shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0 pr-2">
+            <div className="w-8 h-8 rounded-xl bg-blue-50 text-[#06163c] flex items-center justify-center font-bold shrink-0">
+              <Ruler className="w-4 h-4" />
             </div>
-            <div>
-              <h3 className="text-base sm:text-lg font-black tracking-tight text-white">
-                Official Size & Fabric Technical Guide
+            <div className="min-w-0">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 font-['Outfit',sans-serif] truncate">
+                Size Chart & Technical Fabric Guide
               </h3>
-              <p className="text-xs text-blue-200/80">
-                Precision sizing charts, textile GSM specifications & measurement protocols
-              </p>
+              <span className="text-[11px] sm:text-xs text-slate-500 truncate block">
+                Official specifications for NASISI uniform tailoring
+              </span>
             </div>
           </div>
-
           <button
-            type="button"
             onClick={onClose}
-            aria-label="Close Size Guide"
-            className="w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all duration-150 hover:rotate-90 cursor-pointer"
+            className="p-2 sm:p-1.5 rounded-xl sm:rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors shrink-0"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Tab Selection */}
-        <div className="flex border-b border-slate-200 px-6 bg-slate-50 gap-4 shrink-0">
+        {/* Tab Controls */}
+        <div className="flex border-b border-slate-200 px-6 bg-slate-50 gap-4 text-xs font-bold">
           <button
-            type="button"
             onClick={() => setActiveTab('sizes')}
-            className={`py-3 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+            className={`py-3 border-b-2 transition-colors ${
               activeTab === 'sizes'
                 ? 'border-[#06163c] text-[#06163c]'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            Size Dimension Charts
+            📏 Sizing Charts
           </button>
           <button
-            type="button"
             onClick={() => setActiveTab('fabrics')}
-            className={`py-3 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
+            className={`py-3 border-b-2 transition-colors ${
               activeTab === 'fabrics'
                 ? 'border-[#06163c] text-[#06163c]'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            Fabric & Textile GSM Specs
+            🧵 Fabric Compositions
           </button>
           <button
-            type="button"
-            onClick={() => setActiveTab('measuring')}
-            className={`py-3 text-xs font-bold border-b-2 transition-colors cursor-pointer ${
-              activeTab === 'measuring'
+            onClick={() => setActiveTab('care')}
+            className={`py-3 border-b-2 transition-colors ${
+              activeTab === 'care'
                 ? 'border-[#06163c] text-[#06163c]'
                 : 'border-transparent text-slate-500 hover:text-slate-800'
             }`}
           >
-            How to Measure Your Team
+            🧼 Wash & Embroidery Care
           </button>
         </div>
 
-        {/* Content Body */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-6 space-y-6">
+        {/* Body Content */}
+        <div className="p-6 overflow-y-auto space-y-6">
           {activeTab === 'sizes' && (
-            <div className="space-y-5">
-              {/* Category selector */}
-              <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setCategoryTab('adult_unisex')}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    categoryTab === 'adult_unisex'
-                      ? 'bg-[#06163c] text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
-                >
-                  Adult Unisex (Corporate / Medical / Workwear)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCategoryTab('youth_school')}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    categoryTab === 'youth_school'
-                      ? 'bg-[#06163c] text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
-                >
-                  Youth & Academic Uniforms
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCategoryTab('ladies_tailored')}
-                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    categoryTab === 'ladies_tailored'
-                      ? 'bg-[#06163c] text-white shadow-xs'
-                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
-                  }`}
-                >
-                  Ladies Tailored Fit
-                </button>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Select Sizing Group:
+                </span>
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => setSizeCategory('school_junior')}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold ${
+                      sizeCategory === 'school_junior'
+                        ? 'bg-[#06163c] text-white'
+                        : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    School & Junior (Ages 3-14)
+                  </button>
+                  <button
+                    onClick={() => setSizeCategory('adult')}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold ${
+                      sizeCategory === 'adult'
+                        ? 'bg-[#06163c] text-white'
+                        : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    Adult & Senior (S to 5XL)
+                  </button>
+                </div>
               </div>
 
-              {/* Size Table */}
-              <div className="overflow-x-auto rounded-2xl border border-slate-200 shadow-2xs">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-[#06163c] text-white text-[11px] uppercase tracking-wider">
-                    <tr>
-                      <th className="py-3 px-4">Size Tag</th>
-                      <th className="py-3 px-4">Chest / Bust (in)</th>
-                      <th className="py-3 px-4">Waist (in)</th>
-                      <th className="py-3 px-4">Collar / Neck (in)</th>
-                      <th className="py-3 px-4">Height Range (cm)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200 bg-white">
-                    {categoryTab === 'adult_unisex' && (
-                      <>
-                        <tr className="hover:bg-slate-50">
-                          <td className="py-2.5 px-4 font-bold text-slate-900">S (Small)</td>
-                          <td className="py-2.5 px-4 text-slate-600">36" - 38"</td>
-                          <td className="py-2.5 px-4 text-slate-600">30" - 32"</td>
-                          <td className="py-2.5 px-4 text-slate-600">14.5" - 15"</td>
-                          <td className="py-2.5 px-4 text-slate-600">165 - 172 cm</td>
+              {sizeCategory === 'school_junior' ? (
+                <div className="overflow-x-auto border border-slate-200 rounded-xl">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-100 font-bold text-slate-700">
+                      <tr>
+                        <th className="p-3">Junior Size / Age</th>
+                        <th className="p-3">To Fit Chest</th>
+                        <th className="p-3">To Fit Waist</th>
+                        <th className="p-3">Garment Length</th>
+                        <th className="p-3">Child Height</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {juniorSizes.map((row) => (
+                        <tr key={row.size} className="hover:bg-blue-50/50">
+                          <td className="p-3 font-bold text-slate-900">{row.size}</td>
+                          <td className="p-3 text-slate-600">{row.chest}</td>
+                          <td className="p-3 text-slate-600">{row.waist}</td>
+                          <td className="p-3 text-slate-600">{row.length}</td>
+                          <td className="p-3 text-[#06163c] font-semibold">{row.height}</td>
                         </tr>
-                        <tr className="hover:bg-slate-50">
-                          <td className="py-2.5 px-4 font-bold text-slate-900">M (Medium)</td>
-                          <td className="py-2.5 px-4 text-slate-600">38" - 40"</td>
-                          <td className="py-2.5 px-4 text-slate-600">32" - 34"</td>
-                          <td className="py-2.5 px-4 text-slate-600">15.5" - 16"</td>
-                          <td className="py-2.5 px-4 text-slate-600">170 - 178 cm</td>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <div className="overflow-x-auto border border-slate-200 rounded-xl">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-slate-100 font-bold text-slate-700">
+                      <tr>
+                        <th className="p-3">Adult Size</th>
+                        <th className="p-3">Chest (Inches)</th>
+                        <th className="p-3">Waist (Inches)</th>
+                        <th className="p-3">Shirt Collar</th>
+                        <th className="p-3">Garment Length</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {adultSizes.map((row) => (
+                        <tr key={row.size} className="hover:bg-blue-50/50">
+                          <td className="p-3 font-bold text-slate-900">{row.size}</td>
+                          <td className="p-3 text-slate-600">{row.chest}</td>
+                          <td className="p-3 text-slate-600">{row.waist}</td>
+                          <td className="p-3 text-slate-600">{row.neck}</td>
+                          <td className="p-3 text-[#06163c] font-semibold">{row.length}</td>
                         </tr>
-                        <tr className="hover:bg-slate-50">
-                          <td className="py-2.5 px-4 font-bold text-slate-900">L (Large)</td>
-                          <td className="py-2.5 px-4 text-slate-600">42" - 44"</td>
-                          <td className="py-2.5 px-4 text-slate-600">36" - 38"</td>
-                          <td className="py-2.5 px-4 text-slate-600">16.5" - 17"</td>
-                          <td className="py-2.5 px-4 text-slate-600">175 - 183 cm</td>
-                        </tr>
-                        <tr className="hover:bg-slate-50">
-                          <td className="py-2.5 px-4 font-bold text-slate-900">XL (Extra Large)</td>
-                          <td className="py-2.5 px-4 text-slate-600">46" - 48"</td>
-                          <td className="py-2.5 px-4 text-slate-600">40" - 42"</td>
-                          <td className="py-2.5 px-4 text-slate-600">17.5" - 18"</td>
-                          <td className="py-2.5 px-4 text-slate-600">180 - 190 cm</td>
-                        </tr>
-                        <tr className="hover:bg-slate-50">
-                          <td className="py-2.5 px-4 font-bold text-slate-900">XXL (2XL)</td>
-                          <td className="py-2.5 px-4 text-slate-600">50" - 52"</td>
-                          <td className="py-2.5 px-4 text-slate-600">44" - 46"</td>
-                          <td className="py-2.5 px-4 text-slate-600">18.5" - 19"</td>
-                          <td className="py-2.5 px-4 text-slate-600">185 - 195 cm</td>
-                        </tr>
-                      </>
-                    )}
-                    {categoryTab === 'youth_school' && (
-                      <>
-                        <tr className="hover:bg-slate-50">
-                          <td className="py-2.5 px-4 font-bold text-slate-900">Age 4-6 (Size 24-26)</td>
-                          <td className="py-2.5 px-4 text-slate-600">24" - 26"</td>
-                          <td className="py-2.5 px-4 text-slate-600">22" - 23"</td>
-                          <td className="py-2.5 px-4 text-slate-600">11" - 11.5"</td>
-                          <td className="py-2.5 px-4 text-slate-600">105 - 116 cm</td>
-                        </tr>
-                        <tr className="hover:bg-slate-50">
-                          <td className="py-2.5 px-4 font-bold text-slate-900">Age 7-9 (Size 28-30)</td>
-                          <td className="py-2.5 px-4 text-slate-600">28" - 30"</td>
-                          <td className="py-2.5 px-4 text-slate-600">24" - 25"</td>
-                          <td className="py-2.5 px-4 text-slate-600">12" - 12.5"</td>
-                          <td className="py-2.5 px-4 text-slate-600">122 - 134 cm</td>
-                        </tr>
-                        <tr className="hover:bg-slate-50">
-                          <td className="py-2.5 px-4 font-bold text-slate-900">Age 10-12 (Size 32-34)</td>
-                          <td className="py-2.5 px-4 text-slate-600">32" - 34"</td>
-                          <td className="py-2.5 px-4 text-slate-600">26" - 27"</td>
-                          <td className="py-2.5 px-4 text-slate-600">13" - 13.5"</td>
-                          <td className="py-2.5 px-4 text-slate-600">140 - 152 cm</td>
-                        </tr>
-                        <tr className="hover:bg-slate-50">
-                          <td className="py-2.5 px-4 font-bold text-slate-900">Age 13-16 (Size 36-38)</td>
-                          <td className="py-2.5 px-4 text-slate-600">36" - 38"</td>
-                          <td className="py-2.5 px-4 text-slate-600">28" - 30"</td>
-                          <td className="py-2.5 px-4 text-slate-600">14" - 14.5"</td>
-                          <td className="py-2.5 px-4 text-slate-600">158 - 170 cm</td>
-                        </tr>
-                      </>
-                    )}
-                    {categoryTab === 'ladies_tailored' && (
-                      <>
-                        <tr className="hover:bg-slate-50">
-                          <td className="py-2.5 px-4 font-bold text-slate-900">UK 8 / XS</td>
-                          <td className="py-2.5 px-4 text-slate-600">32" - 33"</td>
-                          <td className="py-2.5 px-4 text-slate-600">25" - 26"</td>
-                          <td className="py-2.5 px-4 text-slate-600">35" - 36" (Hips)</td>
-                          <td className="py-2.5 px-4 text-slate-600">160 - 168 cm</td>
-                        </tr>
-                        <tr className="hover:bg-slate-50">
-                          <td className="py-2.5 px-4 font-bold text-slate-900">UK 10 / S</td>
-                          <td className="py-2.5 px-4 text-slate-600">34" - 35"</td>
-                          <td className="py-2.5 px-4 text-slate-600">27" - 28"</td>
-                          <td className="py-2.5 px-4 text-slate-600">37" - 38" (Hips)</td>
-                          <td className="py-2.5 px-4 text-slate-600">162 - 170 cm</td>
-                        </tr>
-                        <tr className="hover:bg-slate-50">
-                          <td className="py-2.5 px-4 font-bold text-slate-900">UK 12 / M</td>
-                          <td className="py-2.5 px-4 text-slate-600">36" - 37"</td>
-                          <td className="py-2.5 px-4 text-slate-600">29" - 30"</td>
-                          <td className="py-2.5 px-4 text-slate-600">39" - 40" (Hips)</td>
-                          <td className="py-2.5 px-4 text-slate-600">165 - 172 cm</td>
-                        </tr>
-                        <tr className="hover:bg-slate-50">
-                          <td className="py-2.5 px-4 font-bold text-slate-900">UK 14 / L</td>
-                          <td className="py-2.5 px-4 text-slate-600">38" - 40"</td>
-                          <td className="py-2.5 px-4 text-slate-600">31" - 33"</td>
-                          <td className="py-2.5 px-4 text-slate-600">41" - 43" (Hips)</td>
-                          <td className="py-2.5 px-4 text-slate-600">168 - 175 cm</td>
-                        </tr>
-                      </>
-                    )}
-                  </tbody>
-                </table>
-              </div>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              <p className="text-[11px] text-slate-500 italic">
+                * Note: If in between sizes, we recommend selecting one size up for school uniforms to accommodate natural student growth throughout the academic year.
+              </p>
             </div>
           )}
 
           {activeTab === 'fabrics' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Shirt className="w-4 h-4 text-[#06163c]" />
-                  <h4 className="text-xs font-bold text-slate-900">Poly-Viscose Suiting (240 GSM)</h4>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Engineered for corporate blazers, trousers, and administrative uniforms. Wrinkle-resistant, breathable drape with anti-static finish.
-                </p>
-                <div className="flex flex-wrap gap-1 pt-1">
-                  <span className="px-2 py-0.5 text-[10px] bg-white border border-slate-200 rounded font-medium">Machine Wash 30°C</span>
-                  <span className="px-2 py-0.5 text-[10px] bg-white border border-slate-200 rounded font-medium">Crease Guard</span>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-[#06163c]" />
-                  <h4 className="text-xs font-bold text-slate-900">Heavy Duty Cotton Twill (280 GSM)</h4>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Used for industrial overalls, engineer boiler suits, and security tactical pants. High tensile strength, double-needle lockstitched.
-                </p>
-                <div className="flex flex-wrap gap-1 pt-1">
-                  <span className="px-2 py-0.5 text-[10px] bg-white border border-slate-200 rounded font-medium">Tear-Resistant</span>
-                  <span className="px-2 py-0.5 text-[10px] bg-white border border-slate-200 rounded font-medium">Industrial Washable</span>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-[#06163c]" />
-                  <h4 className="text-xs font-bold text-slate-900">Antimicrobial Medical Blend (180 GSM)</h4>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  65% Polyester / 35% Cotton medical grade scrub weave. Treated with fluid-repellent coating and silver-ion antimicrobial hygiene barrier.
-                </p>
-                <div className="flex flex-wrap gap-1 pt-1">
-                  <span className="px-2 py-0.5 text-[10px] bg-white border border-slate-200 rounded font-medium">Autoclave Safe</span>
-                  <span className="px-2 py-0.5 text-[10px] bg-white border border-slate-200 rounded font-medium">Fade Resistant</span>
-                </div>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-2">
-                <div className="flex items-center gap-2">
-                  <Layers className="w-4 h-4 text-[#06163c]" />
-                  <h4 className="text-xs font-bold text-slate-900">Combed Piqué Cotton Polo (220 GSM)</h4>
-                </div>
-                <p className="text-xs text-slate-600 leading-relaxed">
-                  Premium honeycomb knit structure for institutional polo shirts, sports staff, and service staff. Soft hand-feel with reinforced ribbed collar.
-                </p>
-                <div className="flex flex-wrap gap-1 pt-1">
-                  <span className="px-2 py-0.5 text-[10px] bg-white border border-slate-200 rounded font-medium">No-Curl Collar</span>
-                  <span className="px-2 py-0.5 text-[10px] bg-white border border-slate-200 rounded font-medium">100% Breathable</span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'measuring' && (
-            <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-blue-50 border border-blue-100 flex items-start gap-3">
-                <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                <div className="text-xs text-slate-700 space-y-1">
-                  <strong className="block font-bold text-slate-900">Factory Measurement Protocol:</strong>
-                  <p>
-                    For institutional bulk orders (50+ staff), Nasisi sends an on-site master tailor with measuring tapes and sample fitting garments directly to your premises anywhere in Kenya.
+            <div className="space-y-4 text-xs">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                  <h4 className="font-bold text-slate-900 text-sm text-[#06163c]">
+                    1. Heavyweight Poly-Cotton Pique (220 GSM)
+                  </h4>
+                  <p className="text-slate-600">
+                    65% combed ring-spun cotton and 35% high-tenacity polyester. Combines the soft breathability of natural cotton with the anti-shrink and color retention of polyester.
                   </p>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                <div className="p-3.5 rounded-xl border border-slate-200 bg-white space-y-1.5">
-                  <span className="font-extrabold text-[#06163c] block">1. Chest / Bust</span>
-                  <p className="text-slate-600 text-[11px] leading-relaxed">
-                    Measure around the fullest part of the chest, keeping the tape horizontal under the armpits.
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                  <h4 className="font-bold text-slate-900 text-sm text-[#06163c]">
+                    2. Anti-Pill Acrylic / Cotton Knit (320 GSM)
+                  </h4>
+                  <p className="text-slate-600">
+                    Specifically formulated with low-pill long acrylic staple fibers. Provides exceptional warmth without fuzz balls or sagging collars after repeated laundering.
                   </p>
                 </div>
-                <div className="p-3.5 rounded-xl border border-slate-200 bg-white space-y-1.5">
-                  <span className="font-extrabold text-[#06163c] block">2. Waistline</span>
-                  <p className="text-slate-600 text-[11px] leading-relaxed">
-                    Measure around the natural waistline where trousers normally sit, allowing one finger breathing room.
+
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                  <h4 className="font-bold text-slate-900 text-sm text-[#06163c]">
+                    3. Pro-Flex 4-Way Scrub Twill (200 GSM)
+                  </h4>
+                  <p className="text-slate-600">
+                    72% Poly, 21% Rayon, 7% Spandex with anti-microbial silver-ion finish. Fluid-resistant, ultra-flexible, and wrinkle-free for 12-hour hospital shifts.
                   </p>
                 </div>
-                <div className="p-3.5 rounded-xl border border-slate-200 bg-white space-y-1.5">
-                  <span className="font-extrabold text-[#06163c] block">3. Inseam / Length</span>
-                  <p className="text-slate-600 text-[11px] leading-relaxed">
-                    Measure from the crotch point down to the ankle bone or desired trouser cuff break.
+
+                <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+                  <h4 className="font-bold text-slate-900 text-sm text-[#06163c]">
+                    4. Poly-Viscose Blazer Twill with Teflon Shield
+                  </h4>
+                  <p className="text-slate-600">
+                    65% Poly, 35% Viscose. Treated with Teflon fabric protector to repel liquid spills, ink stains, and dust, maintaining sharp creases.
                   </p>
                 </div>
               </div>
             </div>
           )}
+
+          {activeTab === 'care' && (
+            <div className="space-y-4 text-xs text-slate-700">
+              <div className="bg-blue-50 p-4 rounded-xl border border-blue-200 space-y-2">
+                <h4 className="font-bold text-[#06163c] text-sm">
+                  Recommended Washing & Care Instructions:
+                </h4>
+                <ul className="space-y-1.5 list-disc list-inside">
+                  <li><strong>Embroidered Garments:</strong> Wash inside-out in cold or warm water (up to 40°C). Avoid chlorine bleach.</li>
+                  <li><strong>Screen Printed Apparel:</strong> Wash inside-out. Do not iron directly on printed graphics; iron on reverse side.</li>
+                  <li><strong>Knit Sweaters & Cardigans:</strong> Machine wash on gentle wool cycle. Flat dry to preserve original knit shape.</li>
+                  <li><strong>Blazers:</strong> Machine washable on delicate cycle or dry clean. Hang immediately after wash to prevent creasing.</li>
+                </ul>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end">
+          <button
+            onClick={onClose}
+            className="px-5 py-2 bg-[#06163c] text-white text-xs font-bold rounded-xl hover:bg-[#021a34]"
+          >
+            Close Guide
+          </button>
         </div>
       </div>
     </div>

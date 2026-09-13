@@ -1,115 +1,188 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
+import { ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { useERP } from '../context/ERPContext';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { INITIAL_HERO_SLIDES } from '../data/heroData';
 
 export const Hero: React.FC = () => {
   const { heroSlides, heroConfig } = useERP();
-  const activeSlides = (heroSlides || []).filter((s) => s.isActive);
-  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const displaySlides = activeSlides.length > 0 ? activeSlides : heroSlides;
+  // Active slides sorted by order, fallback to default if empty
+  const banners = useMemo(() => {
+    const active = heroSlides
+      .filter((s) => s.isActive !== false)
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    return active.length > 0 ? active : INITIAL_HERO_SLIDES;
+  }, [heroSlides]);
 
+  const [activeBanner, setActiveBanner] = useState<number>(0);
+  const [isPaused, setIsPaused] = useState<boolean>(false);
+
+  // Keep index within bounds if slides count changes
   useEffect(() => {
-    if (!heroConfig?.autoPlay || displaySlides.length <= 1) return;
-    const timer = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % displaySlides.length);
-    }, heroConfig.autoPlayIntervalMs || 5000);
-    return () => clearInterval(timer);
-  }, [heroConfig?.autoPlay, heroConfig?.autoPlayIntervalMs, displaySlides.length]);
+    if (activeBanner >= banners.length) {
+      setActiveBanner(0);
+    }
+  }, [banners.length, activeBanner]);
 
-  const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % displaySlides.length);
-  };
+  const nextSlide = useCallback(() => {
+    setActiveBanner((prev) => (prev + 1) % banners.length);
+  }, [banners.length]);
 
-  const prevSlide = () => {
-    setCurrentIndex((prev) => (prev - 1 + displaySlides.length) % displaySlides.length);
-  };
+  const prevSlide = useCallback(() => {
+    setActiveBanner((prev) => (prev - 1 + banners.length) % banners.length);
+  }, [banners.length]);
 
-  const heightClasses = {
-    compact: 'h-[320px] sm:h-[400px] lg:h-[460px]',
-    standard: 'h-[380px] sm:h-[480px] lg:h-[540px]',
-    tall: 'h-[440px] sm:h-[560px] lg:h-[640px]',
-  }[heroConfig?.heightPreset || 'standard'];
+  // Auto-play slideshow according to heroConfig
+  useEffect(() => {
+    if (isPaused || !heroConfig.autoPlay || banners.length <= 1) return;
+    const intervalMs = heroConfig.autoPlayIntervalMs || 5500;
+    const interval = setInterval(() => {
+      nextSlide();
+    }, intervalMs);
+    return () => clearInterval(interval);
+  }, [isPaused, nextSlide, heroConfig.autoPlay, heroConfig.autoPlayIntervalMs, banners.length]);
+
+  const heightClass =
+    heroConfig.heightPreset === 'compact'
+      ? 'h-64 sm:h-72 md:h-[340px] lg:h-[380px]'
+      : heroConfig.heightPreset === 'tall'
+      ? 'h-80 sm:h-96 md:h-[500px] lg:h-[560px]'
+      : 'h-72 sm:h-88 md:h-[420px] lg:h-[480px]';
+
+  const currentSlide = banners[activeBanner] || banners[0];
 
   return (
-    <div className={`relative w-full overflow-hidden bg-slate-950 select-none ${heightClasses}`}>
-      {displaySlides.map((slide, index) => {
-        const isCurrent = index === currentIndex;
-        return (
-          <div
-            key={slide.id || index}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-              isCurrent ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'
-            }`}
-          >
-            <img
-              src={slide.src}
-              alt={slide.alt || slide.title || 'Nasisi Uniforms Showcase'}
-              className="w-full h-full object-cover object-center transform scale-105 transition-transform duration-7000 ease-out"
-              referrerPolicy="no-referrer"
-            />
-            {heroConfig?.showOverlayGradients && (
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-900/20 to-slate-950/40 pointer-events-none" />
-            )}
-          </div>
-        );
-      })}
+    <section
+      id="hero"
+      aria-label="Hero Visual Banner"
+      onMouseEnter={() => setIsPaused(true)}
+      onMouseLeave={() => setIsPaused(false)}
+      className={`relative w-full ${heightClass} overflow-hidden bg-white group select-none transition-all duration-300`}
+    >
+      {/* Animated Background Banner with Ken Burns Effect */}
+      <AnimatePresence mode="sync">
+        <motion.div
+          key={currentSlide.id || activeBanner}
+          initial={{ opacity: 0, scale: 1.04 }}
+          animate={{ opacity: 1, scale: 1.08 }}
+          exit={{ opacity: 0 }}
+          transition={{
+            opacity: { duration: 1.0, ease: 'easeInOut' },
+            scale: { duration: 6.5, ease: 'easeOut' },
+          }}
+          className="absolute inset-0 w-full h-full bg-white"
+        >
+          <img
+            src={currentSlide.src}
+            alt={currentSlide.alt || currentSlide.title}
+            className="w-full h-full object-cover object-center brightness-100 contrast-100"
+            loading="eager"
+            referrerPolicy="no-referrer"
+          />
+        </motion.div>
+      </AnimatePresence>
 
-      {/* Top Edge White Gradient Overlay */}
+      {/* Slight White Gradient Overlay on top of the hero image */}
       <div
-        className="absolute top-0 left-0 right-0 h-20 sm:h-28 md:h-36 bg-gradient-to-b from-white via-white/50 to-transparent pointer-events-none z-[15]"
+        className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-b from-white/70 via-white/20 to-transparent"
         aria-hidden="true"
       />
 
-      {/* Nav Controls if multiple slides */}
-      {displaySlides.length > 1 && (
+      {/* Left / Right Navigation Buttons (Visible on hover & touch) */}
+      {banners.length > 1 && (
         <>
           <button
             type="button"
             onClick={prevSlide}
-            aria-label="Previous Slide"
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/40 hover:bg-black/70 text-white/90 flex items-center justify-center backdrop-blur-md border border-white/20 transition-all hover:scale-110 active:scale-95 cursor-pointer shadow-lg"
+            aria-label="Previous banner"
+            className="group/arrow absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/95 hover:bg-white text-slate-800 hover:text-[#06163c] border border-slate-200 shadow-xl transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-115 hover:shadow-2xl hover:border-blue-300 active:scale-90 cursor-pointer backdrop-blur-md"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-5 h-5 transition-transform duration-200 group-hover/arrow:-translate-x-0.5" />
           </button>
+
           <button
             type="button"
             onClick={nextSlide}
-            aria-label="Next Slide"
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 w-11 h-11 rounded-full bg-black/40 hover:bg-black/70 text-white/90 flex items-center justify-center backdrop-blur-md border border-white/20 transition-all hover:scale-110 active:scale-95 cursor-pointer shadow-lg"
+            aria-label="Next banner"
+            className="group/arrow absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/95 hover:bg-white text-slate-800 hover:text-[#06163c] border border-slate-200 shadow-xl transition-all duration-300 opacity-0 group-hover:opacity-100 hover:scale-115 hover:shadow-2xl hover:border-blue-300 active:scale-90 cursor-pointer backdrop-blur-md"
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-5 h-5 transition-transform duration-200 group-hover/arrow:translate-x-0.5" />
           </button>
-
-          {/* Indicator dots */}
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
-            {displaySlides.map((_, i) => (
-              <button
-                key={i}
-                type="button"
-                onClick={() => setCurrentIndex(i)}
-                aria-label={`Go to slide ${i + 1}`}
-                className={`h-2.5 rounded-full transition-all duration-300 ${
-                  i === currentIndex ? 'w-8 bg-white shadow-md' : 'w-2.5 bg-white/45 hover:bg-white/70'
-                }`}
-              />
-            ))}
-          </div>
         </>
       )}
 
-      {/* Optional wave divider */}
-      {heroConfig?.showWaveDivider && (
+      {/* Minimalist Progress Indicators & Playback Controls */}
+      {banners.length > 1 && (
+        <div className="absolute bottom-6 right-4 sm:right-8 z-20 flex items-center gap-2 bg-white/90 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-slate-200 shadow-md hover:shadow-lg transition-shadow duration-300">
+          {heroConfig.autoPlay && (
+            <>
+              <button
+                type="button"
+                onClick={() => setIsPaused(!isPaused)}
+                aria-label={isPaused ? 'Resume auto-play' : 'Pause auto-play'}
+                className="text-slate-600 hover:text-slate-900 hover:scale-115 active:scale-90 transition-all duration-200 p-0.5 cursor-pointer"
+                title={isPaused ? 'Resume' : 'Pause'}
+              >
+                {isPaused ? <Play className="w-3.5 h-3.5" /> : <Pause className="w-3.5 h-3.5" />}
+              </button>
+
+              <div className="h-2.5 w-px bg-slate-200" />
+            </>
+          )}
+
+          <div className="flex items-center gap-1.5">
+            {banners.map((b, idx) => (
+              <button
+                key={b.id || idx}
+                type="button"
+                onClick={() => setActiveBanner(idx)}
+                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
+                  activeBanner === idx
+                    ? 'bg-[#06163c] w-6 shadow-xs scale-105'
+                    : 'bg-slate-300 hover:bg-slate-500 hover:scale-125 w-2'
+                }`}
+                aria-label={`Slide ${idx + 1}`}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Curved Bottom Edge Single Wave Design blending into white page canvas */}
+      {heroConfig.showWaveDivider !== false && (
         <div className="absolute bottom-0 left-0 right-0 w-full overflow-hidden leading-none pointer-events-none z-10">
           <svg
-            className="relative block w-full h-8 sm:h-12 text-white fill-current"
-            viewBox="0 0 1200 120"
+            className="relative block w-full h-8 sm:h-12 md:h-16 lg:h-20"
+            viewBox="0 0 1440 80"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
             preserveAspectRatio="none"
           >
-            <path d="M0,0 C150,90 350,-40 500,45 C650,130 900,10 1200,40 L1200,120 L0,120 Z" />
+            {/* Subtle wave shadow for realistic depth */}
+            <path
+              d="M0,28 C500,78 940,-12 1440,43 L1440,80 L0,80 Z"
+              fill="rgba(3, 35, 69, 0.04)"
+              className="blur-[2px]"
+            />
+            {/* Single wave shape blending seamlessly into white page canvas (#ffffff) */}
+            <path
+              d="M0,30 C500,80 940,-10 1440,45 L1440,80 L0,80 Z"
+              fill="#ffffff"
+            />
+            {/* Soft luminous wave crest rim line */}
+            <path
+              d="M0,30 C500,80 940,-10 1440,45"
+              stroke="rgba(226, 232, 240, 0.8)"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              fill="none"
+            />
           </svg>
         </div>
       )}
-    </div>
+    </section>
   );
 };
+
+

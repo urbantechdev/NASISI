@@ -2,7 +2,6 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useERP } from '../context/ERPContext';
 import { UniformProduct, UniformCategory } from '../types';
-import academicSchoolBlazerImg from '../assets/images/academic_school_blazer_1787666599640.jpg';
 import {
   Search,
   SlidersHorizontal,
@@ -37,16 +36,12 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
   onSelectProduct,
   onOpenCustomizerWithProduct,
 }) => {
-  const { products, businessProfile } = useERP();
+  const { products } = useERP();
   const [selectedCategory, setSelectedCategory] = useState<UniformCategory>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const searchContainerRef = useRef<HTMLDivElement>(null);
-
-  // Dynamic platform logo behind title
-  const titleLogo = businessProfile?.titleWatermarkUrl || businessProfile?.logoUrl || '';
-  const watermarkOpacity = businessProfile?.watermarkOpacity !== undefined ? businessProfile.watermarkOpacity : 0.08;
 
   // Only show published products on storefront catalog
   const liveProducts = useMemo(() => {
@@ -184,53 +179,6 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
   return (
     <section id="catalog" className="py-8 sm:py-12 bg-white border-b border-slate-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* Section Header with Dynamic Platform Logo Watermark Behind It */}
-        <div className="relative py-6 sm:py-10 mb-4 sm:mb-6 text-center overflow-hidden flex flex-col items-center justify-center">
-          {/* Dynamic Platform Logo Watermark Behind Title */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0">
-            {titleLogo ? (
-              <img
-                src={titleLogo}
-                alt=""
-                className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 object-contain pointer-events-none transition-opacity duration-300"
-                style={{ opacity: watermarkOpacity }}
-                aria-hidden="true"
-              />
-            ) : (
-              <svg
-                viewBox="0 0 100 100"
-                className="w-48 h-48 sm:w-64 sm:h-64 md:w-80 md:h-80 text-[#06163c] pointer-events-none transition-opacity duration-300"
-                style={{ opacity: watermarkOpacity }}
-                fill="none"
-                aria-hidden="true"
-              >
-                <rect x="15" y="15" width="70" height="70" rx="20" stroke="currentColor" strokeWidth="6" strokeDasharray="6 4" />
-                <path
-                  d="M32 68 L32 32 L50 54 L50 32 L68 68 L68 32"
-                  stroke="currentColor"
-                  strokeWidth="7"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <circle cx="68" cy="32" r="5" fill="#f59e0b" />
-                <circle cx="32" cy="68" r="4" fill="#0284c7" />
-              </svg>
-            )}
-          </div>
-
-          <div className="relative z-10 max-w-2xl mx-auto px-4">
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-blue-50 text-[#06163c] border border-blue-200/80 mb-2 shadow-2xs">
-              {businessProfile?.companyName || 'NASISI KNITWEAR & GRAPHICS'}
-            </span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight font-['Outfit',sans-serif]">
-              Bespoke Knitwear & Apparel Catalog
-            </h2>
-            <p className="mt-2 text-xs sm:text-sm text-slate-600 font-medium max-w-xl mx-auto">
-              {businessProfile?.slogan || 'We stitch it, You wear it, We print it, you represent.'}
-            </p>
-          </div>
-        </div>
         
         {/* Prominent Centered Search Bar Below Hero */}
         <div className="max-w-2xl sm:max-w-3xl mx-auto mb-6 sm:mb-8">
@@ -304,20 +252,18 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                               : 'hover:bg-slate-50 border border-transparent'
                           }`}
                         >
-                          {thumb ? (
-                            <img
-                              src={thumb}
-                              alt={product.name}
-                              className="w-11 h-11 rounded-lg object-cover bg-slate-100 border border-slate-200 shrink-0 transition-transform duration-200 hover:scale-105"
-                              loading="lazy"
-                              decoding="async"
-                              referrerPolicy="no-referrer"
-                            />
-                          ) : (
-                            <div className="w-11 h-11 rounded-lg bg-blue-50 border border-blue-200/80 flex items-center justify-center shrink-0 text-[#06163c]">
-                              <Shirt className="w-5 h-5 text-blue-700" />
-                            </div>
-                          )}
+                          <img
+                            src={thumb}
+                            alt={product.name}
+                            className="w-11 h-11 rounded-lg object-cover bg-slate-100 border border-slate-200 shrink-0 transition-transform duration-200 hover:scale-105"
+                            loading="lazy"
+                            decoding="async"
+                            referrerPolicy="no-referrer"
+                            onError={(e) => {
+                              e.currentTarget.src =
+                                'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=400&q=80';
+                            }}
+                          />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5 flex-wrap">
                               <h4 className="text-xs font-bold text-slate-900 truncate">
@@ -416,28 +362,7 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
         </div>
 
         {/* Product Grid */}
-        {liveProducts.length === 0 ? (
-          <div className="bg-white rounded-2xl p-12 text-center border border-dashed border-blue-200 space-y-4 max-w-lg mx-auto shadow-sm">
-            <div className="w-16 h-16 bg-blue-50 text-[#06163c] rounded-2xl flex items-center justify-center mx-auto ring-8 ring-blue-50/50">
-              <Shirt className="w-8 h-8 text-blue-600" />
-            </div>
-            <div className="space-y-1">
-              <h3 className="text-xl font-black text-slate-900 font-['Outfit',sans-serif]">
-                Catalog Ready for New Products
-              </h3>
-              <p className="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
-                All sample products have been cleanly wiped. You can now create your custom uniform designs, finished garments, and specifications directly in the Admin Portal.
-              </p>
-            </div>
-            <a
-              href="#erp"
-              className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#06163c] hover:bg-blue-900 text-white text-xs font-bold rounded-xl shadow-md transition-all duration-200 hover:scale-105 active:scale-95"
-            >
-              <span>Go to Admin Portal to Create Products</span>
-              <ChevronRight className="w-4 h-4" />
-            </a>
-          </div>
-        ) : filteredProducts.length === 0 ? (
+        {filteredProducts.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center border border-slate-200 space-y-3">
             <Shirt className="w-12 h-12 text-slate-300 mx-auto" />
             <h3 className="text-lg font-bold text-slate-800">No uniforms found</h3>
@@ -449,7 +374,7 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                 setSelectedCategory('all');
                 setSearchQuery('');
               }}
-              className="px-4 py-2 text-xs font-bold text-[#06163c] bg-blue-50 rounded-lg hover:bg-blue-100 cursor-pointer"
+              className="px-4 py-2 text-xs font-bold text-[#06163c] bg-blue-50 rounded-lg hover:bg-blue-100"
             >
               Reset Filters
             </button>
@@ -481,28 +406,17 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                     {/* Subtle light sweep on hover */}
                     <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-out pointer-events-none z-10" />
 
-                    {((product.images && product.images.length > 0 && product.images[0]) || product.image) ? (
-                      <img
-                        src={(product.images && product.images.length > 0) ? product.images[0] : product.image}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-108 group-hover:brightness-[1.03] transition-transform duration-700 ease-out"
-                        loading="lazy"
-                        decoding="async"
-                        referrerPolicy="no-referrer"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 group-hover:bg-blue-50/50 transition-colors">
-                        <div className="w-14 h-14 rounded-2xl bg-white shadow-sm border border-blue-100/80 flex items-center justify-center text-[#06163c] mb-2 group-hover:scale-110 transition-transform">
-                          <Shirt className="w-7 h-7 text-[#06163c]/70" />
-                        </div>
-                        <span className="text-[11px] font-extrabold text-slate-600 tracking-tight">
-                          Ready for Photo Upload
-                        </span>
-                        <span className="text-[10px] text-blue-600 font-semibold mt-0.5">
-                          {product.fabric?.weight || 'Bespoke Stitch Spec'}
-                        </span>
-                      </div>
-                    )}
+                    <img
+                      src={(product.images && product.images.length > 0) ? product.images[0] : product.image}
+                      alt={product.name}
+                      className="w-full h-full object-cover group-hover:scale-108 group-hover:brightness-[1.03] transition-transform duration-700 ease-out"
+                      loading="lazy"
+                      decoding="async"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => {
+                        e.currentTarget.src = 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80';
+                      }}
+                    />
                     
                     {/* Category Tag & SKU Badge */}
                     <div className="absolute top-3 left-3 flex items-center gap-1.5 z-10">

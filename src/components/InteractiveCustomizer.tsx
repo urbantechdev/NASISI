@@ -214,38 +214,8 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
   };
 
   const handleSendToCart = () => {
-    const matchedProduct =
-      (products || []).find((p) => p && p.id === selectedGarment.productId) || (products && products[0]);
-
-    const targetProduct: UniformProduct = matchedProduct || {
-      id: selectedGarment.productId || `custom-${Date.now()}`,
-      sku: `SKU-CUST-${selectedGarment.id.toUpperCase()}`,
-      name: selectedGarment.name,
-      category: 'promotional',
-      categoryLabel: 'Custom Apparel',
-      tagline: 'Crafted via 3D Customizer Studio',
-      basePrice: unitCost,
-      minOrder: selectedGarment.minOrder,
-      availableColors: [
-        { name: garmentColor.name, hex: garmentColor.hex, bgClass: 'bg-slate-700' },
-      ],
-      sizes: ['S', 'M', 'L', 'XL', '2XL'],
-      fabric: {
-        composition: 'Premium Combed Cotton / Performance Poly',
-        weight: '220 GSM',
-        features: ['Pre-shrunk', 'Anti-pill', 'Colourfast'],
-      },
-      customizationOptions: {
-        embroidery: true,
-        screenPrinting: true,
-        wovenPatch: true,
-      },
-      description: `Custom ${selectedGarment.name} created in 3D Live Mockup Studio.`,
-      idealFor: ['Corporate Branding', 'Institutions', 'Teamwear'],
-      image: selectedGarment.baseImage,
-      published: true,
-      stockOnHand: 100,
-    };
+    const targetProduct =
+      products.find((p) => p.id === selectedGarment.productId) || products[0];
 
     const newItem: QuoteItem = {
       id: `mockup-${Date.now()}`,
@@ -348,8 +318,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
 
   return (
     <div
-      id="customizer-modal-overlay"
-      className="fixed inset-0 z-[9999] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-0 sm:p-5 md:p-8 overflow-hidden sm:overflow-y-auto animate-fadeIn"
+      className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-0 sm:p-5 md:p-8 overflow-hidden sm:overflow-y-auto animate-fadeIn"
       role="dialog"
       aria-modal="true"
       aria-labelledby="mockup-modal-title"

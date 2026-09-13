@@ -1,6 +1,5 @@
 import React from 'react';
 import { NasisiLogo } from './NasisiLogo';
-import { useERP } from '../context/ERPContext';
 import { Phone, Mail, MapPin, MessageSquare, ArrowUp, Sparkles, ShieldCheck, Lock } from 'lucide-react';
 
 interface FooterProps {
@@ -8,7 +7,6 @@ interface FooterProps {
   onOpenPrivacyPolicy?: () => void;
   onOpenTerms?: () => void;
   onOpenCookies?: () => void;
-  onOpenLocation?: () => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({
@@ -16,52 +14,15 @@ export const Footer: React.FC<FooterProps> = ({
   onOpenPrivacyPolicy,
   onOpenTerms,
   onOpenCookies,
-  onOpenLocation,
 }) => {
-  const { businessProfile } = useERP();
-  const footerLogo = businessProfile?.footerLogoUrl || businessProfile?.logoUrl || '';
-  const watermarkOpacity = businessProfile?.watermarkOpacity !== undefined ? businessProfile.watermarkOpacity : 0.06;
-
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
-    <footer id="contact" className="bg-white text-slate-800 relative overflow-hidden">
-      {/* Dynamic Platform Logo Watermark Behind Entire Footer */}
-      <div className="absolute right-0 bottom-0 pointer-events-none select-none z-0 overflow-hidden">
-        {footerLogo ? (
-          <img
-            src={footerLogo}
-            alt=""
-            className="w-72 h-72 sm:w-96 sm:h-96 md:w-[480px] md:h-[480px] object-contain translate-x-12 translate-y-12 transition-opacity duration-300 pointer-events-none"
-            style={{ opacity: watermarkOpacity }}
-            aria-hidden="true"
-          />
-        ) : (
-          <svg
-            viewBox="0 0 100 100"
-            className="w-72 h-72 sm:w-96 sm:h-96 md:w-[480px] md:h-[480px] text-[#06163c] translate-x-12 translate-y-12 transition-opacity duration-300 pointer-events-none"
-            style={{ opacity: watermarkOpacity }}
-            fill="none"
-            aria-hidden="true"
-          >
-            <rect x="15" y="15" width="70" height="70" rx="20" stroke="currentColor" strokeWidth="6" strokeDasharray="6 4" />
-            <path
-              d="M32 68 L32 32 L50 54 L50 32 L68 68 L68 32"
-              stroke="currentColor"
-              strokeWidth="7"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <circle cx="68" cy="32" r="5" fill="#f59e0b" />
-            <circle cx="32" cy="68" r="4" fill="#0284c7" />
-          </svg>
-        )}
-      </div>
-
+    <footer id="contact" className="bg-white text-slate-800 relative">
       {/* Single Wave Curve on the Top Edge of Footer */}
-      <div className="w-full overflow-hidden leading-none -mb-[1px] pointer-events-none relative z-10">
+      <div className="w-full overflow-hidden leading-none -mb-[1px] pointer-events-none">
         <svg
           className="w-full h-8 sm:h-12 md:h-16 text-[#06163c] block"
           viewBox="0 0 1440 60"
@@ -76,41 +37,14 @@ export const Footer: React.FC<FooterProps> = ({
       </div>
 
       {/* Brand motto top strip - hidden on mobile */}
-      <div className="hidden sm:block bg-gradient-to-r from-[#020a1c] via-[#06163c] to-[#030e28] py-6 px-4 border-y border-blue-900/40 shadow-inner relative overflow-hidden z-10">
-        {/* Dynamic Logo Silhouette behind Motto Strip */}
-        <div className="absolute right-8 top-1/2 -translate-y-1/2 pointer-events-none select-none z-0 opacity-10">
-          {footerLogo ? (
-            <img
-              src={footerLogo}
-              alt=""
-              className="w-36 h-36 object-contain brightness-200 pointer-events-none"
-              aria-hidden="true"
-            />
-          ) : (
-            <svg
-              viewBox="0 0 100 100"
-              className="w-36 h-36 text-white fill-none pointer-events-none"
-              aria-hidden="true"
-            >
-              <rect x="15" y="15" width="70" height="70" rx="20" stroke="currentColor" strokeWidth="6" strokeDasharray="6 4" />
-              <path
-                d="M32 68 L32 32 L50 54 L50 32 L68 68 L68 32"
-                stroke="currentColor"
-                strokeWidth="7"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          )}
-        </div>
-
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left relative z-10">
+      <div className="hidden sm:block bg-gradient-to-r from-[#020a1c] via-[#06163c] to-[#030e28] py-6 px-4 border-y border-blue-900/40 shadow-inner">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <div>
             <span className="text-xs uppercase font-bold tracking-widest text-blue-200 block">
-              {businessProfile?.companyName || 'NASISI KNITWEAR & GRAPHICS'}
+              NASISI KNITWEAR & GRAPHICS
             </span>
             <p className="text-lg sm:text-xl font-extrabold font-['Outfit',sans-serif] tracking-wide text-white">
-              "{businessProfile?.slogan || 'We stitch it, You wear it, We print it, you represent.'}"
+              "We stitch it, You wear it, We print it, you represent."
             </p>
           </div>
           <a
@@ -122,20 +56,10 @@ export const Footer: React.FC<FooterProps> = ({
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 sm:pt-9 pb-24 sm:pb-9 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-9">
         {/* On Mobile: Only show Logo and Title. On Desktop/Tablet: Show full 5-column grid */}
-        <div className="sm:hidden flex flex-col items-center justify-center text-center space-y-2.5 pb-2">
+        <div className="sm:hidden flex flex-col items-center justify-center text-center space-y-1.5 pb-2">
           <NasisiLogo size="xl" variant="full" isFooter={true} />
-          {onOpenLocation && (
-            <button
-              type="button"
-              onClick={onOpenLocation}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-[#06163c] text-xs font-bold shadow-2xs hover:bg-blue-100 transition-colors cursor-pointer"
-            >
-              <MapPin className="w-3.5 h-3.5 text-blue-600" />
-              <span>Factory Location & Google Map</span>
-            </button>
-          )}
         </div>
 
         {/* Desktop / Tablet Grid (Hidden on Mobile) */}
@@ -214,31 +138,10 @@ export const Footer: React.FC<FooterProps> = ({
                   <Mail className="w-3.5 h-3.5 text-[#06163c]" />
                   <span>orders@nasisiuniforms.com</span>
                 </p>
-                <div className="pt-1">
-                  {onOpenLocation ? (
-                    <button
-                      type="button"
-                      onClick={onOpenLocation}
-                      className="flex items-start gap-2 text-left hover:text-[#06163c] transition-colors group cursor-pointer"
-                      title="View Factory Showroom on Google Map"
-                    >
-                      <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0 mt-0.5 group-hover:scale-110 transition-transform" />
-                      <div>
-                        <span className="font-semibold text-slate-800 group-hover:text-blue-700 underline decoration-dotted">
-                          Commercial St / Enterprise Rd, Industrial Area
-                        </span>
-                        <span className="block text-[11px] text-blue-600 font-bold mt-0.5">
-                          View Location on Google Map &rarr;
-                        </span>
-                      </div>
-                    </button>
-                  ) : (
-                    <p className="flex items-start gap-2">
-                      <MapPin className="w-3.5 h-3.5 text-[#06163c] flex-shrink-0 mt-0.5" />
-                      <span>Commercial St / Enterprise Rd, Industrial Area, Nairobi, Kenya</span>
-                    </p>
-                  )}
-                </div>
+                <p className="flex items-start gap-2 pt-1">
+                  <MapPin className="w-3.5 h-3.5 text-[#06163c] flex-shrink-0 mt-0.5" />
+                  <span>Uhuru Market Workshop, Nairobi, Kenya</span>
+                </p>
               </div>
             </div>
 
@@ -278,19 +181,6 @@ export const Footer: React.FC<FooterProps> = ({
                   Cookie Policy
                 </button>
               )}
-              {onOpenLocation && (
-                <>
-                  <span>•</span>
-                  <button
-                    type="button"
-                    onClick={onOpenLocation}
-                    className="hover:text-[#06163c] hover:underline font-semibold cursor-pointer text-blue-700 flex items-center gap-1"
-                  >
-                    <MapPin className="w-3 h-3 text-blue-600" />
-                    <span>Location & Google Map</span>
-                  </button>
-                </>
-              )}
             </div>
           </div>
           
@@ -308,11 +198,11 @@ export const Footer: React.FC<FooterProps> = ({
                 id="footer-admin-lock-btn"
                 type="button"
                 onClick={onOpenAdminERP}
-                className="p-2 rounded-lg text-slate-500 hover:text-[#06163c] bg-slate-50 hover:bg-slate-100 active:scale-95 transition-all border border-slate-200 inline-flex items-center justify-center cursor-pointer shadow-2xs group"
+                className="p-1.5 sm:p-2 rounded-lg text-slate-400 hover:text-[#06163c] hover:bg-slate-100 active:scale-95 transition-all border border-slate-200 inline-flex items-center justify-center cursor-pointer shadow-2xs"
                 title="Admin Access"
                 aria-label="Admin Access"
               >
-                <Lock className="w-4 h-4 text-slate-600 group-hover:text-[#06163c] transition-colors" />
+                <Lock className="w-4 h-4 text-slate-500 hover:text-[#06163c] transition-colors" />
               </button>
             )}
             <button

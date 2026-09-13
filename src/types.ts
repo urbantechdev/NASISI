@@ -30,9 +30,9 @@ export interface UniformProduct {
     features: string[];
   };
   customizationOptions: {
-    embroidery?: boolean;
-    screenPrinting?: boolean;
-    wovenPatch?: boolean;
+    embroidery: boolean;
+    screenPrinting: boolean;
+    wovenPatch: boolean;
     reflectiveStripes?: boolean;
     heatTransfer?: boolean;
     customStitching?: boolean;
@@ -46,7 +46,6 @@ export interface UniformProduct {
   garmentType?: string; // Exact garment type from official catalogue
   badge?: string;
   popular?: boolean;
-  leadTime?: string;
   // Synced inventory and publishing fields
   published?: boolean;
   sku: string; // Stock Keeping Unit (e.g. "SKU-IND-REF-101")
@@ -352,8 +351,6 @@ export interface ERPBusinessProfile {
   logoUrl?: string; // Main brand logo (URL or Base64 data URL)
   faviconUrl?: string; // Browser tab favicon (URL or Base64 data URL)
   footerLogoUrl?: string; // Footer logo (URL or Base64 data URL)
-  titleWatermarkUrl?: string; // Specific logo behind title (falls back to logoUrl)
-  watermarkOpacity?: number; // Opacity for title and footer background watermarks (e.g. 0.08)
   logoDisplayMode?: 'image-only' | 'image-and-text'; // Display preference
 }
 
@@ -382,8 +379,6 @@ export type AdminRole =
   | 'Operations Manager' 
   | 'Finance Controller' 
   | 'Production Supervisor'
-  | 'Sales & Client Rep'
-  | 'Inventory & Dispatch Manager'
   | 'Customer';
 
 export interface AdminUserActivity {
@@ -406,7 +401,7 @@ export interface AdminUser {
   avatar?: string;
   bio?: string;
   location?: string;
-  status: 'active' | 'away' | 'offline' | 'suspended';
+  status: 'active' | 'away' | 'offline';
   lastLogin?: string;
   joinedDate: string;
   twoFactorEnabled: boolean;

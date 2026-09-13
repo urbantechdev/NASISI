@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { motion } from 'motion/react';
 import { NasisiLogo } from './NasisiLogo';
 import { useERP } from '../context/ERPContext';
-import { getInitialsAvatar } from '../data/adminUserData';
 import {
   ShoppingBag,
   Menu,
@@ -102,16 +101,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           (p.idealFor || []).some((item) => (item || '').toLowerCase().includes(q))
         );
       })
-      .slice(0, 6);
+      .slice(0, 5);
   }, [liveProducts, navSearchQuery]);
-
-  const displayedProducts = useMemo(() => {
-    if (matchingNavProducts.length > 0) return matchingNavProducts;
-    if (!navSearchQuery.trim()) {
-      return liveProducts.slice(0, 5);
-    }
-    return [];
-  }, [matchingNavProducts, navSearchQuery, liveProducts]);
 
   // Click outside to close navbar search
   useEffect(() => {
@@ -148,18 +139,18 @@ export const Navbar: React.FC<NavbarProps> = ({
   const handleNavKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      if (displayedProducts.length > 0) {
-        const selected = displayedProducts[navHighlightedIndex] || displayedProducts[0];
+      if (matchingNavProducts.length > 0) {
+        const selected = matchingNavProducts[navHighlightedIndex] || matchingNavProducts[0];
         onSelectProduct?.(selected);
         setIsNavSearchOpen(false);
         setNavSearchQuery('');
       }
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setNavHighlightedIndex((prev) => (prev + 1) % Math.max(1, displayedProducts.length));
+      setNavHighlightedIndex((prev) => (prev + 1) % Math.max(1, matchingNavProducts.length));
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setNavHighlightedIndex((prev) => (prev - 1 + displayedProducts.length) % Math.max(1, displayedProducts.length));
+      setNavHighlightedIndex((prev) => (prev - 1 + matchingNavProducts.length) % Math.max(1, matchingNavProducts.length));
     } else if (e.key === 'Escape') {
       setIsNavSearchOpen(false);
     }
@@ -304,7 +295,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className={`fixed top-0 left-0 right-0 z-[1000] transition-all duration-200 shadow-[0_4px_25px_rgba(6,22,60,0.6)] ${
+      className={`fixed top-0 left-0 right-0 z-40 transition-all duration-200 shadow-[0_4px_25px_rgba(6,22,60,0.6)] ${
         isScrolled
           ? 'bg-[#06163c]/98 backdrop-blur-md py-4 sm:py-5'
           : 'bg-[#06163c] py-6 sm:py-7 md:py-8'
@@ -319,7 +310,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="absolute top-0 left-0 w-48 sm:w-64 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-cyan-300/40 shadow-[0_0_6px_#38bdf8] animate-scanner-laser-delayed pointer-events-none" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-30">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex items-center justify-between">
           {/* Logo in White / Brand Light Variant - Enlarged with restored subtitle & slogan */}
           <a href="#" className="focus:outline-none flex items-center group shrink-0" aria-label="NASISI Home">
@@ -344,7 +335,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* 2. Services (with Sub Domains Dropdown) */}
             <div
-              className="relative z-40 py-2"
+              className="relative py-2"
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
@@ -368,7 +359,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               {/* Mega Expansive Dropdown Menu */}
               {servicesDropdownOpen && (
                 <div
-                  className="absolute top-full -left-52 md:-left-64 lg:-left-72 xl:-left-80 w-[960px] lg:w-[1040px] xl:w-[1140px] max-w-[94vw] bg-white rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.38)] border border-slate-200/90 p-6 transition-all animate-fadeIn z-[1200] mt-2 text-slate-900 overflow-hidden ring-1 ring-black/5"
+                  className="absolute top-full -left-52 md:-left-64 lg:-left-72 xl:-left-80 w-[960px] lg:w-[1040px] xl:w-[1140px] max-w-[94vw] bg-white rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.28)] border border-slate-200/90 p-6 transition-all animate-fadeIn z-50 mt-2 text-slate-900 overflow-hidden ring-1 ring-black/5"
                   role="menu"
                 >
                   {/* Top Mega Menu Header */}
@@ -663,206 +654,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             </a>
           </nav>
 
-          {/* Action CTAs - Right-Side Icon Buttons */}
+          {/* Action CTAs - Four Right-Side Icon Buttons */}
           <div className="hidden sm:flex items-center gap-2 sm:gap-2.5">
-            {/* 0. Search & Instant Product Preview Button */}
-            <div className="relative z-30" ref={navSearchRef}>
-              <div className="relative group">
-                <button
-                  id="navbar-search-btn"
-                  type="button"
-                  onClick={() => setIsNavSearchOpen(!isNavSearchOpen)}
-                  className={`btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 cursor-pointer ${
-                    isNavSearchOpen
-                      ? 'bg-amber-400 text-slate-950 font-black shadow-[0_0_16px_rgba(251,191,36,0.6)] scale-105'
-                      : 'bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm hover:shadow-[0_0_16px_rgba(255,255,255,0.4)] hover:scale-110 hover:-translate-y-0.5 active:scale-90'
-                  }`}
-                  aria-label="Search and preview uniform products"
-                  title="Search & Live Preview"
-                >
-                  <Search className="w-5 h-5 text-[#06163c] transition-transform duration-200 group-hover:scale-110" />
-                </button>
-                {/* Floating Tooltip */}
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-[1100]">
-                  <span>Search & Preview</span>
-                  <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
-                </div>
-              </div>
-
-              {/* Dimmed backdrop when search is open so display window opens above everything */}
-              {isNavSearchOpen && (
-                <div
-                  className="fixed inset-0 bg-slate-950/40 backdrop-blur-[2px] z-[1050] transition-opacity animate-fadeIn cursor-pointer"
-                  onClick={() => setIsNavSearchOpen(false)}
-                  aria-hidden="true"
-                />
-              )}
-
-              {/* Search & Instant Product Preview Dropdown Window */}
-              {isNavSearchOpen && (
-                <div
-                  id="navbar-search-dropdown-window"
-                  className="absolute top-full right-0 mt-3 w-[360px] sm:w-[480px] md:w-[540px] max-w-[94vw] bg-white text-slate-900 rounded-3xl shadow-[0_25px_90px_rgba(0,0,0,0.55)] border border-slate-200/90 p-4 sm:p-5 z-[1200] animate-scaleIn overflow-hidden ring-1 ring-black/5"
-                  role="dialog"
-                  aria-label="Uniform search and live preview window"
-                >
-                  {/* Search input header */}
-                  <div className="relative mb-3">
-                    <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      autoFocus
-                      placeholder="Search uniforms, scrubs, lab coats, blazers..."
-                      value={navSearchQuery}
-                      onChange={(e) => {
-                        setNavSearchQuery(e.target.value);
-                        setNavHighlightedIndex(0);
-                      }}
-                      onKeyDown={handleNavKeyDown}
-                      className="w-full pl-10 pr-9 py-2.5 text-xs text-slate-900 placeholder-slate-400 bg-slate-100/90 border border-slate-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#06163c] focus:bg-white transition-all shadow-inner"
-                    />
-                    {navSearchQuery && (
-                      <button
-                        type="button"
-                        onClick={() => setNavSearchQuery('')}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-slate-700 p-1 cursor-pointer"
-                        aria-label="Clear search"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-
-                  {/* Category Filter Chips */}
-                  <div className="flex items-center gap-1.5 overflow-x-auto pb-2.5 mb-2.5 border-b border-slate-100 scrollbar-none">
-                    {[
-                      { label: 'All', query: '' },
-                      { label: 'Healthcare', query: 'healthcare' },
-                      { label: 'Corporate', query: 'corporate' },
-                      { label: 'Industrial', query: 'safety' },
-                      { label: 'Security', query: 'security' },
-                      { label: 'School', query: 'school' },
-                      { label: 'Hospitality', query: 'hospitality' },
-                    ].map((chip) => (
-                      <button
-                        key={chip.label}
-                        type="button"
-                        onClick={() => setNavSearchQuery(chip.query)}
-                        className={`px-2.5 py-1 text-[11px] font-bold rounded-xl whitespace-nowrap transition-all cursor-pointer ${
-                          (chip.query === '' && !navSearchQuery) ||
-                          (chip.query !== '' && navSearchQuery.toLowerCase().includes(chip.query))
-                            ? 'bg-[#06163c] text-white shadow-2xs'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200 hover:text-slate-900'
-                        }`}
-                      >
-                        {chip.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Products Live Preview List */}
-                  <div className="space-y-2 max-h-[340px] overflow-y-auto overscroll-contain pr-0.5">
-                    {displayedProducts.length === 0 ? (
-                      <div className="py-8 text-center space-y-2">
-                        <Shirt className="w-8 h-8 text-slate-300 mx-auto" />
-                        <p className="text-xs text-slate-500">
-                          No uniform products found matching "{navSearchQuery}"
-                        </p>
-                        <p className="text-[11px] text-slate-400">
-                          Try searching for "scrub", "blazer", "security", or "overall"
-                        </p>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="flex items-center justify-between text-[10px] font-black uppercase text-slate-400 px-1">
-                          <span>{navSearchQuery ? 'Matching Uniforms' : 'Instant Preview Garments'}</span>
-                          <span className="text-[#06163c] font-bold">
-                            {displayedProducts.length} Items • Tap Any to Open Preview
-                          </span>
-                        </div>
-
-                        {displayedProducts.map((p, index) => {
-                          const isHighlighted = index === navHighlightedIndex;
-                          return (
-                            <div
-                              key={p.id}
-                              onClick={() => {
-                                onSelectProduct?.(p);
-                                setIsNavSearchOpen(false);
-                                setNavSearchQuery('');
-                              }}
-                              className={`flex items-center gap-3 p-2.5 rounded-2xl border transition-all cursor-pointer group/item ${
-                                isHighlighted
-                                  ? 'bg-blue-50/90 border-blue-300 shadow-xs'
-                                  : 'bg-slate-50/70 hover:bg-blue-50/70 border-slate-100 hover:border-blue-200'
-                              }`}
-                            >
-                              <img
-                                src={p.image}
-                                alt={p.name}
-                                className="w-12 h-12 rounded-xl object-cover bg-white shrink-0 border border-slate-200/80 shadow-2xs group-hover/item:scale-105 transition-transform"
-                                referrerPolicy="no-referrer"
-                              />
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-1.5">
-                                  <h5 className="text-xs font-bold text-slate-900 truncate">
-                                    {p.name}
-                                  </h5>
-                                  <span className="px-1.5 py-0.5 text-[9px] font-extrabold uppercase rounded bg-blue-100 text-[#06163c] shrink-0">
-                                    {p.categoryLabel}
-                                  </span>
-                                </div>
-                                <p className="text-[10.5px] text-slate-500 truncate mt-0.5">
-                                  {p.fabric?.composition || 'Heavy Duty Fabric'} ({p.fabric?.weight || 'Industrial Standard'})
-                                </p>
-                                <span className="text-[11px] font-black text-[#06163c] block mt-0.5">
-                                  Ksh {(p.basePrice || 0).toLocaleString()} <span className="text-[10px] font-normal text-slate-400">/ pc (MOQ {p.minOrder || 10})</span>
-                                </span>
-                              </div>
-
-                              <button
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  onSelectProduct?.(p);
-                                  setIsNavSearchOpen(false);
-                                  setNavSearchQuery('');
-                                }}
-                                className="px-2.5 py-1.5 rounded-xl bg-[#06163c] group-hover/item:bg-blue-900 text-white text-[11px] font-bold flex items-center gap-1.5 shrink-0 shadow-xs transition-colors cursor-pointer"
-                                title="Open Full Uniform Preview"
-                              >
-                                <Eye className="w-3.5 h-3.5" />
-                                <span className="hidden sm:inline">Preview</span>
-                              </button>
-                            </div>
-                          );
-                        })}
-                      </>
-                    )}
-                  </div>
-
-                  {/* Bottom Footer Action */}
-                  <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                    <span className="text-slate-400 text-[10px]">
-                      Use <kbd className="px-1 py-0.5 bg-slate-100 rounded text-[9px] font-mono border">↑</kbd>{' '}
-                      <kbd className="px-1 py-0.5 bg-slate-100 rounded text-[9px] font-mono border">↓</kbd> +{' '}
-                      <kbd className="px-1 py-0.5 bg-slate-100 rounded text-[9px] font-mono border">Enter</kbd>
-                    </span>
-                    <a
-                      href="#catalog"
-                      onClick={() => setIsNavSearchOpen(false)}
-                      className="font-bold text-[#06163c] hover:underline flex items-center gap-1"
-                    >
-                      <span>Explore Full Catalogue</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-
             {/* 1. Size Guide Icon Button */}
-            <div className="relative z-30 group">
+            <div className="relative group">
               <button
                 id="navbar-size-guide-btn"
                 onClick={onOpenSizeGuide}
@@ -873,14 +668,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <Ruler className="w-5 h-5 text-[#06163c] transition-transform duration-200 group-hover:rotate-12 group-hover:scale-110" />
               </button>
               {/* Floating Tooltip */}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-[1100]">
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-50">
                 <span>Size Guide</span>
                 <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
               </div>
             </div>
 
             {/* 2. Live Mockup Studio Icon Button */}
-            <div className="relative z-30 group">
+            <div className="relative group">
               <button
                 id="navbar-live-mockup-btn"
                 type="button"
@@ -892,14 +687,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <Sparkles className="w-5 h-5 text-[#06163c] transition-transform duration-200 group-hover:rotate-12 group-hover:scale-110" />
               </button>
               {/* Floating Tooltip */}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-[1100]">
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-50">
                 <span>3D Live Mockup</span>
                 <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
               </div>
             </div>
 
-            {/* 3. Quote Request / Cart Icon Button with Live Items Preview */}
-            <div className="relative z-30 group">
+            {/* 3. Quote Request / Cart Icon Button */}
+            <div className="relative group">
               <button
                 id="navbar-quote-cart-btn"
                 onClick={onOpenQuoteModal}
@@ -914,51 +709,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </span>
                 )}
               </button>
-
-              {/* Floating Tooltip (shown when empty) */}
-              {totalItemsCount === 0 && (
-                <div className="absolute top-full right-0 sm:left-1/2 sm:-translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-[1100]">
-                  <span>Quote Cart (0)</span>
-                  <div className="absolute -top-1 right-3 sm:left-1/2 sm:-translate-x-1/2 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
-                </div>
-              )}
-
-              {/* Floating Quote Cart Quick Preview Window on hover (shown when items exist) */}
-              {totalItemsCount > 0 && (
-                <div className="absolute top-full right-0 mt-3 w-72 sm:w-80 bg-white text-slate-900 rounded-2xl shadow-[0_25px_70px_rgba(0,0,0,0.4)] border border-slate-200 p-3.5 z-[1200] opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none group-hover:pointer-events-auto ring-1 ring-black/5 animate-scaleIn">
-                  <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                    <span className="text-xs font-bold text-slate-900">Quote Basket Preview</span>
-                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 text-[#06163c]">
-                      {totalItemsCount} {totalItemsCount === 1 ? 'item' : 'items'}
-                    </span>
-                  </div>
-                  <div className="max-h-48 overflow-y-auto divide-y divide-slate-100 my-2 pr-0.5">
-                    {quoteItems.map((item, idx) => (
-                      <div key={idx} className="py-2 flex items-center justify-between gap-2 text-xs">
-                        <div className="min-w-0">
-                          <p className="font-bold text-slate-800 truncate">{item.product.name}</p>
-                          <p className="text-[10px] text-slate-400">Qty: {item.quantity} • {item.color}</p>
-                        </div>
-                        <span className="font-extrabold text-[#06163c] shrink-0 text-xs">
-                          Ksh {(item.estimatedItemTotal || 0).toLocaleString()}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={onOpenQuoteModal}
-                    className="w-full mt-1.5 py-2.5 rounded-xl bg-[#06163c] hover:bg-blue-900 text-white text-xs font-extrabold transition-colors text-center cursor-pointer shadow-md"
-                  >
-                    Open Full Instant Quote
-                  </button>
-                </div>
-              )}
+              {/* Floating Tooltip */}
+              <div className="absolute top-full right-0 sm:left-1/2 sm:-translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-50">
+                <span>Quote Cart {totalItemsCount > 0 ? `(${totalItemsCount})` : ''}</span>
+                <div className="absolute -top-1 right-3 sm:left-1/2 sm:-translate-x-1/2 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
+              </div>
             </div>
 
             {/* 4. Staff ERP / Account Profile Button */}
             {currentUser ? (
-              <div className="relative z-30 group">
+              <div className="relative group">
                 <button
                   type="button"
                   onClick={() => {
@@ -986,12 +746,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                   )}
                 </button>
                 {/* Floating Tooltip / Logout Action on hover */}
-                <div className="absolute top-full right-0 mt-2 w-52 p-3 bg-white text-slate-900 rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none group-hover:pointer-events-auto shadow-xl border border-slate-200 z-[1200]">
+                <div className="absolute top-full right-0 mt-2 w-52 p-3 bg-white text-slate-900 rounded-xl whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none group-hover:pointer-events-auto shadow-xl border border-slate-200 z-50">
                   <div className="text-xs font-bold truncate">{currentUser.name}</div>
                   <div className="text-[10px] text-slate-500 truncate font-mono">{currentUser.email}</div>
                   <div className="mt-1">
                     <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${isWhitelistedAdmin ? 'bg-amber-100 text-amber-900' : 'bg-blue-100 text-blue-900'}`}>
-                      {isWhitelistedAdmin ? 'Enterprise Admin' : 'Customer Account'}
+                      {isWhitelistedAdmin ? 'Whitelisted Admin' : 'Customer Account'}
                     </span>
                   </div>
                   {isWhitelistedAdmin && onOpenAdminERP && (
@@ -1015,17 +775,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
               </div>
             ) : (
-              <div className="relative z-30 group">
+              <div className="relative group">
                 <button
                   type="button"
                   onClick={onOpenAdminERP}
-                  className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 text-white border-white/20 shadow-sm hover:scale-105 active:scale-90 transition-all duration-200 cursor-pointer"
+                  className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 hover:bg-white/20 text-white border border-white/20 shadow-sm hover:scale-105 active:scale-90 transition-all duration-200 cursor-pointer"
                   aria-label="Staff Login & ERP Access"
                   title="Staff Login & ERP Access"
                 >
                   <ShieldCheck className="w-5 h-5 text-blue-200" />
                 </button>
-                <div className="absolute top-full right-0 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-[1100]">
+                <div className="absolute top-full right-0 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-50">
                   <span>Staff Login</span>
                   <div className="absolute -top-1 right-3.5 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
                 </div>
@@ -1049,7 +809,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 )}
               </button>
               {/* Floating Tooltip */}
-              <div className="absolute top-full right-0 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-[1050]">
+              <div className="absolute top-full right-0 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none shadow-xl border border-slate-700/70 z-50">
                 <span>{mobileMenuOpen ? 'Close Menu' : 'Navigation & Quick Links'}</span>
                 <div className="absolute -top-1 right-3.5 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
               </div>
@@ -1058,21 +818,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Mobile menu toggle button */}
           <div className="flex items-center gap-2 lg:hidden">
-            {/* Mobile Search Button */}
-            <button
-              id="mobile-search-toggle-btn"
-              type="button"
-              onClick={() => setIsNavSearchOpen(!isNavSearchOpen)}
-              className={`relative flex items-center justify-center w-10 h-10 rounded-xl transition-all active:scale-95 cursor-pointer ${
-                isNavSearchOpen
-                  ? 'bg-amber-400 text-slate-950 font-black shadow-md'
-                  : 'bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm'
-              }`}
-              aria-label="Search Catalogue"
-            >
-              <Search className="w-5 h-5 text-[#06163c]" />
-            </button>
-
             <button
               id="mobile-quote-btn"
               onClick={onOpenQuoteModal}
@@ -1098,68 +843,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Mobile Search Preview Dropdown Bar */}
-        {isNavSearchOpen && (
-          <div className="lg:hidden mt-3 pt-3 border-t border-blue-900/50 relative z-40">
-            <div className="bg-white text-slate-900 rounded-2xl p-3 shadow-2xl border border-slate-200">
-              <div className="relative mb-2">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  autoFocus
-                  placeholder="Search uniforms, scrubs, blazers..."
-                  value={navSearchQuery}
-                  onChange={(e) => setNavSearchQuery(e.target.value)}
-                  className="w-full pl-9 pr-8 py-2 text-xs text-slate-900 placeholder-slate-400 bg-slate-100 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#06163c]"
-                />
-                {navSearchQuery && (
-                  <button
-                    type="button"
-                    onClick={() => setNavSearchQuery('')}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs text-slate-400"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-
-              <div className="space-y-1.5 max-h-56 overflow-y-auto">
-                {displayedProducts.map((p) => (
-                  <div
-                    key={p.id}
-                    onClick={() => {
-                      onSelectProduct?.(p);
-                      setIsNavSearchOpen(false);
-                      setNavSearchQuery('');
-                    }}
-                    className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-50 hover:bg-blue-50 border border-slate-100 cursor-pointer"
-                  >
-                    <img
-                      src={p.image}
-                      alt={p.name}
-                      className="w-10 h-10 rounded-lg object-cover bg-white shrink-0 border border-slate-200"
-                      referrerPolicy="no-referrer"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-bold text-slate-900 truncate">{p.name}</p>
-                      <span className="text-[10px] text-slate-500 block truncate">{p.categoryLabel}</span>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <span className="text-xs font-extrabold text-[#06163c] block">
-                        Ksh {(p.basePrice || 0).toLocaleString()}
-                      </span>
-                      <span className="text-[9px] font-bold text-blue-700 bg-blue-100 px-1 rounded">Preview</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Responsive Hamburger Navigation Drawer (Full screen on mobile, right slide-over on desktop) */}
         {mobileMenuOpen && (
-          <div className="fixed inset-0 z-[9999] flex justify-end">
+          <div className="fixed inset-0 z-[100] flex justify-end">
             {/* Backdrop for desktop with blur and click-to-close */}
             <div
               className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity animate-fadeIn"
@@ -1268,7 +954,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                           </div>
                           <div className="text-right shrink-0">
                             <span className="text-xs font-extrabold text-[#06163c] block">
-                              Ksh {(p.basePrice || 0).toLocaleString()}
+                              ${p.price.base.toFixed(2)}
                             </span>
                             <span className="text-[9px] text-emerald-600 font-bold uppercase">Ready</span>
                           </div>
@@ -1504,7 +1190,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </div>
                       <div className="flex items-center gap-2.5 mb-3">
                         <img
-                          src={currentUser.avatar || getInitialsAvatar(currentUser.name, isWhitelistedAdmin ? '#06163c' : '#0284c7')}
+                          src={currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=120'}
                           alt={currentUser.name}
                           className="w-9 h-9 rounded-xl object-cover border border-slate-200"
                         />
@@ -1640,10 +1326,10 @@ export const Navbar: React.FC<NavbarProps> = ({
       )}
       </div>
 
-      {/* Clean Wave Curve on the Bottom Edge matching the header bar color - rendered behind interactive display windows */}
-      <div className="absolute top-full left-0 right-0 w-full overflow-hidden leading-none pointer-events-none -mt-[1px] z-0">
+      {/* Clean Wave Curve on the Bottom Edge matching the header bar color */}
+      <div className="absolute top-full left-0 right-0 w-full overflow-hidden leading-none pointer-events-none -mt-[1px]">
         <svg
-          className="w-full h-7 sm:h-9 md:h-10 lg:h-12 block relative z-0 pointer-events-none"
+          className="w-full h-7 sm:h-9 md:h-10 lg:h-12 block relative z-10"
           viewBox="0 0 1440 60"
           fill="none"
           preserveAspectRatio="none"

@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { UniformProduct, QuoteItem } from '../types';
 import { useERP } from '../context/ERPContext';
-import academicSchoolBlazerImg from '../assets/images/academic_school_blazer_1787666599640.jpg';
-import { X, Check, ShoppingBag, SlidersHorizontal, Sparkles, Shield, Tag, Layers, CheckCircle2, MessageSquare, ArrowRight, UploadCloud, FileImage, Image as ImageIcon, ChevronLeft, ChevronRight, Eye, Shirt } from 'lucide-react';
+import { X, Check, ShoppingBag, SlidersHorizontal, Sparkles, Shield, Tag, Layers, CheckCircle2, MessageSquare, ArrowRight, UploadCloud, FileImage, Image as ImageIcon, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface UniformModalProps {
@@ -159,10 +158,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
     product.availableColors.find((c) => c.name === selectedColor)?.hex || '#06163c';
 
   return (
-    <div
-      id="uniform-modal-overlay"
-      className="fixed inset-0 z-[9999] bg-slate-900/80 backdrop-blur-md flex items-center justify-center p-0 sm:p-6 overflow-hidden sm:overflow-y-auto animate-fadeIn"
-    >
+    <div className="fixed inset-0 z-[100] bg-slate-900/75 backdrop-blur-md flex items-center justify-center p-0 sm:p-6 overflow-hidden sm:overflow-y-auto animate-fadeIn">
       <div
         className="relative bg-white w-full h-full sm:h-auto sm:max-h-[92vh] sm:max-w-4xl sm:rounded-2xl flex flex-col shadow-2xl border-0 sm:border sm:border-slate-200 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
@@ -245,36 +241,28 @@ export const UniformModal: React.FC<UniformModalProps> = ({
             {/* Left: Product Image & Fabric Info */}
             <div className="md:col-span-5 space-y-4">
               {(() => {
-                const rawImages = (product.images && product.images.length > 0)
-                  ? product.images.filter(Boolean)
-                  : product.image
-                  ? [product.image]
-                  : [];
-                const productImages: string[] = rawImages;
-                const hasImages = productImages.length > 0;
-                const currentImg = hasImages ? (productImages[activeImageIndex] || productImages[0]) : '';
+                const productImages: string[] =
+                  product.images && product.images.length > 0
+                    ? product.images
+                    : product.image
+                    ? [product.image]
+                    : ['https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80'];
+                const currentImg = productImages[activeImageIndex] || productImages[0];
 
                 return (
                   <div className="space-y-2.5">
-                    <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#D1E0FF]/30 via-slate-50 to-[#D1E0FF]/15 border border-[#D1E0FF] shadow-[0_8px_25px_rgba(209,224,255,0.4)] aspect-[4/3] group flex items-center justify-center">
-                      {hasImages ? (
-                        <img
-                          key={currentImg}
-                          src={currentImg}
-                          alt={`${product.name} - View ${activeImageIndex + 1}`}
-                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                          loading="eager"
-                          referrerPolicy="no-referrer"
-                        />
-                      ) : (
-                        <div className="flex flex-col items-center justify-center p-6 text-center">
-                          <div className="w-16 h-16 rounded-2xl bg-white shadow-md border border-blue-100 flex items-center justify-center text-[#06163c] mb-3">
-                            <Shirt className="w-8 h-8 text-blue-900" />
-                          </div>
-                          <span className="text-sm font-bold text-slate-800">Photo Upload Pending</span>
-                          <span className="text-xs text-blue-700 font-medium mt-1">Upload photos in the Admin ERP Portal</span>
-                        </div>
-                      )}
+                    <div className="relative rounded-2xl overflow-hidden bg-gradient-to-br from-[#D1E0FF]/30 via-slate-50 to-[#D1E0FF]/15 border border-[#D1E0FF] shadow-[0_8px_25px_rgba(209,224,255,0.4)] aspect-[4/3] group">
+                      <img
+                        key={currentImg}
+                        src={currentImg}
+                        alt={`${product.name} - View ${activeImageIndex + 1}`}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        loading="eager"
+                        referrerPolicy="no-referrer"
+                        onError={(e) => {
+                          e.currentTarget.src = 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80';
+                        }}
+                      />
                       {product.badge && (
                         <span className="absolute top-3 left-3 bg-[#06163c] text-white text-xs font-bold px-2.5 py-1 rounded-lg shadow-sm">
                           {product.badge}
