@@ -56,8 +56,12 @@ export const Hero: React.FC = () => {
     <section
       id="hero"
       aria-label="Hero Visual Banner"
-      onMouseEnter={() => setIsPaused(true)}
-      onMouseLeave={() => setIsPaused(false)}
+      onMouseEnter={() => {
+        if (heroConfig.pauseOnHover !== false) setIsPaused(true);
+      }}
+      onMouseLeave={() => {
+        if (heroConfig.pauseOnHover !== false) setIsPaused(false);
+      }}
       className={`relative w-full ${heightClass} overflow-hidden bg-white group select-none transition-all duration-300`}
     >
       {/* Animated Background Banner with Ken Burns Effect */}
@@ -85,9 +89,81 @@ export const Hero: React.FC = () => {
 
       {/* Slight White Gradient Overlay on top of the hero image */}
       <div
-        className="absolute inset-0 z-10 pointer-events-none bg-gradient-to-b from-white/70 via-white/20 to-transparent"
+        className={`absolute inset-0 z-10 pointer-events-none transition-opacity duration-300 ${
+          heroConfig.showOverlayText
+            ? 'bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent'
+            : 'bg-gradient-to-b from-white/70 via-white/20 to-transparent'
+        }`}
         aria-hidden="true"
       />
+
+      {/* Optional Storefront Slide Caption Overlay if enabled by Banner Settings */}
+      {heroConfig.showOverlayText && (
+        <div
+          className={`absolute inset-0 z-15 flex flex-col justify-center px-6 sm:px-12 md:px-20 pointer-events-none ${
+            heroConfig.textAlignment === 'center' ? 'items-center text-center' : 'items-start text-left'
+          }`}
+        >
+          <div className="max-w-2xl">
+            {heroConfig.showBadges !== false && currentSlide.badge && (
+              <motion.span
+                key={`badge-${currentSlide.id || activeBanner}`}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="inline-block px-3 py-1 rounded-full bg-slate-900/80 backdrop-blur-md text-sky-300 border border-sky-400/30 text-xs font-black uppercase tracking-wider mb-2"
+              >
+                {currentSlide.badge}
+              </motion.span>
+            )}
+
+            <motion.h2
+              key={`title-${currentSlide.id || activeBanner}`}
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white tracking-tight drop-shadow-lg font-['Outfit']"
+            >
+              {currentSlide.title}
+            </motion.h2>
+
+            {currentSlide.subtitle && (
+              <motion.p
+                key={`sub-${currentSlide.id || activeBanner}`}
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-xs sm:text-sm md:text-base text-slate-100 mt-2 max-w-xl drop-shadow line-clamp-2"
+              >
+                {currentSlide.subtitle}
+              </motion.p>
+            )}
+
+            {heroConfig.showActionButtons && (
+              <motion.div
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className={`flex flex-wrap gap-3 mt-4 pointer-events-auto ${
+                  heroConfig.textAlignment === 'center' ? 'justify-center' : 'justify-start'
+                }`}
+              >
+                <a
+                  href="#catalog"
+                  className="px-5 py-2.5 rounded-xl bg-[#06163c] text-white font-bold text-xs shadow-lg hover:bg-blue-900 transition-all cursor-pointer"
+                >
+                  Explore Catalog
+                </a>
+                <a
+                  href="#contact"
+                  className="px-5 py-2.5 rounded-xl bg-white/90 text-slate-900 font-bold text-xs shadow-lg hover:bg-white transition-all cursor-pointer backdrop-blur-md"
+                >
+                  Request Quote
+                </a>
+              </motion.div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Left / Right Navigation Buttons (Visible on hover & touch) */}
       {banners.length > 1 && (

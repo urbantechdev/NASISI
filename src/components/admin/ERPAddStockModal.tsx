@@ -97,20 +97,32 @@ export const ERPAddStockModal: React.FC<ERPAddStockModalProps> = ({
     <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl max-w-xl w-full border border-slate-200 shadow-2xl overflow-hidden animate-fadeIn">
         {/* Header */}
-        <div className="bg-[#06163c] text-white p-5 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <Boxes className="w-5 h-5 text-sky-300" />
-            <div>
-              <h3 className="font-bold text-base font-['Outfit']">Add New Inventory SKU / Material</h3>
-              <p className="text-xs text-blue-200">Catalog fabrics, garments, yarns, trims or packaging</p>
+        <div className="bg-[#06163c] text-white p-5 flex items-center justify-between gap-3 border-b border-blue-950">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <Boxes className="w-5 h-5 text-sky-300 shrink-0" />
+            <div className="min-w-0">
+              <h3 className="font-bold text-base font-['Outfit'] truncate">Add New Inventory SKU / Material</h3>
+              <p className="text-xs text-blue-200 truncate">Catalog fabrics, garments, yarns, trims or packaging</p>
             </div>
           </div>
-          <button
-            onClick={onClose}
-            className="p-1 text-blue-200 hover:text-white rounded-lg hover:bg-white/10"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={handleSubmit}
+              className="px-3.5 sm:px-4 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-black text-xs rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 border border-emerald-400/40"
+              title="Quick Save Inventory Item"
+            >
+              <Save className="w-3.5 h-3.5" />
+              <span>Save SKU</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="p-1.5 text-blue-200 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+              title="Close modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Form Body */}

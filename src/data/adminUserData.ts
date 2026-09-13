@@ -24,6 +24,7 @@ export const getInitialsAvatar = (name: string, bg: string = '#06163c'): string 
  * Any other Gmail account automatically accesses the customer interface for checkout.
  */
 export const WHITELISTED_ADMIN_EMAILS: string[] = [
+  'urbaninteriorkenya@gmail.com',
   'veronicanjus@gmail.com',
   'nasisiknitwear.ke@gmail.com',
   'optimumengineeringke@gmail.com',
@@ -36,12 +37,43 @@ export const isWhitelistedAdminEmail = (emailOrStaffId: string | null | undefine
 };
 
 export const ALLOWED_ADMIN_ACCOUNTS_INFO = [
+  { email: 'urbaninteriorkenya@gmail.com', label: 'Urban Interior Kenya Admin' },
   { email: 'veronicanjus@gmail.com', label: 'Veronica Njus (Managing Director)' },
   { email: 'nasisiknitwear.ke@gmail.com', label: 'Nasisi Knitwear Executive' },
   { email: 'optimumengineeringke@gmail.com', label: 'Optimum Engineering Admin' },
 ];
 
 export const INITIAL_ADMIN_USERS: AdminUser[] = [
+  {
+    id: 'user-urban-interior',
+    name: 'Urban Interior Kenya',
+    email: 'urbaninteriorkenya@gmail.com',
+    role: 'Super Admin',
+    staffId: 'NAS-ADM-URB',
+    phone: '+254 722 419 820',
+    department: 'Executive Administration & Operations',
+    avatar: getInitialsAvatar('Urban Interior Kenya', '#1e3a8a'),
+    bio: 'Enterprise Super Administrator and operational lead for Nasisi Uniforms.',
+    location: 'Nairobi HQ',
+    status: 'active',
+    lastLogin: 'Verified Whitelisted Admin',
+    joinedDate: 'January 2021',
+    twoFactorEnabled: true,
+    notificationPreferences: {
+      emailAlerts: true,
+      smsAlerts: true,
+      newOrders: true,
+      mpesaReconciliations: true,
+    },
+    recentActivities: [
+      {
+        id: 'act-urb-1',
+        action: 'Authorized Enterprise ERP Production & Factory Access',
+        timestamp: 'Just now',
+        category: 'security',
+      },
+    ],
+  },
   {
     id: 'user-veronica',
     name: 'Veronica Njus',

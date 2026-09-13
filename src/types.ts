@@ -57,6 +57,7 @@ export interface UniformProduct {
   badge?: string;
   popular?: boolean;
   published?: boolean;
+  leadTime?: string;
   leadTimeDays?: number;
   stockCount?: number;
   stockOnHand?: number;
@@ -106,6 +107,11 @@ export interface HeroConfig {
   showWaveDivider: boolean;
   showOverlayGradients: boolean;
   heightPreset: 'compact' | 'standard' | 'tall';
+  pauseOnHover?: boolean;
+  showOverlayText?: boolean;
+  textAlignment?: 'left' | 'center';
+  showActionButtons?: boolean;
+  showBadges?: boolean;
 }
 
 export type AdminRole =
@@ -134,7 +140,7 @@ export interface AdminUser {
   avatar?: string;
   bio?: string;
   location?: string;
-  status?: 'active' | 'inactive';
+  status?: 'active' | 'away' | 'offline' | 'suspended';
   lastLogin?: string;
   joinedDate?: string;
   twoFactorEnabled?: boolean;

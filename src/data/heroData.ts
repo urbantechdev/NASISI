@@ -69,6 +69,11 @@ export const INITIAL_HERO_CONFIG: HeroConfig = {
   showWaveDivider: true,
   showOverlayGradients: false,
   heightPreset: 'standard',
+  pauseOnHover: true,
+  showOverlayText: false,
+  textAlignment: 'left',
+  showActionButtons: false,
+  showBadges: true,
 };
 
 export interface PresetHeroImage {

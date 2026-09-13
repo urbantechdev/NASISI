@@ -297,7 +297,6 @@ export default function App() {
             onOpenQuoteModal={() => setIsQuoteModalOpen(true)}
             onOpenCustomizer={() => setIsCustomizerModalOpen(true)}
             onOpenSizeGuide={() => setIsSizeGuideOpen(true)}
-            onOpenAdminERP={() => navigateToView('erp')}
             onSelectProduct={(product) => setSelectedProductForModal(product)}
             onOpenPrivacyPolicy={() => navigateToView('privacy')}
             onOpenTerms={() => navigateToView('terms')}

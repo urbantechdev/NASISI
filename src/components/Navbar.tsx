@@ -44,7 +44,6 @@ interface NavbarProps {
   onOpenQuoteModal: () => void;
   onOpenCustomizer: () => void;
   onOpenSizeGuide: () => void;
-  onOpenAdminERP?: () => void;
   onSelectProduct?: (product: UniformProduct) => void;
   onOpenPrivacyPolicy?: () => void;
   onOpenTerms?: () => void;
@@ -57,7 +56,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenQuoteModal,
   onOpenCustomizer,
   onOpenSizeGuide,
-  onOpenAdminERP,
   onSelectProduct,
   onOpenPrivacyPolicy,
   onOpenTerms,
@@ -76,6 +74,73 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [isNavSearchOpen, setIsNavSearchOpen] = useState(false);
   const [navHighlightedIndex, setNavHighlightedIndex] = useState(0);
   const navSearchRef = useRef<HTMLDivElement>(null);
+  const desktopSearchRef = useRef<HTMLDivElement>(null);
+
+  // Header Action Buttons Quick Preview Windows state (Top of Everything)
+  const [cartPreviewOpen, setCartPreviewOpen] = useState(false);
+  const [mockupPreviewOpen, setMockupPreviewOpen] = useState(false);
+  const [sizeGuidePreviewOpen, setSizeGuidePreviewOpen] = useState(false);
+  const [desktopSearchOpen, setDesktopSearchOpen] = useState(false);
+
+  const cartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const mockupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const sizeGuideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const closeAllHeaderPreviews = () => {
+    setServicesDropdownOpen(false);
+    setCartPreviewOpen(false);
+    setMockupPreviewOpen(false);
+    setSizeGuidePreviewOpen(false);
+    setDesktopSearchOpen(false);
+    setIsNavSearchOpen(false);
+  };
+
+  const isAnyHeaderPreviewOpen =
+    servicesDropdownOpen ||
+    cartPreviewOpen ||
+    mockupPreviewOpen ||
+    sizeGuidePreviewOpen ||
+    desktopSearchOpen ||
+    isNavSearchOpen;
+
+  const handleCartMouseEnter = () => {
+    if (cartTimeoutRef.current) clearTimeout(cartTimeoutRef.current);
+    setMockupPreviewOpen(false);
+    setSizeGuidePreviewOpen(false);
+    setServicesDropdownOpen(false);
+    setCartPreviewOpen(true);
+  };
+  const handleCartMouseLeave = () => {
+    cartTimeoutRef.current = setTimeout(() => {
+      setCartPreviewOpen(false);
+    }, 200);
+  };
+
+  const handleMockupMouseEnter = () => {
+    if (mockupTimeoutRef.current) clearTimeout(mockupTimeoutRef.current);
+    setCartPreviewOpen(false);
+    setSizeGuidePreviewOpen(false);
+    setServicesDropdownOpen(false);
+    setMockupPreviewOpen(true);
+  };
+  const handleMockupMouseLeave = () => {
+    mockupTimeoutRef.current = setTimeout(() => {
+      setMockupPreviewOpen(false);
+    }, 200);
+  };
+
+  const handleSizeGuideMouseEnter = () => {
+    if (sizeGuideTimeoutRef.current) clearTimeout(sizeGuideTimeoutRef.current);
+    setCartPreviewOpen(false);
+    setMockupPreviewOpen(false);
+    setServicesDropdownOpen(false);
+    setSizeGuidePreviewOpen(true);
+  };
+  const handleSizeGuideMouseLeave = () => {
+    sizeGuideTimeoutRef.current = setTimeout(() => {
+      setSizeGuidePreviewOpen(false);
+    }, 200);
+  };
 
   const liveProducts = useMemo(() => {
     return (products || []).filter((p) => p && p.published !== false);
@@ -98,18 +163,21 @@ export const Navbar: React.FC<NavbarProps> = ({
       .slice(0, 5);
   }, [liveProducts, navSearchQuery]);
 
-  // Click outside to close navbar search
+  // Click outside to close navbar search & desktop popovers
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
       if (navSearchRef.current && !navSearchRef.current.contains(e.target as Node)) {
         setIsNavSearchOpen(false);
+      }
+      if (desktopSearchRef.current && !desktopSearchRef.current.contains(e.target as Node)) {
+        setDesktopSearchOpen(false);
       }
     };
     document.addEventListener('mousedown', handleOutsideClick);
     return () => document.removeEventListener('mousedown', handleOutsideClick);
   }, []);
 
-  // Lock body scroll and listen for Escape key when navigation drawer or popups are open
+  // Lock body scroll and listen for Escape key when navigation drawer or preview popups are open
   useEffect(() => {
     if (mobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -120,8 +188,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         if (mobileMenuOpen) setMobileMenuOpen(false);
-        if (servicesDropdownOpen) setServicesDropdownOpen(false);
-        if (isNavSearchOpen) setIsNavSearchOpen(false);
+        closeAllHeaderPreviews();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -130,7 +197,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       document.body.style.overflow = '';
       window.removeEventListener('keydown', handleKeyDown);
     };
-  }, [mobileMenuOpen, servicesDropdownOpen, isNavSearchOpen]);
+  }, [mobileMenuOpen, servicesDropdownOpen, isNavSearchOpen, cartPreviewOpen, mockupPreviewOpen, sizeGuidePreviewOpen, desktopSearchOpen]);
 
   const handleNavKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -138,7 +205,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       if (matchingNavProducts.length > 0) {
         const selected = matchingNavProducts[navHighlightedIndex] || matchingNavProducts[0];
         onSelectProduct?.(selected);
-        setIsNavSearchOpen(false);
+        closeAllHeaderPreviews();
         setNavSearchQuery('');
       }
     } else if (e.key === 'ArrowDown') {
@@ -148,11 +215,17 @@ export const Navbar: React.FC<NavbarProps> = ({
       e.preventDefault();
       setNavHighlightedIndex((prev) => (prev - 1 + matchingNavProducts.length) % Math.max(1, matchingNavProducts.length));
     } else if (e.key === 'Escape') {
-      setIsNavSearchOpen(false);
+      closeAllHeaderPreviews();
     }
   };
 
   const totalItemsCount = quoteItems.reduce((sum, item) => sum + item.totalQuantity, 0);
+  const totalCartValue = useMemo(() => {
+    return quoteItems.reduce(
+      (sum, item) => sum + (item.totalPrice || (item.unitPrice || 0) * item.totalQuantity || 0),
+      0
+    );
+  }, [quoteItems]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -291,7 +364,9 @@ export const Navbar: React.FC<NavbarProps> = ({
       initial={{ y: -80, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 shadow-[0_4px_25px_rgba(6,22,60,0.6)] ${
+      className={`fixed top-0 left-0 right-0 ${
+        isAnyHeaderPreviewOpen || mobileMenuOpen ? 'z-[100000]' : 'z-[9990]'
+      } transition-all duration-200 shadow-[0_4px_25px_rgba(6,22,60,0.6)] ${
         isScrolled
           ? 'bg-[#06163c]/98 backdrop-blur-md py-4 sm:py-5'
           : 'bg-[#06163c] py-6 sm:py-7 md:py-8'
@@ -320,7 +395,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </a>
 
           {/* Desktop Navigation Links: Home, Services (with sub domains dropdown), Products, About, Contact */}
-          <nav className={`hidden lg:flex items-center gap-7 ${servicesDropdownOpen ? 'relative z-[1000]' : 'relative z-20'}`}>
+          <nav className={`hidden lg:flex items-center gap-7 ${servicesDropdownOpen ? 'relative z-[100000]' : 'relative z-20'}`}>
             {/* 1. Home */}
             <a
               href="#"
@@ -331,13 +406,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* 2. Services (with Sub Domains Dropdown) */}
             <div
-              className={`relative py-2 ${servicesDropdownOpen ? 'z-30' : 'z-20'}`}
+              className={`relative py-2 ${servicesDropdownOpen ? 'z-[100000]' : 'z-20'}`}
               onMouseEnter={handleMouseEnter}
               onMouseLeave={handleMouseLeave}
             >
               <button
                 type="button"
-                onClick={() => setServicesDropdownOpen(!servicesDropdownOpen)}
+                onClick={() => {
+                  const nextState = !servicesDropdownOpen;
+                  closeAllHeaderPreviews();
+                  setServicesDropdownOpen(nextState);
+                }}
                 className={`flex items-center gap-1.5 text-sm font-semibold transition-colors py-1 cursor-pointer ${
                   servicesDropdownOpen ? 'text-white' : 'text-blue-100 hover:text-white'
                 }`}
@@ -352,11 +431,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 />
               </button>
 
-              {/* Mega Expansive Dropdown Menu */}
+              {/* Mega Expansive Dropdown Menu - Appears on Top of Everything */}
               {servicesDropdownOpen && (
                 <>
                   <div
-                    className="fixed inset-0 z-20 bg-slate-950/40 backdrop-blur-xs transition-opacity cursor-default"
+                    className="fixed inset-0 z-[99999] bg-slate-950/45 backdrop-blur-xs transition-opacity cursor-default"
                     onClick={(e) => {
                       e.stopPropagation();
                       setServicesDropdownOpen(false);
@@ -364,7 +443,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                     aria-hidden="true"
                   />
                   <div
-                    className="absolute top-full -left-52 md:-left-64 lg:-left-72 xl:-left-80 w-[960px] lg:w-[1040px] xl:w-[1140px] max-w-[94vw] bg-white rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.32)] border border-slate-200/90 p-6 transition-all animate-fadeIn z-30 mt-2 text-slate-900 overflow-hidden ring-1 ring-black/5"
+                    className="absolute top-full -left-52 md:-left-64 lg:-left-72 xl:-left-80 w-[960px] lg:w-[1040px] xl:w-[1140px] max-w-[94vw] bg-white rounded-3xl shadow-[0_30px_90px_rgba(0,0,0,0.45)] border border-slate-200/90 p-6 transition-all animate-fadeIn z-[100000] mt-3 text-slate-900 overflow-hidden ring-1 ring-black/10"
                     role="menu"
                   >
                   {/* Top Mega Menu Header */}
@@ -660,79 +739,478 @@ export const Navbar: React.FC<NavbarProps> = ({
             </a>
           </nav>
 
-          {/* Action CTAs - Right-Side Icon Buttons */}
-          <div className="hidden sm:flex items-center gap-2 sm:gap-2.5 relative z-20">
-            {/* 1. Size Guide Icon Button */}
-            <div className="relative group">
+          {/* Action CTAs - Right-Side Icon Buttons with Live Preview Windows (Top of Everything) */}
+          <div className="hidden sm:flex items-center gap-2 sm:gap-2.5 relative z-30">
+            {/* 0. Desktop Search Toggle & Live Product Search Preview Window */}
+            <div className="relative" ref={desktopSearchRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  const next = !desktopSearchOpen;
+                  closeAllHeaderPreviews();
+                  setDesktopSearchOpen(next);
+                }}
+                className={`btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 cursor-pointer ${
+                  desktopSearchOpen
+                    ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.6)] scale-105'
+                    : 'bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm hover:shadow-[0_0_16px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-90'
+                }`}
+                aria-label="Search Uniforms & Apparel"
+                title="Search Catalog"
+              >
+                <Search className="w-5 h-5 transition-transform duration-200" />
+              </button>
+
+              {/* Desktop Live Search Preview Window - Top of Everything */}
+              {desktopSearchOpen && (
+                <div className="absolute top-full right-0 mt-3 w-88 sm:w-96 bg-white rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.4)] border border-slate-200/90 p-4 z-[100000] text-slate-900 animate-fadeIn ring-1 ring-black/10">
+                  {/* Pointer arrow */}
+                  <div className="absolute -top-2 right-4 w-4 h-4 bg-white rotate-45 border-l border-t border-slate-200" />
+
+                  {/* Search Input Bar */}
+                  <div className="relative z-10 flex items-center gap-2 p-1.5 bg-slate-100 rounded-2xl border border-slate-200">
+                    <Search className="w-4 h-4 text-slate-400 ml-2 shrink-0" />
+                    <input
+                      type="text"
+                      autoFocus
+                      value={navSearchQuery}
+                      onChange={(e) => {
+                        setNavSearchQuery(e.target.value);
+                        setNavHighlightedIndex(0);
+                      }}
+                      onKeyDown={handleNavKeyDown}
+                      placeholder="Search blazers, scrubs, overalls, polos..."
+                      className="w-full py-1 px-2 bg-transparent text-xs text-slate-900 font-medium placeholder:text-slate-400 focus:outline-none"
+                    />
+                    {navSearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setNavSearchQuery('')}
+                        className="p-1 text-slate-400 hover:text-slate-700 rounded-lg mr-1 cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Live Results Preview */}
+                  <div className="mt-3 relative z-10">
+                    {navSearchQuery.trim() === '' ? (
+                      <div className="py-4 px-2 text-center text-[11px] text-slate-400">
+                        Type keywords like <span className="text-blue-600 font-bold">blazer</span>,{' '}
+                        <span className="text-blue-600 font-bold">scrub</span>,{' '}
+                        <span className="text-blue-600 font-bold">chef</span>, or{' '}
+                        <span className="text-blue-600 font-bold">cotton</span>.
+                      </div>
+                    ) : matchingNavProducts.length === 0 ? (
+                      <div className="py-5 text-center text-xs text-slate-500 font-medium">
+                        No uniforms found matching "{navSearchQuery}".
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5 max-h-64 overflow-y-auto pr-1">
+                        <div className="text-[10px] uppercase font-bold text-slate-400 px-1 mb-1">
+                          Matching Uniforms ({matchingNavProducts.length})
+                        </div>
+                        {matchingNavProducts.map((product, idx) => (
+                          <div
+                            key={product.id}
+                            onClick={() => {
+                              onSelectProduct?.(product);
+                              closeAllHeaderPreviews();
+                              setNavSearchQuery('');
+                            }}
+                            className={`flex items-center gap-3 p-2 rounded-xl transition-colors cursor-pointer ${
+                              idx === navHighlightedIndex
+                                ? 'bg-blue-50 border border-blue-200'
+                                : 'hover:bg-slate-50 border border-transparent'
+                            }`}
+                          >
+                            <img
+                              src={product.image || product.images?.[0]}
+                              alt={product.name}
+                              className="w-11 h-11 object-cover rounded-lg border border-slate-200 shrink-0 bg-white"
+                              referrerPolicy="no-referrer"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <h5 className="text-xs font-bold text-slate-900 truncate">
+                                {product.name}
+                              </h5>
+                              <span className="text-[10px] text-slate-500 block truncate">
+                                {product.categoryLabel || product.category} • MOQ: {product.minOrder}
+                              </span>
+                            </div>
+                            <div className="text-right shrink-0">
+                              <span className="text-xs font-black text-[#06163c] font-['Outfit'] block">
+                                Ksh {product.basePrice.toLocaleString()}
+                              </span>
+                              <span className="text-[9px] text-emerald-600 font-bold">
+                                View Specs
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* 1. Size Guide Icon Button with Quick Preview Window */}
+            <div
+              className="relative"
+              onMouseEnter={handleSizeGuideMouseEnter}
+              onMouseLeave={handleSizeGuideMouseLeave}
+            >
               <button
                 id="navbar-size-guide-btn"
                 onClick={() => {
-                  setServicesDropdownOpen(false);
-                  setMobileMenuOpen(false);
+                  closeAllHeaderPreviews();
                   onOpenSizeGuide();
                 }}
-                className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm hover:shadow-[0_0_16px_rgba(255,255,255,0.4)] hover:scale-110 hover:-translate-y-0.5 active:scale-90 transition-all duration-200 cursor-pointer"
+                className={`btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 cursor-pointer ${
+                  sizeGuidePreviewOpen
+                    ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.6)] scale-105'
+                    : 'bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm hover:shadow-[0_0_16px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-90'
+                }`}
                 aria-label="Size Guide & Fabric Specifications"
                 title="Size Guide"
               >
-                <Ruler className="w-5 h-5 text-[#06163c] transition-transform duration-200 group-hover:rotate-12 group-hover:scale-110" />
+                <Ruler className="w-5 h-5 transition-transform duration-200" />
               </button>
-              {/* Floating Tooltip */}
-              <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap pointer-events-none shadow-xl border border-slate-700/70 z-50 transition-all duration-150 ${servicesDropdownOpen ? 'hidden' : 'opacity-0 group-hover:opacity-100'}`}>
-                <span>Size Guide</span>
-                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
-              </div>
+
+              {/* Quick Preview Window - Top of Everything */}
+              {sizeGuidePreviewOpen && (
+                <div
+                  className="absolute top-full right-0 sm:left-1/2 sm:-translate-x-1/2 mt-3 w-84 sm:w-96 bg-white rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.4)] border border-slate-200/90 p-5 z-[100000] text-slate-900 animate-fadeIn ring-1 ring-black/10"
+                  onMouseEnter={handleSizeGuideMouseEnter}
+                  onMouseLeave={handleSizeGuideMouseLeave}
+                >
+                  {/* Pointer arrow */}
+                  <div className="absolute -top-2 right-4 sm:left-1/2 sm:-translate-x-1/2 w-4 h-4 bg-white rotate-45 border-l border-t border-slate-200" />
+
+                  {/* Header */}
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100 relative z-10">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold">
+                        <Ruler className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-slate-900 uppercase tracking-wide">
+                          Size & Fabric Standards
+                        </h4>
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          East Africa KBS & Institutional Specs
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      Standardized
+                    </span>
+                  </div>
+
+                  {/* Quick Sizing Grid */}
+                  <div className="mt-3.5 space-y-2 relative z-10 text-[11px]">
+                    <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100 text-center font-medium">
+                      <div>
+                        <span className="text-[9px] font-bold text-slate-400 block uppercase">Nursery</span>
+                        <span className="font-bold text-slate-800">Age 3–6</span>
+                        <span className="text-[10px] text-slate-500 block">22"–26" Chest</span>
+                      </div>
+                      <div className="border-x border-slate-200 px-1">
+                        <span className="text-[9px] font-bold text-slate-400 block uppercase">Primary</span>
+                        <span className="font-bold text-slate-800">Age 7–13</span>
+                        <span className="text-[10px] text-slate-500 block">28"–34" Chest</span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] font-bold text-slate-400 block uppercase">High / Adult</span>
+                        <span className="font-bold text-slate-800">S – 3XL</span>
+                        <span className="text-[10px] text-slate-500 block">36"–48"+ Chest</span>
+                      </div>
+                    </div>
+
+                    {/* Fabric specifications note */}
+                    <div className="p-2.5 bg-blue-50/60 rounded-xl border border-blue-100 flex items-start gap-2 text-slate-700">
+                      <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                      <div className="text-[11px] leading-relaxed">
+                        <strong className="text-blue-900">Anti-Pill & Pre-Shrunk:</strong> Heavy 240–280 GSM pique & wool blends certified for 100+ industrial wash cycles.
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CTA */}
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2 relative z-10">
+                    <span className="text-[10px] text-slate-400">Exact measurement charts</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        closeAllHeaderPreviews();
+                        onOpenSizeGuide();
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#06163c] hover:bg-blue-900 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer hover:shadow-md"
+                    >
+                      <span>Open Sizing Matrix</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* 2. Live Mockup Studio Icon Button */}
-            <div className="relative group">
+            {/* 2. Live Mockup Studio Icon Button with Quick Preview Window */}
+            <div
+              className="relative"
+              onMouseEnter={handleMockupMouseEnter}
+              onMouseLeave={handleMockupMouseLeave}
+            >
               <button
                 id="navbar-live-mockup-btn"
                 type="button"
                 onClick={() => {
-                  setServicesDropdownOpen(false);
-                  setMobileMenuOpen(false);
+                  closeAllHeaderPreviews();
                   onOpenCustomizer();
                 }}
-                className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm hover:shadow-[0_0_16px_rgba(255,255,255,0.4)] hover:scale-110 hover:-translate-y-0.5 active:scale-90 transition-all duration-200 cursor-pointer"
+                className={`btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 cursor-pointer ${
+                  mockupPreviewOpen
+                    ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.6)] scale-105'
+                    : 'bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm hover:shadow-[0_0_16px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-90'
+                }`}
                 aria-label="Launch 3D Live Mockup Studio"
                 title="Live 3D Mockup Studio"
               >
-                <Sparkles className="w-5 h-5 text-[#06163c] transition-transform duration-200 group-hover:rotate-12 group-hover:scale-110" />
+                <Sparkles className="w-5 h-5 transition-transform duration-200" />
               </button>
-              {/* Floating Tooltip */}
-              <div className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap pointer-events-none shadow-xl border border-slate-700/70 z-50 transition-all duration-150 ${servicesDropdownOpen ? 'hidden' : 'opacity-0 group-hover:opacity-100'}`}>
-                <span>3D Live Mockup</span>
-                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
-              </div>
+
+              {/* Quick Preview Window - Top of Everything */}
+              {mockupPreviewOpen && (
+                <div
+                  className="absolute top-full right-0 sm:left-1/2 sm:-translate-x-1/2 mt-3 w-84 sm:w-96 bg-white rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.4)] border border-slate-200/90 p-5 z-[100000] text-slate-900 animate-fadeIn ring-1 ring-black/10"
+                  onMouseEnter={handleMockupMouseEnter}
+                  onMouseLeave={handleMockupMouseLeave}
+                >
+                  {/* Pointer arrow */}
+                  <div className="absolute -top-2 right-4 sm:left-1/2 sm:-translate-x-1/2 w-4 h-4 bg-white rotate-45 border-l border-t border-slate-200" />
+
+                  {/* Header */}
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100 relative z-10">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center font-bold">
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-slate-900 uppercase tracking-wide">
+                          3D Mockup Studio
+                        </h4>
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          Real-Time Digital Garment Visualizer
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200">
+                      Interactive
+                    </span>
+                  </div>
+
+                  {/* Feature Snapshot */}
+                  <div className="mt-3.5 space-y-2.5 relative z-10 text-[11px]">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2">
+                        <Palette className="w-4 h-4 text-purple-600 shrink-0" />
+                        <span className="font-semibold text-slate-800">Pantone Dyeing</span>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2">
+                        <Shirt className="w-4 h-4 text-blue-600 shrink-0" />
+                        <span className="font-semibold text-slate-800">360° Visualizer</span>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2">
+                        <Award className="w-4 h-4 text-amber-600 shrink-0" />
+                        <span className="font-semibold text-slate-800">Crest Digitizer</span>
+                      </div>
+                      <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-2">
+                        <Zap className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span className="font-semibold text-slate-800">Instant Estimate</span>
+                      </div>
+                    </div>
+
+                    <p className="text-[11px] text-slate-500 leading-relaxed">
+                      Upload your school or corporate crest, change collar/body colorways, and view 3D renders before placing batch production.
+                    </p>
+                  </div>
+
+                  {/* CTA */}
+                  <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2 relative z-10">
+                    <span className="text-[10px] text-slate-400">Zero design fee preview</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        closeAllHeaderPreviews();
+                        onOpenCustomizer();
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-[#06163c] hover:bg-blue-900 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer hover:shadow-md"
+                    >
+                      <span>Launch 3D Studio</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* 3. Quote Request / Cart Icon Button */}
-            <div className="relative group">
+            {/* 3. Quote Request / Cart Icon Button with Quick Preview Window */}
+            <div
+              className="relative"
+              onMouseEnter={handleCartMouseEnter}
+              onMouseLeave={handleCartMouseLeave}
+            >
               <button
                 id="navbar-quote-cart-btn"
                 onClick={() => {
-                  setServicesDropdownOpen(false);
-                  setMobileMenuOpen(false);
+                  closeAllHeaderPreviews();
                   onOpenQuoteModal();
                 }}
-                className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm hover:shadow-[0_0_16px_rgba(255,255,255,0.4)] hover:scale-110 hover:-translate-y-0.5 active:scale-90 transition-all duration-200 cursor-pointer"
+                className={`btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 cursor-pointer ${
+                  cartPreviewOpen
+                    ? 'bg-blue-600 text-white shadow-[0_0_20px_rgba(37,99,235,0.6)] scale-105'
+                    : 'bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm hover:shadow-[0_0_16px_rgba(255,255,255,0.4)] hover:scale-105 active:scale-90'
+                }`}
                 aria-label="View Quote Cart"
                 title="Quote Cart"
               >
-                <ShoppingBag className="w-5 h-5 text-[#06163c] group-hover:scale-115 group-hover:-rotate-12 transition-transform duration-200" />
+                <ShoppingBag className="w-5 h-5 transition-transform duration-200" />
                 {totalItemsCount > 0 && (
                   <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[20px] h-5 px-1 text-[11px] font-black bg-[#06163c] text-white rounded-full border-2 border-white shadow-md animate-scaleIn">
                     {totalItemsCount}
                   </span>
                 )}
               </button>
-              {/* Floating Tooltip */}
-              <div className={`absolute top-full right-0 sm:left-1/2 sm:-translate-x-1/2 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap pointer-events-none shadow-xl border border-slate-700/70 z-50 transition-all duration-150 ${servicesDropdownOpen ? 'hidden' : 'opacity-0 group-hover:opacity-100'}`}>
-                <span>Quote Cart {totalItemsCount > 0 ? `(${totalItemsCount})` : ''}</span>
-                <div className="absolute -top-1 right-3 sm:left-1/2 sm:-translate-x-1/2 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
-              </div>
+
+              {/* Quick Preview Window - Top of Everything */}
+              {cartPreviewOpen && (
+                <div
+                  className="absolute top-full right-0 mt-3 w-88 sm:w-96 bg-white rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.4)] border border-slate-200/90 p-5 z-[100000] text-slate-900 animate-fadeIn ring-1 ring-black/10"
+                  onMouseEnter={handleCartMouseEnter}
+                  onMouseLeave={handleCartMouseLeave}
+                >
+                  {/* Pointer arrow */}
+                  <div className="absolute -top-2 right-4 w-4 h-4 bg-white rotate-45 border-l border-t border-slate-200" />
+
+                  {/* Header */}
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100 relative z-10">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold">
+                        <ShoppingBag className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="text-xs font-black text-slate-900 uppercase tracking-wide">
+                          Quote Cart Preview
+                        </h4>
+                        <span className="text-[10px] text-slate-500 font-medium">
+                          {totalItemsCount} item{totalItemsCount === 1 ? '' : 's'} configured
+                        </span>
+                      </div>
+                    </div>
+                    {totalItemsCount > 0 && (
+                      <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                        {quoteItems.length} line(s)
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Body Content */}
+                  <div className="mt-3.5 relative z-10">
+                    {quoteItems.length === 0 ? (
+                      <div className="py-6 text-center space-y-2">
+                        <div className="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+                          <ShoppingBag className="w-6 h-6" />
+                        </div>
+                        <p className="text-xs font-bold text-slate-800">Your quote cart is empty</p>
+                        <p className="text-[11px] text-slate-500 max-w-xs mx-auto">
+                          Select uniforms from our catalog or use the 3D customizer to configure bulk school or corporate uniforms.
+                        </p>
+                        <a
+                          href="#catalog"
+                          onClick={() => closeAllHeaderPreviews()}
+                          className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 hover:text-blue-800 mt-2"
+                        >
+                          <span>Explore Uniform Catalog</span>
+                          <ArrowRight className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
+                    ) : (
+                      <>
+                        {/* Scrollable list of items */}
+                        <div className="max-h-56 overflow-y-auto space-y-2.5 pr-1 scrollbar-thin">
+                          {quoteItems.slice(0, 4).map((item) => (
+                            <div
+                              key={item.id}
+                              className="flex items-center gap-3 p-2 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100/80 transition-colors"
+                            >
+                              <img
+                                src={item.product?.image || item.product?.images?.[0]}
+                                alt={item.product?.name}
+                                className="w-12 h-12 object-cover rounded-lg border border-slate-200 shrink-0 bg-white"
+                                referrerPolicy="no-referrer"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <h5 className="text-xs font-bold text-slate-900 truncate">
+                                  {item.product?.name}
+                                </h5>
+                                <div className="flex items-center gap-2 mt-0.5 text-[10px] text-slate-500">
+                                  {item.selectedColor && (
+                                    <span className="inline-flex items-center gap-1">
+                                      <span className="w-2 h-2 rounded-full bg-blue-600" />
+                                      {item.selectedColor}
+                                    </span>
+                                  )}
+                                  <span>Qty: {item.totalQuantity}</span>
+                                </div>
+                              </div>
+                              <div className="text-right shrink-0">
+                                <span className="text-xs font-black text-[#06163c] font-['Outfit'] block">
+                                  Ksh {(item.totalPrice || (item.unitPrice || 0) * item.totalQuantity || 0).toLocaleString()}
+                                </span>
+                                <span className="text-[9px] text-slate-400">
+                                  @ Ksh {(item.unitPrice || 0).toLocaleString()}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                          {quoteItems.length > 4 && (
+                            <p className="text-[10px] text-center font-bold text-slate-400 py-1">
+                              + {quoteItems.length - 4} more line item(s) in cart
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Order Subtotal Bar */}
+                        <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between">
+                          <div>
+                            <span className="text-[10px] uppercase font-bold text-slate-400 block">
+                              Estimated Total
+                            </span>
+                            <span className="text-base font-black text-[#06163c] font-['Outfit']">
+                              Ksh {totalCartValue.toLocaleString()}
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              closeAllHeaderPreviews();
+                              onOpenQuoteModal();
+                            }}
+                            className="inline-flex items-center gap-1.5 px-4 py-2 bg-[#06163c] hover:bg-blue-900 text-white text-xs font-black rounded-xl shadow-md hover:shadow-lg transition-all cursor-pointer active:scale-95"
+                          >
+                            <span>Open Full Estimator</span>
+                            <ArrowRight className="w-3.5 h-3.5 text-sky-400" />
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
+
 
             {/* 4. Desktop Hamburger Menu Toggle Button */}
             <div className="relative group">
@@ -740,7 +1218,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 id="navbar-desktop-hamburger-btn"
                 type="button"
                 onClick={() => {
-                  setServicesDropdownOpen(false);
+                  closeAllHeaderPreviews();
                   setMobileMenuOpen(!mobileMenuOpen);
                 }}
                 className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm hover:shadow-[0_0_16px_rgba(255,255,255,0.4)] hover:scale-110 hover:-translate-y-0.5 active:scale-90 transition-all duration-200 cursor-pointer"
@@ -754,7 +1232,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 )}
               </button>
               {/* Floating Tooltip */}
-              <div className={`absolute top-full right-0 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap pointer-events-none shadow-xl border border-slate-700/70 z-50 transition-all duration-150 ${servicesDropdownOpen ? 'hidden' : 'opacity-0 group-hover:opacity-100'}`}>
+              <div className={`absolute top-full right-0 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap pointer-events-none shadow-xl border border-slate-700/70 z-50 transition-all duration-150 ${isAnyHeaderPreviewOpen ? 'hidden' : 'opacity-0 group-hover:opacity-100'}`}>
                 <span>{mobileMenuOpen ? 'Close Menu' : 'Navigation & Quick Links'}</span>
                 <div className="absolute -top-1 right-3.5 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
               </div>
