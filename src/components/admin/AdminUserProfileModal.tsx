@@ -145,7 +145,7 @@ export const AdminUserProfileModal: React.FC<AdminUserProfileModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto font-['Plus_Jakarta_Sans',sans-serif]">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto font-['Plus_Jakarta_Sans',sans-serif]">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
