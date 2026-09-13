@@ -36,8 +36,6 @@ import {
   Factory,
   Zap,
   Check,
-  User,
-  Lock,
 } from 'lucide-react';
 import { QuoteItem, UniformProduct } from '../types';
 
@@ -51,7 +49,6 @@ interface NavbarProps {
   onOpenTerms?: () => void;
   onOpenCookies?: () => void;
   onOpenLocation?: () => void;
-  onOpenAdminERP?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -64,9 +61,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenTerms,
   onOpenCookies,
   onOpenLocation,
-  onOpenAdminERP,
 }) => {
-  const { products, currentUser, isAuthenticated, isWhitelistedAdmin } = useERP();
+  const { products } = useERP();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [servicesDropdownOpen, setServicesDropdownOpen] = useState(false);
@@ -1216,51 +1212,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
 
 
-            {/* 4. Enterprise ERP / Admin Portal Quick Access */}
-            {onOpenAdminERP && (
-              <div className="relative group">
-                <button
-                  id="navbar-admin-erp-btn"
-                  type="button"
-                  onClick={() => {
-                    closeAllHeaderPreviews();
-                    onOpenAdminERP();
-                  }}
-                  className={`btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 cursor-pointer ${
-                    currentUser
-                      ? isWhitelistedAdmin
-                        ? 'bg-amber-400 hover:bg-amber-300 text-slate-950 border border-amber-300 shadow-sm hover:scale-105'
-                        : 'bg-blue-600 hover:bg-blue-500 text-white border border-blue-400 shadow-sm hover:scale-105'
-                      : 'bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm hover:shadow-[0_0_16px_rgba(255,255,255,0.4)] hover:scale-110 hover:-translate-y-0.5 active:scale-90'
-                  }`}
-                  aria-label="Access ERP Portal"
-                  title={currentUser ? (isWhitelistedAdmin ? `ERP Portal: ${currentUser.name}` : `Account: ${currentUser.name}`) : 'Enterprise ERP Portal'}
-                >
-                  {currentUser?.avatar ? (
-                    <img
-                      src={currentUser.avatar}
-                      alt={currentUser.name}
-                      referrerPolicy="no-referrer"
-                      className="w-7 h-7 rounded-lg object-cover"
-                    />
-                  ) : currentUser ? (
-                    <ShieldCheck className="w-5 h-5 text-slate-950" />
-                  ) : (
-                    <Lock className="w-4 h-4 text-[#06163c]" />
-                  )}
-                  {currentUser && isWhitelistedAdmin && (
-                    <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full ring-2 ring-white" />
-                  )}
-                </button>
-                {/* Floating Tooltip */}
-                <div className={`absolute top-full right-0 mt-2 px-2.5 py-1 bg-slate-950/95 text-white text-[11px] font-bold rounded-lg whitespace-nowrap pointer-events-none shadow-xl border border-slate-700/70 z-50 transition-all duration-150 ${isAnyHeaderPreviewOpen ? 'hidden' : 'opacity-0 group-hover:opacity-100'}`}>
-                  <span>{currentUser ? (isWhitelistedAdmin ? `ERP Dashboard (${currentUser.role})` : `Customer Portal (${currentUser.name})`) : 'Admin & Staff ERP Portal'}</span>
-                  <div className="absolute -top-1 right-3.5 w-2 h-2 bg-slate-950 rotate-45 border-l border-t border-slate-700/70" />
-                </div>
-              </div>
-            )}
-
-            {/* 5. Desktop Hamburger Menu Toggle Button */}
+            {/* 4. Desktop Hamburger Menu Toggle Button */}
             <div className="relative group">
               <button
                 id="navbar-desktop-hamburger-btn"
@@ -1653,29 +1605,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <span>Contact Factory</span>
                   <ArrowRight className="w-4 h-4 text-slate-400" />
                 </a>
-
-                {onOpenAdminERP && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMobileMenuOpen(false);
-                      onOpenAdminERP();
-                    }}
-                    className={`w-full flex items-center justify-between px-3.5 py-3 text-sm font-bold rounded-xl transition-all cursor-pointer text-left ${
-                      currentUser && isWhitelistedAdmin
-                        ? 'bg-amber-100/80 text-amber-950 border border-amber-300'
-                        : currentUser
-                        ? 'bg-blue-50 text-blue-900 border border-blue-200'
-                        : 'bg-[#06163c] text-white hover:bg-blue-950'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <ShieldCheck className={`w-4 h-4 ${currentUser && isWhitelistedAdmin ? 'text-amber-700' : 'text-sky-400'}`} />
-                      <span>{currentUser ? (isWhitelistedAdmin ? `ERP Dashboard (${currentUser.role})` : `My Portal (${currentUser.name})`) : 'Staff & Admin ERP Portal'}</span>
-                    </div>
-                    <ArrowRight className="w-4 h-4 opacity-70" />
-                  </button>
-                )}
               </div>
 
               {/* Direct WhatsApp & Hotline Quick Bar */}
