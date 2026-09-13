@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { UniformProduct, QuoteItem } from '../types';
 import { useERP } from '../context/ERPContext';
 import {
@@ -316,9 +317,29 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
     };
   };
 
-  return (
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-[100] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-0 sm:p-5 md:p-8 overflow-hidden sm:overflow-y-auto animate-fadeIn"
+      className="fixed inset-0 z-[100000] bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-0 sm:p-5 md:p-8 overflow-hidden sm:overflow-y-auto animate-fadeIn"
       role="dialog"
       aria-modal="true"
       aria-labelledby="mockup-modal-title"
@@ -851,6 +872,7 @@ export const InteractiveCustomizer: React.FC<InteractiveCustomizerProps> = ({
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

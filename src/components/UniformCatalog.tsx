@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useERP } from '../context/ERPContext';
 import { UniformProduct, UniformCategory } from '../types';
+import academicSchoolBlazerImg from '../assets/images/academic_school_blazer_1787666599640.jpg';
 import {
   Search,
   SlidersHorizontal,
@@ -260,8 +261,7 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                             decoding="async"
                             referrerPolicy="no-referrer"
                             onError={(e) => {
-                              e.currentTarget.src =
-                                'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=400&q=80';
+                              e.currentTarget.src = academicSchoolBlazerImg;
                             }}
                           />
                           <div className="flex-1 min-w-0">
@@ -414,7 +414,7 @@ export const UniformCatalog: React.FC<UniformCatalogProps> = ({
                       decoding="async"
                       referrerPolicy="no-referrer"
                       onError={(e) => {
-                        e.currentTarget.src = 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80';
+                        e.currentTarget.src = academicSchoolBlazerImg;
                       }}
                     />
                     

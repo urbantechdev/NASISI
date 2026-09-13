@@ -3,7 +3,11 @@ import { Phone, Mail, MapPin, MessageSquare, Clock, Send, ChevronDown, CheckCirc
 import { useERP } from '../context/ERPContext';
 import confetti from 'canvas-confetti';
 
-export const ContactSection: React.FC = () => {
+interface ContactSectionProps {
+  onOpenLocation?: () => void;
+}
+
+export const ContactSection: React.FC<ContactSectionProps> = ({ onOpenLocation }) => {
   const { raiseInquiryTicket } = useERP();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -99,10 +103,19 @@ export const ContactSection: React.FC = () => {
 
               <div className="space-y-3 text-xs text-slate-700">
                 <div className="flex items-start gap-3">
-                  <MapPin className="w-4 h-4 text-[#06163c] flex-shrink-0 mt-0.5" />
+                  <MapPin className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <strong className="block text-slate-900">Workshop & Production Location:</strong>
-                    <span>Uhuru Market, Nairobi, Kenya</span>
+                    <strong className="block text-slate-900">Showroom & Factory Location:</strong>
+                    <span>Commercial St / Enterprise Rd, Industrial Area, Nairobi, Kenya</span>
+                    {onOpenLocation && (
+                      <button
+                        type="button"
+                        onClick={onOpenLocation}
+                        className="mt-1 text-blue-700 hover:text-blue-900 font-bold inline-flex items-center gap-1 underline decoration-blue-300 hover:decoration-blue-700 transition-colors cursor-pointer"
+                      >
+                        <span>View on Interactive Google Map & Directions &rarr;</span>
+                      </button>
+                    )}
                   </div>
                 </div>
 

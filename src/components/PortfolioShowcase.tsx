@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { PORTFOLIO_ITEMS } from '../data/uniformsData';
+import academicSchoolBlazerImg from '../assets/images/academic_school_blazer_1787666599640.jpg';
 import { Sparkles, CheckCircle2, ShieldCheck, Tag, Building2, Users } from 'lucide-react';
 
 export const PortfolioShowcase: React.FC = () => {
@@ -79,7 +80,7 @@ export const PortfolioShowcase: React.FC = () => {
                   decoding="async"
                   referrerPolicy="no-referrer"
                   onError={(e) => {
-                    e.currentTarget.src = 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?auto=format&fit=crop&w=800&q=80';
+                    e.currentTarget.src = academicSchoolBlazerImg;
                   }}
                 />
                 <span className="absolute top-3 left-3 bg-[#06163c] text-white text-[10px] font-extrabold px-2.5 py-1 rounded shadow">

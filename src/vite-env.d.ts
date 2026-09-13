@@ -15,12 +15,12 @@ declare module '*.png' {
   export default src;
 }
 
-declare module '*.webp' {
+declare module '*.svg' {
   const src: string;
   export default src;
 }
 
-declare module '*.svg' {
+declare module '*.webp' {
   const src: string;
   export default src;
 }

@@ -15,6 +15,9 @@ import highVisSafetyVestImg from '../../assets/images/high_vis_safety_vest_17876
 import industrialWorkwearOverallImg from '../../assets/images/industrial_workwear_overall_1787666910504.jpg';
 import varsityLettermanJacketImg from '../../assets/images/varsity_letterman_jacket_1787666981298.jpg';
 import fleecePulloverHoodieImg from '../../assets/images/fleece_pullover_hoodie_1787666996711.jpg';
+import schoolBlazerAlternativeImg from '../../assets/images/school_blazer_1787463441853.jpg';
+import medicalScrubsAlternativeImg from '../../assets/images/medical_scrubs_1787463454201.jpg';
+import varsityJacketAlternativeImg from '../../assets/images/varsity_jacket_1787463467084.jpg';
 import {
   X,
   Plus,
@@ -116,19 +119,19 @@ const PRESET_GARMENT_IMAGES = [
   },
   {
     name: 'Tactical Security Uniform',
-    url: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=800&q=80',
+    url: highVisSafetyVestImg,
   },
   {
     name: 'Doctor Medical Lab Coat',
-    url: 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?auto=format&fit=crop&w=800&q=80',
+    url: medicalScrubsAlternativeImg,
   },
   {
     name: 'Sublimated Football Team Jersey',
-    url: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=800&q=80',
+    url: varsityJacketAlternativeImg,
   },
   {
     name: 'Promotional Round-Neck T-Shirt',
-    url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80',
+    url: corporateServicePoloImg,
   },
 ];
 
@@ -941,7 +944,7 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                           <div className="flex items-center gap-2">
                             <input
                               type="url"
-                              placeholder="Paste high-res image URL (e.g. https://images.unsplash.com/...)"
+                              placeholder="Paste high-res image URL (e.g. https://example.com/garment.jpg)"
                               value={customUrlInput}
                               onChange={(e) => setCustomUrlInput(e.target.value)}
                               onKeyDown={(e) => {

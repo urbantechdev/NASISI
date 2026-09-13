@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FileText,
   ShieldCheck,
@@ -19,6 +19,7 @@ import {
   Building2,
   PackageCheck,
 } from 'lucide-react';
+import { updateSEO } from '../utils/seo';
 
 interface TermsOfServicePageProps {
   onBackToStorefront: () => void;
@@ -32,6 +33,11 @@ export const TermsOfServicePage: React.FC<TermsOfServicePageProps> = ({
   onNavigateToCookies,
 }) => {
   const [activeSection, setActiveSection] = useState<string>('agreement');
+
+  useEffect(() => {
+    updateSEO('terms');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   const lastUpdated = 'February 2026';
   const effectiveDate = 'January 1, 2026';

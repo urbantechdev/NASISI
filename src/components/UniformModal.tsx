@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { UniformProduct, QuoteItem } from '../types';
 import { useERP } from '../context/ERPContext';
+import academicSchoolBlazerImg from '../assets/images/academic_school_blazer_1787666599640.jpg';
 import { X, Check, ShoppingBag, SlidersHorizontal, Sparkles, Shield, Tag, Layers, CheckCircle2, MessageSquare, ArrowRight, UploadCloud, FileImage, Image as ImageIcon, ChevronLeft, ChevronRight, Eye } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -41,6 +43,14 @@ export const UniformModal: React.FC<UniformModalProps> = ({
 
   useEffect(() => {
     if (product) {
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+
       setSelectedColor(product.availableColors?.[0]?.name || '');
       setActiveImageIndex(0);
       const initial: Record<string, number> = {};
@@ -49,8 +59,15 @@ export const UniformModal: React.FC<UniformModalProps> = ({
       });
       setSizeQuantities(initial);
       setTicketRaised(null);
+
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = '';
     }
-  }, [product]);
+  }, [product, onClose]);
 
   const totalUnits: number = (Object.values(sizeQuantities) as number[]).reduce(
     (a: number, b: number) => a + b,
@@ -157,8 +174,13 @@ export const UniformModal: React.FC<UniformModalProps> = ({
   const activeColorHex =
     product.availableColors.find((c) => c.name === selectedColor)?.hex || '#06163c';
 
-  return (
-    <div className="fixed inset-0 z-[100] bg-slate-900/75 backdrop-blur-md flex items-center justify-center p-0 sm:p-6 overflow-hidden sm:overflow-y-auto animate-fadeIn">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100000] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-0 sm:p-6 overflow-hidden sm:overflow-y-auto animate-fadeIn"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
       <div
         className="relative bg-white w-full h-full sm:h-auto sm:max-h-[92vh] sm:max-w-4xl sm:rounded-2xl flex flex-col shadow-2xl border-0 sm:border sm:border-slate-200 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
@@ -246,7 +268,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                     ? product.images
                     : product.image
                     ? [product.image]
-                    : ['https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80'];
+                    : [academicSchoolBlazerImg];
                 const currentImg = productImages[activeImageIndex] || productImages[0];
 
                 return (
@@ -260,7 +282,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
                         loading="eager"
                         referrerPolicy="no-referrer"
                         onError={(e) => {
-                          e.currentTarget.src = 'https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=800&q=80';
+                          e.currentTarget.src = academicSchoolBlazerImg;
                         }}
                       />
                       {product.badge && (
@@ -693,6 +715,7 @@ export const UniformModal: React.FC<UniformModalProps> = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Ruler, Layers, Sparkles, Check, Info, ShieldAlert } from 'lucide-react';
 
 interface SizeAndFabricGuideProps {
@@ -9,6 +10,24 @@ interface SizeAndFabricGuideProps {
 export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, onClose }) => {
   const [activeTab, setActiveTab] = useState<'sizes' | 'fabrics' | 'care'>('sizes');
   const [sizeCategory, setSizeCategory] = useState<'school_junior' | 'adult'>('school_junior');
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [isOpen, onClose]);
 
   const juniorSizes = [
     { size: 'Age 3-4 (XS Junior)', chest: '22" - 24"', waist: '20" - 21"', length: '16"', height: '98 - 104 cm' },
@@ -31,8 +50,13 @@ export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, 
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[100] bg-slate-900/75 backdrop-blur-md flex items-center justify-center p-0 sm:p-6 overflow-hidden sm:overflow-y-auto animate-fadeIn">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100000] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-0 sm:p-6 overflow-hidden sm:overflow-y-auto animate-fadeIn"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
       <div
         className="relative bg-white w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-3xl sm:rounded-3xl flex flex-col shadow-2xl border-0 sm:border sm:border-slate-200 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
@@ -253,6 +277,7 @@ export const SizeAndFabricGuide: React.FC<SizeAndFabricGuideProps> = ({ isOpen, 
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

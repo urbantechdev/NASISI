@@ -15,6 +15,7 @@ import {
   Save,
   RotateCcw,
 } from 'lucide-react';
+import { updateSEO } from '../utils/seo';
 
 interface CookiePolicyPageProps {
   onBackToStorefront: () => void;
@@ -36,6 +37,11 @@ export const CookiePolicyPage: React.FC<CookiePolicyPageProps> = ({
 }) => {
   const [activeSection, setActiveSection] = useState<string>('what-are-cookies');
   const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+
+  useEffect(() => {
+    updateSEO('cookies');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
 
   // Cookie preferences state loaded from localStorage
   const [preferences, setPreferences] = useState<CookiePreferences>(() => {

@@ -13,6 +13,7 @@ import {
 import { motion } from 'motion/react';
 import { AdminUser } from '../../types';
 import { NasisiLogo } from '../NasisiLogo';
+import { getInitialsAvatar } from '../../data/adminUserData';
 
 interface CustomerRestrictedAccessPageProps {
   currentUser: AdminUser;
@@ -73,7 +74,7 @@ export const CustomerRestrictedAccessPage: React.FC<CustomerRestrictedAccessPage
               Enterprise Dashboard Access Restricted
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-md">
-              Only whitelisted factory administrators are authorized to access the ERP backend, production queues, and KRA tax invoices.
+              Only authorized factory administrators can access the ERP backend, production queues, and financial records.
             </p>
           </div>
 
@@ -90,7 +91,7 @@ export const CustomerRestrictedAccessPage: React.FC<CustomerRestrictedAccessPage
 
             <div className="flex items-center gap-3">
               <img
-                src={currentUser.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=400&auto=format&fit=crop'}
+                src={currentUser.avatar || getInitialsAvatar(currentUser.name, '#0284c7')}
                 alt={currentUser.name}
                 referrerPolicy="no-referrer"
                 className="w-11 h-11 rounded-xl object-cover border border-slate-200 shadow-xs"
@@ -142,12 +143,10 @@ export const CustomerRestrictedAccessPage: React.FC<CustomerRestrictedAccessPage
             </motion.button>
           </div>
 
-          {/* Whitelisted Notice Footer */}
+          {/* Security Notice Footer */}
           <div className="mt-6 pt-4 border-t border-slate-100 text-center">
-            <p className="text-[11px] text-slate-500 leading-relaxed">
-              Authorized admin accounts: <span className="font-mono text-slate-700 font-semibold">nasisiknitwear.ke@gmail.com</span>,{' '}
-              <span className="font-mono text-slate-700 font-semibold">optimumengineeringke@gmail.com</span>, or{' '}
-              <span className="font-mono text-slate-700 font-semibold">veronicanjus@gmail.com</span>.
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              If your organization requires administrative ERP credentials, please contact executive management.
             </p>
           </div>
         </motion.div>

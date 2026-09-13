@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { QuoteItem, QuoteSubmission } from '../types';
 import { useERP } from '../context/ERPContext';
 import {
@@ -65,6 +66,24 @@ export const QuoteEstimatorModal: React.FC<QuoteEstimatorModalProps> = ({
       }
     }
   }, [currentUser, isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          onClose();
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [isOpen, onClose]);
 
   const subtotal = quoteItems.reduce((sum, item) => sum + item.totalPrice, 0);
   const totalUnits = quoteItems.reduce((sum, item) => sum + item.totalQuantity, 0);
@@ -192,8 +211,13 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
 
   if (!isOpen) return null;
 
-  return (
-    <div className="fixed inset-0 z-[110] bg-slate-900/75 backdrop-blur-md flex items-center justify-center p-0 sm:p-6 overflow-hidden sm:overflow-y-auto animate-fadeIn">
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[100000] bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-0 sm:p-6 overflow-hidden sm:overflow-y-auto animate-fadeIn"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+    >
       <div
         className="relative bg-white w-full h-full sm:h-auto sm:max-h-[92vh] sm:max-w-3xl sm:rounded-3xl flex flex-col shadow-2xl border-0 sm:border sm:border-slate-200 overflow-hidden"
         onClick={(e) => e.stopPropagation()}
@@ -547,6 +571,7 @@ Hotline: 0728102929 | info@nasisiuniforms.com`;
         </div>
 
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
