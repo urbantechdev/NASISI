@@ -604,7 +604,7 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-white rounded-3xl max-w-2xl w-full border border-slate-200 shadow-2xl overflow-hidden animate-fadeIn my-8">
         {/* Modal Header */}
         <div className="bg-gradient-to-r from-[#020a1c] via-[#06163c] to-[#030e28] text-white p-5 flex items-center justify-between border-b border-blue-900/40">
@@ -751,7 +751,7 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
               <div className="flex gap-2">
                 <input
                   type="url"
-                  placeholder="https://example.com/banner.jpg or cloud asset URL"
+                  placeholder="https://images.unsplash.com/... or cloud asset URL"
                   value={customUrlInput}
                   onChange={(e) => setCustomUrlInput(e.target.value)}
                   className="flex-1 px-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"

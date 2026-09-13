@@ -23,7 +23,6 @@ import {
 } from 'lucide-react';
 import { useERP } from '../../context/ERPContext';
 import { AdminRole, AdminUser } from '../../types';
-import { getInitialsAvatar } from '../../data/adminUserData';
 
 interface AdminUserProfileModalProps {
   isOpen: boolean;
@@ -145,7 +144,7 @@ export const AdminUserProfileModal: React.FC<AdminUserProfileModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto font-['Plus_Jakarta_Sans',sans-serif]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto font-['Plus_Jakarta_Sans',sans-serif]">
       {/* Backdrop */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -188,7 +187,7 @@ export const AdminUserProfileModal: React.FC<AdminUserProfileModalProps> = ({
           <div className="flex items-end gap-4">
             <div className="relative group">
               <img
-                src={formData.avatar || currentUser.avatar || getInitialsAvatar(currentUser.name, '#06163c')}
+                src={formData.avatar || currentUser.avatar}
                 alt={currentUser.name}
                 className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl object-cover border-4 border-white shadow-lg bg-slate-100"
               />
@@ -370,7 +369,7 @@ export const AdminUserProfileModal: React.FC<AdminUserProfileModalProps> = ({
                   type="text"
                   value={formData.avatar}
                   onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
-                  placeholder="https://example.com/avatar.jpg or direct image URL"
+                  placeholder="https://images.unsplash.com/..."
                   className="w-full px-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-900 bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-hidden font-mono"
                 />
               </div>
