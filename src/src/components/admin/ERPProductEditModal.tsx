@@ -15,6 +15,8 @@ import highVisSafetyVestImg from '../../assets/images/high_vis_safety_vest_17876
 import industrialWorkwearOverallImg from '../../assets/images/industrial_workwear_overall_1787666910504.jpg';
 import varsityLettermanJacketImg from '../../assets/images/varsity_letterman_jacket_1787666981298.jpg';
 import fleecePulloverHoodieImg from '../../assets/images/fleece_pullover_hoodie_1787666996711.jpg';
+import medicalScrubsAlternativeImg from '../../assets/images/medical_scrubs_1787463454201.jpg';
+import varsityJacketAlternativeImg from '../../assets/images/varsity_jacket_1787463467084.jpg';
 import {
   X,
   Plus,
@@ -24,16 +26,11 @@ import {
   Layers,
   Tag,
   Check,
-  Globe,
   Eye,
-  Sliders,
   DollarSign,
   Palette,
   Scissors,
   CheckCircle2,
-  AlertCircle,
-  Image as ImageIcon,
-  Building2,
   Upload,
   UploadCloud,
   FileImage,
@@ -41,8 +38,18 @@ import {
   Star,
   ChevronLeft,
   ChevronRight,
+  ArrowRight,
+  ArrowLeft,
+  Sliders,
+  Boxes,
+  FileText,
+  Clock,
+  MapPin,
+  Building,
+  ShieldCheck,
   Maximize2,
-  Minimize2,
+  LayoutGrid,
+  ListOrdered,
 } from 'lucide-react';
 
 interface ERPProductEditModalProps {
@@ -61,77 +68,26 @@ const CATEGORY_OPTIONS: { id: UniformCategory; label: string }[] = [
   { id: 'promotional', label: '7. Promotional & Branding Wear' },
   { id: 'sportswear', label: '8. Sportswear' },
   { id: 'specialized_workwear', label: '9. Specialized Work-wear' },
-  // Legacy categories
   { id: 'service', label: 'Service & Corporate (Legacy)' },
   { id: 'workwear', label: 'Workwear & Industrial (Legacy)' },
   { id: 'knitwear', label: 'Custom Knitwear & Fleece (Legacy)' },
 ];
 
 const PRESET_GARMENT_IMAGES = [
-  {
-    name: 'High-Vis Safety Vest / Jacket',
-    url: highVisSafetyVestImg,
-  },
-  {
-    name: 'Heavy-Duty Workwear Boiler Suit',
-    url: industrialWorkwearOverallImg,
-  },
-  {
-    name: 'Tailored Academic Blazer',
-    url: academicSchoolBlazerImg,
-  },
-  {
-    name: 'School Knit Sweater',
-    url: schoolKnitSweaterImg,
-  },
-  {
-    name: 'Corporate Performance Polo',
-    url: corporateServicePoloImg,
-  },
-  {
-    name: 'Pro-Flex Medical Scrubs Set',
-    url: medicalScrubSetImg,
-  },
-  {
-    name: 'Executive Master Chef Jacket',
-    url: chefJacketExecutiveImg,
-  },
-  {
-    name: 'Bistro Canvas Barista Apron',
-    url: canvasBaristaApronImg,
-  },
-  {
-    name: 'School Sports Tracksuit',
-    url: schoolTracksuitJacketImg,
-  },
-  {
-    name: 'School Pique Polo',
-    url: schoolPiquePoloImg,
-  },
-  {
-    name: 'Custom Varsity Letterman Jacket',
-    url: varsityLettermanJacketImg,
-  },
-  {
-    name: 'Heritage Fleece Pullover Hoodie',
-    url: fleecePulloverHoodieImg,
-  },
-  {
-    name: 'Tactical Security Uniform',
-    url: 'https://images.unsplash.com/photo-1541872703-74c5e44368f9?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'Doctor Medical Lab Coat',
-    url: 'https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'Sublimated Football Team Jersey',
-    url: 'https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'Promotional Round-Neck T-Shirt',
-    url: 'https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=800&q=80',
-  },
+  { name: 'High-Vis Safety Vest / Jacket', category: 'safety_industrial', url: highVisSafetyVestImg },
+  { name: 'Heavy-Duty Workwear Boiler Suit', category: 'safety_industrial', url: industrialWorkwearOverallImg },
+  { name: 'Tailored Academic Blazer', category: 'school', url: academicSchoolBlazerImg },
+  { name: 'School Knit Sweater', category: 'school', url: schoolKnitSweaterImg },
+  { name: 'School Sports Tracksuit', category: 'school', url: schoolTracksuitJacketImg },
+  { name: 'School Pique Polo', category: 'school', url: schoolPiquePoloImg },
+  { name: 'Corporate Performance Polo', category: 'corporate', url: corporateServicePoloImg },
+  { name: 'Pro-Flex Medical Scrubs Set', category: 'healthcare', url: medicalScrubSetImg },
+  { name: 'Executive Master Chef Jacket', category: 'hospitality', url: chefJacketExecutiveImg },
+  { name: 'Bistro Canvas Barista Apron', category: 'hospitality', url: canvasBaristaApronImg },
+  { name: 'Custom Varsity Letterman Jacket', category: 'sportswear', url: varsityLettermanJacketImg },
+  { name: 'Heritage Fleece Pullover Hoodie', category: 'sportswear', url: fleecePulloverHoodieImg },
+  { name: 'Doctor Medical Lab Coat', category: 'healthcare', url: medicalScrubsAlternativeImg },
+  { name: 'Sublimated Football Team Jersey', category: 'sportswear', url: varsityJacketAlternativeImg },
 ];
 
 const PRESET_COLORS = [
@@ -148,22 +104,48 @@ const PRESET_COLORS = [
   { name: 'Safety Fluorescent Yellow', hex: '#CA8A04', bgClass: 'bg-[#CA8A04]' },
 ];
 
+const SIZE_PRESETS = [
+  {
+    name: 'Primary School (Age 4-13)',
+    sizes: ['Age 4-5', 'Age 6-7', 'Age 8-9', 'Age 10-11', 'Age 12-13'],
+  },
+  {
+    name: 'Youth & Adult Standard (S-3XL)',
+    sizes: ['Youth S', 'Youth M', 'Youth L', 'Adult S', 'Adult M', 'Adult L', 'Adult XL', 'Adult 2XL'],
+  },
+  {
+    name: 'Industrial Workwear (Waist/Chest 32-46)',
+    sizes: ['Size 32', 'Size 34', 'Size 36', 'Size 38', 'Size 40', 'Size 42', 'Size 44', 'Size 46'],
+  },
+  {
+    name: 'Standard One-Size',
+    sizes: ['Standard Free Size'],
+  },
+];
+
+type StageStep = 1 | 2 | 3 | 4 | 5;
+
 export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
   isOpen,
   onClose,
   productToEdit,
 }) => {
-  const { addProduct, updateProduct, uploadImageToCloud } = useERP();
+  const { addProduct, updateProduct } = useERP();
+
+  // Workflow View Mode: 'stepper' (guided in order 1->2->3->4->5) or 'all' (wide full-canvas overview)
+  const [viewLayout, setViewLayout] = useState<'stepper' | 'all'>('stepper');
+  const [activeStep, setActiveStep] = useState<StageStep>(1);
 
   // Form State
   const [name, setName] = useState('');
   const [tagline, setTagline] = useState('');
   const [category, setCategory] = useState<UniformCategory>('school');
-  const [categoryLabel, setCategoryLabel] = useState('School Uniforms');
+  const [categoryLabel, setCategoryLabel] = useState('School & Institutional Uniforms');
   const [sku, setSku] = useState('');
   const [basePrice, setBasePrice] = useState<number>(3500);
   const [unitCost, setUnitCost] = useState<number>(2000);
   const [minOrder, setMinOrder] = useState<number>(25);
+  const [leadTimeDays, setLeadTimeDays] = useState<number>(10);
   const [stockOnHand, setStockOnHand] = useState<number>(100);
   const [stockReserved, setStockReserved] = useState<number>(15);
   const [location, setLocation] = useState('Warehouse Bay A, Rack 2');
@@ -171,22 +153,22 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
   const [published, setPublished] = useState<boolean>(true);
   const [badge, setBadge] = useState<string>('');
   const [popular, setPopular] = useState<boolean>(false);
-  const [image, setImage] = useState<string>(PRESET_GARMENT_IMAGES[0].url);
-  const [images, setImages] = useState<string[]>([PRESET_GARMENT_IMAGES[0].url]);
+
+  // Multi-image studio state
+  const [images, setImages] = useState<string[]>([PRESET_GARMENT_IMAGES[2].url]);
   const [activePreviewIdx, setActivePreviewIdx] = useState<number>(0);
   const [customUrlInput, setCustomUrlInput] = useState<string>('');
-  const [imageSourceMode, setImageSourceMode] = useState<'upload' | 'url' | 'presets'>('upload');
+  const [imageSourceMode, setImageSourceMode] = useState<'upload' | 'presets' | 'url'>('presets');
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
   const [isImageDragging, setIsImageDragging] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [description, setDescription] = useState('');
 
-  // Complex specs
+  // Description & specs
+  const [description, setDescription] = useState('');
   const [colors, setColors] = useState<{ name: string; hex: string; bgClass: string }[]>([
     { name: 'Royal Blue', hex: '#06163c', bgClass: 'bg-[#06163c]' },
     { name: 'Deep Navy', hex: '#0F172A', bgClass: 'bg-[#0F172A]' },
   ]);
-
   const [sizes, setSizes] = useState<string[]>([
     'Age 4-5',
     'Age 6-7',
@@ -199,7 +181,6 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
     'Adult L',
     'Adult XL',
   ]);
-
   const [fabricComp, setFabricComp] = useState('65% Polyester, 35% Combed Viscose Suiting');
   const [fabricWeight, setFabricWeight] = useState('280 GSM');
   const [fabricFeatures, setFabricFeatures] = useState<string[]>([
@@ -207,7 +188,6 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
     'High tensile double-stitch seams',
     'Crease-resistant shape retention',
   ]);
-
   const [customization, setCustomization] = useState({
     embroidery: true,
     screenPrinting: true,
@@ -215,48 +195,25 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
     reflectiveStripes: false,
     heatTransfer: true,
   });
-
   const [idealFor, setIdealFor] = useState<string[]>([
     'Junior & Senior School Students',
-    'Cadet Corps & Prefects',
+    'Academy Prefects & Staff',
   ]);
 
-  // Input helpers
+  // Temporary inputs
   const [newColorName, setNewColorName] = useState('');
   const [newColorHex, setNewColorHex] = useState('#06163c');
   const [newSizeInput, setNewSizeInput] = useState('');
   const [newFeatureInput, setNewFeatureInput] = useState('');
   const [newIdealInput, setNewIdealInput] = useState('');
-  const [activeTab, setActiveTab] = useState<'details' | 'specs' | 'pricing'>('details');
-  const [isFullscreen, setIsFullscreen] = useState(true);
 
-  // Lock body scroll and handle ESC key when window opens
-  useEffect(() => {
-    if (isOpen) {
-      setIsFullscreen(true);
-      document.body.style.overflow = 'hidden';
-      const handleKeyDown = (e: KeyboardEvent) => {
-        if (e.key === 'Escape') {
-          onClose();
-        }
-      };
-      window.addEventListener('keydown', handleKeyDown);
-      return () => {
-        document.body.style.overflow = '';
-        window.removeEventListener('keydown', handleKeyDown);
-      };
-    } else {
-      document.body.style.overflow = '';
-    }
-  }, [isOpen, onClose]);
-
-  // Populate when editing or reset when creating
+  // Populate or reset form
   useEffect(() => {
     if (productToEdit) {
       setName(productToEdit.name || '');
       setTagline(productToEdit.tagline || '');
       setCategory(productToEdit.category || 'school');
-      setCategoryLabel(productToEdit.categoryLabel || 'School Uniforms');
+      setCategoryLabel(productToEdit.categoryLabel || 'School & Institutional Uniforms');
       setSku(
         productToEdit.sku ||
           `SKU-GAR-${(productToEdit.category || 'SCH').substring(0, 3).toUpperCase()}-${Math.floor(
@@ -266,6 +223,7 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
       setBasePrice(productToEdit.basePrice || 0);
       setUnitCost(productToEdit.unitCost || Math.round((productToEdit.basePrice || 0) * 0.58));
       setMinOrder(productToEdit.minOrder || 10);
+      setLeadTimeDays(productToEdit.leadTimeDays || 10);
       setStockOnHand(productToEdit.stockOnHand ?? 75);
       setStockReserved(productToEdit.stockReserved ?? 10);
       setLocation(productToEdit.location || 'Warehouse Bay A');
@@ -278,16 +236,15 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
           ? productToEdit.images
           : productToEdit.image
           ? [productToEdit.image]
-          : [PRESET_GARMENT_IMAGES[0].url];
+          : [PRESET_GARMENT_IMAGES[2].url];
       setImages(initialImgs);
-      setImage(initialImgs[0]);
       setActivePreviewIdx(0);
       setDescription(productToEdit.description || '');
       setColors(productToEdit.availableColors || []);
       setSizes(productToEdit.sizes || []);
-      setFabricComp(productToEdit.fabric?.composition || '');
-      setFabricWeight(productToEdit.fabric?.weight || '240 GSM');
-      setFabricFeatures(productToEdit.fabric?.features || []);
+      setFabricComp(productToEdit.fabric?.composition || '65% Polyester, 35% Viscose');
+      setFabricWeight(productToEdit.fabric?.weight || '260 GSM');
+      setFabricFeatures(productToEdit.fabric?.features || ['Double-stitched seams', 'Stain-repellent']);
       setCustomization({
         embroidery: !!productToEdit.customizationOptions?.embroidery,
         screenPrinting: !!productToEdit.customizationOptions?.screenPrinting,
@@ -297,24 +254,23 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
       });
       setIdealFor(productToEdit.idealFor || []);
     } else {
-      // Defaults for brand new product
       setName('');
-      setTagline('');
+      setTagline('Kenyan Manufactured Institutional Apparel');
       setCategory('school');
       setCategoryLabel('3. School & Institutional Uniforms');
       setSku(`SKU-GAR-SCH-${Math.floor(100 + Math.random() * 900)}`);
       setBasePrice(3200);
       setUnitCost(1850);
-      setMinOrder(25);
+      setMinOrder(20);
+      setLeadTimeDays(10);
       setStockOnHand(120);
       setStockReserved(10);
       setLocation('Warehouse Rack A-1');
       setSupplier('Nasisi Internal Tailoring Unit');
       setPublished(true);
-      setBadge('New Item');
+      setBadge('New Platform SKU');
       setPopular(false);
-      setImages([PRESET_GARMENT_IMAGES[0].url]);
-      setImage(PRESET_GARMENT_IMAGES[0].url);
+      setImages([PRESET_GARMENT_IMAGES[2].url]);
       setActivePreviewIdx(0);
       setDescription(
         'Precision engineered uniform garment manufactured in Kenya with reinforced stress points, anti-shrink dyes, and commercial laundering endurance.'
@@ -324,7 +280,7 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
         { name: 'Deep Navy', hex: '#0F172A', bgClass: 'bg-[#0F172A]' },
       ]);
       setSizes(['Youth S', 'Youth M', 'Youth L', 'Adult S', 'Adult M', 'Adult L']);
-      setFabricComp('65% Polyester, 35% Viscose');
+      setFabricComp('65% Polyester, 35% Viscose Suiting');
       setFabricWeight('260 GSM');
       setFabricFeatures([
         'Anti-pill surface finish',
@@ -340,100 +296,77 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
       });
       setIdealFor(['Academic Uniforms', 'School & College Students']);
     }
+    setActiveStep(1);
   }, [productToEdit, isOpen]);
 
-  // Multi-image handlers
+  // Image actions
   const handleAddImage = (url: string) => {
     if (!url || !url.trim()) return;
     const cleanUrl = url.trim();
-    setImages((prev) => {
-      if (prev.includes(cleanUrl)) return prev;
-      const next = [...prev, cleanUrl];
-      return next;
-    });
-    uploadImageToCloud(cleanUrl, 'product_image').catch(() => {});
+    setImages((prev) => (prev.includes(cleanUrl) ? prev : [...prev, cleanUrl]));
     setCustomUrlInput('');
   };
 
   const handleRemoveImage = (index: number) => {
+    if (images.length <= 1) {
+      alert('A product must maintain at least one photo.');
+      return;
+    }
     setImages((prev) => {
-      if (prev.length <= 1) {
-        alert('Each product must have at least 1 image. Please add another image before removing this one.');
-        return prev;
-      }
       const next = prev.filter((_, i) => i !== index);
       if (activePreviewIdx >= next.length) {
         setActivePreviewIdx(Math.max(0, next.length - 1));
       }
-      setImage(next[0]);
       return next;
     });
   };
 
   const handleSetPrimary = (index: number) => {
+    if (index === 0) return;
     setImages((prev) => {
-      if (index === 0 || index >= prev.length) return prev;
-      const target = prev[index];
-      const rest = prev.filter((_, i) => i !== index);
-      const next = [target, ...rest];
-      setImage(target);
-      setActivePreviewIdx(0);
-      return next;
+      const selected = prev[index];
+      const remaining = prev.filter((_, i) => i !== index);
+      return [selected, ...remaining];
     });
+    setActivePreviewIdx(0);
   };
 
-  const handleMultipleFiles = (files: FileList | null) => {
-    if (!files || files.length === 0) return;
-    Array.from(files).forEach(async (file) => {
-      if (!file.type.startsWith('image/')) return;
-      if (file.size > 10 * 1024 * 1024) {
-        alert(`File ${file.name} exceeds 10MB limit.`);
-        return;
-      }
-      try {
-        const cloudUrl = await uploadImageToCloud(file, 'product_image');
-        setImages((prev) => {
-          if (prev.includes(cloudUrl)) return prev;
-          return [...prev, cloudUrl];
-        });
-      } catch {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          if (event.target?.result) {
-            const dataUrl = event.target.result as string;
-            setImages((prev) => {
-              if (prev.includes(dataUrl)) return prev;
-              return [...prev, dataUrl];
-            });
-          }
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-    setUploadedFileName(`${files.length} file(s) synced to cloud gallery`);
-  };
-
-  // Sync category label when category changes
-  const handleCategoryChange = (newCat: UniformCategory) => {
-    setCategory(newCat);
-    const match = CATEGORY_OPTIONS.find((c) => c.id === newCat);
-    if (match) setCategoryLabel(match.label);
-    if (!productToEdit) {
-      setSku(`SKU-GAR-${newCat.substring(0, 3).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`);
+  const handleMultipleFiles = (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) return;
+    const validFiles = Array.from(fileList).filter((f) => f.type.startsWith('image/'));
+    if (validFiles.length === 0) {
+      alert('Please select valid image files (PNG, JPG, WEBP).');
+      return;
     }
+
+    setUploadedFileName(`Uploaded ${validFiles.length} photo(s)`);
+    validFiles.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        if (e.target?.result) {
+          handleAddImage(e.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
+  // Sizing and specs helpers
   const handleAddColor = () => {
     if (!newColorName.trim()) return;
     setColors((prev) => [
       ...prev,
-      { name: newColorName.trim(), hex: newColorHex, bgClass: `bg-[${newColorHex}]` },
+      {
+        name: newColorName.trim(),
+        hex: newColorHex,
+        bgClass: `bg-[${newColorHex}]`,
+      },
     ]);
     setNewColorName('');
   };
 
-  const handleRemoveColor = (idx: number) => {
-    setColors((prev) => prev.filter((_, i) => i !== idx));
+  const handleRemoveColor = (index: number) => {
+    setColors((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleAddSize = () => {
@@ -442,8 +375,12 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
     setNewSizeInput('');
   };
 
-  const handleRemoveSize = (sizeToRemove: string) => {
-    setSizes((prev) => prev.filter((s) => s !== sizeToRemove));
+  const handleRemoveSize = (val: string) => {
+    setSizes((prev) => prev.filter((s) => s !== val));
+  };
+
+  const handleApplySizePreset = (presetSizes: string[]) => {
+    setSizes(presetSizes);
   };
 
   const handleAddFeature = () => {
@@ -466,15 +403,27 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
     setIdealFor((prev) => prev.filter((_, i) => i !== idx));
   };
 
+  const handleCategoryChange = (newCat: UniformCategory) => {
+    setCategory(newCat);
+    const opt = CATEGORY_OPTIONS.find((c) => c.id === newCat);
+    if (opt) setCategoryLabel(opt.label);
+
+    // Auto-update SKU prefix if user hasn't made custom edits
+    const prefix = (newCat || 'GAR').substring(0, 3).toUpperCase();
+    setSku(`SKU-GAR-${prefix}-${Math.floor(100 + Math.random() * 900)}`);
+  };
+
+  // Save product payload
   const handleSave = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!name.trim()) {
-      alert('Please enter a product name');
+      alert('Please enter a product name.');
+      setActiveStep(1);
       return;
     }
 
-    const finalImages = images.length > 0 ? images : [PRESET_GARMENT_IMAGES[0].url];
-    const primaryImage = finalImages[0] || PRESET_GARMENT_IMAGES[0].url;
+    const finalImages = images.length > 0 ? images : [PRESET_GARMENT_IMAGES[2].url];
+    const primaryImage = finalImages[0] || PRESET_GARMENT_IMAGES[2].url;
 
     const payload: UniformProduct = {
       id: productToEdit?.id || `prod-${Date.now()}`,
@@ -483,31 +432,36 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
       category,
       categoryLabel,
       basePrice: Number(basePrice) || 0,
+      unitCost: Number(unitCost) || 0,
       minOrder: Number(minOrder) || 1,
-      availableColors: colors.length > 0 ? colors : [{ name: 'Navy', hex: '#0F172A', bgClass: 'bg-[#0F172A]' }],
+      leadTimeDays: Number(leadTimeDays) || 10,
+      leadTime: `${leadTimeDays || 10} Business Days`,
+      stockOnHand: Number(stockOnHand) || 0,
+      stockReserved: Number(stockReserved) || 0,
+      location: location.trim() || 'Warehouse Main Bay',
+      supplier: supplier.trim() || 'Nasisi Internal Tailoring Unit',
+      published: published !== false,
+      badge: badge.trim() || undefined,
+      popular: !!popular,
+      sku: sku.trim() || `SKU-GAR-${category.toUpperCase()}-101`,
+      image: primaryImage,
+      images: finalImages,
+      availableColors:
+        colors.length > 0
+          ? colors
+          : [{ name: 'Navy', hex: '#0F172A', bgClass: 'bg-[#0F172A]' }],
       sizes: sizes.length > 0 ? sizes : ['Standard'],
       fabric: {
-        composition: fabricComp || '100% Kenyan Manufactured Poly-Blend',
-        weight: fabricWeight || '240 GSM',
+        composition: fabricComp || '65% Polyester, 35% Viscose Suiting',
+        weight: fabricWeight || '260 GSM',
         features: fabricFeatures,
       },
       customizationOptions: {
         ...customization,
         customStitching: true,
       },
-      description: description.trim() || `${name} manufactured with industrial-grade stitching.`,
+      description: description.trim() || `${name} manufactured with industrial-grade tailoring.`,
       idealFor,
-      image: primaryImage,
-      images: finalImages,
-      badge: badge.trim() || undefined,
-      popular: !!popular,
-      published: published !== false,
-      sku: sku.trim() || `SKU-GAR-${category.toUpperCase()}-101`,
-      stockOnHand: Number(stockOnHand) || 0,
-      stockReserved: Number(stockReserved) || 0,
-      unitCost: Number(unitCost) || 0,
-      location: location.trim() || 'Warehouse Main Bay',
-      supplier: supplier.trim() || 'Nasisi Internal Tailoring Unit',
     };
 
     if (productToEdit) {
@@ -519,201 +473,288 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
     onClose();
   };
 
+  const handleSaveRef = useRef(handleSave);
+  handleSaveRef.current = handleSave;
+
+  // Keyboard shortcut Ctrl+S or Cmd+S for fast saving anywhere
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        handleSaveRef.current();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
   if (!isOpen) return null;
+
+  // Estimated gross profit margin
+  const grossMarginKsh = Math.max(0, basePrice - unitCost);
+  const grossMarginPercent = basePrice > 0 ? Math.round((grossMarginKsh / basePrice) * 100) : 0;
+  const totalStockAssetKsh = (stockOnHand || 0) * (basePrice || 0);
+
+  const STEPS_CONFIG: { step: StageStep; label: string; short: string; icon: any }[] = [
+    { step: 1, label: '1. Identity & Category', short: 'Identity', icon: Tag },
+    { step: 2, label: '2. Multi-Angle Photos', short: 'Photos', icon: FileImage },
+    { step: 3, label: '3. Pricing & Logistics', short: 'Pricing', icon: DollarSign },
+    { step: 4, label: '4. Sizing & Fabric Specs', short: 'Specs', icon: Scissors },
+    { step: 5, label: '5. Copy & Target Audience', short: 'Overview', icon: FileText },
+  ];
 
   return (
     <AnimatePresence>
-      <div
-        id="product-creation-modal-overlay"
-        className={`fixed inset-0 z-[99999] overflow-y-auto overscroll-contain ${
-          isFullscreen
-            ? 'w-screen h-screen bg-slate-950 flex flex-col'
-            : 'flex items-center justify-center p-2 sm:p-4 md:p-6 bg-slate-950/80 backdrop-blur-md min-h-screen'
-        }`}
-        role="dialog"
-        aria-modal="true"
-      >
+      <div className="fixed inset-0 z-[100000] overflow-y-auto bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6">
+        {/* WIDE MODAL CONTAINER (max-w-7xl) */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.98, y: 10 }}
+          initial={{ opacity: 0, scale: 0.96, y: 15 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.98, y: 10 }}
-          transition={{ duration: 0.2 }}
-          className={`bg-white text-slate-800 flex flex-col shadow-2xl ${
-            isFullscreen
-              ? 'w-full h-full min-h-screen rounded-none border-0 overflow-hidden'
-              : 'w-full max-w-5xl h-[92vh] max-h-[92vh] rounded-3xl border border-slate-200 overflow-hidden my-auto'
-          }`}
+          exit={{ opacity: 0, scale: 0.96, y: 15 }}
+          className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-7xl max-h-[94vh] flex flex-col overflow-hidden text-slate-800 font-['Plus_Jakarta_Sans',sans-serif]"
         >
-          {/* Modal Header */}
-          <div className="px-4 sm:px-8 py-3 sm:py-3.5 bg-[#06163c] text-white flex items-center justify-between border-b border-blue-950 shrink-0 select-none sticky top-0 z-40">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-400/30 flex items-center justify-center shrink-0">
-                <Package className="w-5 h-5 text-sky-400" />
+          {/* 1. Modal Top Bar */}
+          <div className="px-5 sm:px-6 py-3.5 sm:py-4 bg-[#06163c] text-white flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-blue-950 shrink-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-blue-600/30 border border-blue-400/30 flex items-center justify-center shrink-0">
+                <Package className="w-5 h-5 sm:w-6 sm:h-6 text-sky-400" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-sm sm:text-base md:text-lg font-black font-['Outfit'] tracking-wide">
-                    {productToEdit ? `Edit: ${productToEdit.name}` : 'Create New Garment SKU'}
+                  <h2 className="text-sm sm:text-base md:text-lg font-black font-['Outfit'] tracking-wide truncate">
+                    {productToEdit ? `Edit Garment: ${productToEdit.name}` : 'Create New Garment SKU & Catalog Item'}
                   </h2>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-sky-500/20 text-sky-300 border border-sky-400/30 uppercase tracking-wider">
-                    {isFullscreen ? 'Full Window' : 'Windowed'}
-                  </span>
-                  <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                    Live Storefront Sync
+                  <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-blue-900/60 text-sky-300 border border-blue-700/50">
+                    {sku || 'SKU-PENDING'}
                   </span>
                 </div>
-                <p className="text-xs text-blue-200 mt-0.5 hidden md:block">
-                  Instant real-time sync with storefront catalog, live price engine, and factory inventory.
+                <p className="text-xs text-blue-200/90 truncate hidden xs:block">
+                  Structured multi-step garment creation engine with live inventory & pricing synchronization.
                 </p>
               </div>
             </div>
 
-            {/* Window Controls */}
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Top Quick Actions with Prominent Primary Save Button */}
+            <div className="flex items-center gap-2 sm:gap-2.5 self-stretch sm:self-auto justify-end shrink-0">
+              {/* Layout Switcher: Step-by-step or Wide Full-Form */}
+              <div className="inline-flex p-0.5 bg-blue-950/80 rounded-xl text-xs font-bold border border-blue-900 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setViewLayout('stepper')}
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+                    viewLayout === 'stepper'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-blue-300 hover:text-white'
+                  }`}
+                  title="Navigate step-by-step in ordered sequence"
+                >
+                  <ListOrdered className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline">Guided Order</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewLayout('all')}
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+                    viewLayout === 'all'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-blue-300 hover:text-white'
+                  }`}
+                  title="Display all sections together on a wide canvas"
+                >
+                  <LayoutGrid className="w-3.5 h-3.5" />
+                  <span className="hidden md:inline">Wide Full Form</span>
+                </button>
+              </div>
+
+              {/* PRIMARY PROMINENT TOP SAVE BUTTON */}
               <button
                 type="button"
-                onClick={() => setIsFullscreen(!isFullscreen)}
-                className="p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
-                title={isFullscreen ? 'Switch to Centered Window' : 'Maximize to Full Window'}
+                id="btn-modal-top-save"
+                onClick={() => handleSave()}
+                className="px-3.5 sm:px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:from-emerald-700 active:to-teal-700 text-white text-xs sm:text-sm font-black rounded-xl shadow-[0_4px_16px_rgba(16,185,129,0.35)] hover:shadow-[0_6px_22px_rgba(16,185,129,0.5)] transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer active:scale-95 border border-emerald-400/40 shrink-0"
+                title="Quick Save Garment SKU (Ctrl+S / ⌘S)"
               >
-                {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                <CheckCircle2 className="w-4 h-4 text-emerald-100 shrink-0" />
+                <span className="tracking-wide">
+                  {productToEdit ? 'Save Changes' : 'Save Product'}
+                </span>
+                <span className="hidden lg:inline-block text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-800/80 text-emerald-200 border border-emerald-600/50">
+                  ⌘S
+                </span>
               </button>
+
               <button
                 type="button"
                 onClick={onClose}
-                className="p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer"
-                title="Close Window (Esc)"
+                className="p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-xl transition-colors cursor-pointer shrink-0"
+                title="Close modal"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
           </div>
 
-          {/* Tab Navigation */}
-          <div className="flex border-b border-slate-200 bg-slate-50 px-4 sm:px-8 pt-2.5 gap-2 sm:gap-4 shrink-0 overflow-x-auto select-none sticky top-0 z-30">
-            {[
-              { id: 'details', label: '1. Basic Info & Images', icon: Tag },
-              { id: 'pricing', label: '2. Pricing & Inventory SKU', icon: DollarSign },
-              { id: 'specs', label: '3. Sizes, Colors & Fabric Specs', icon: Scissors },
-            ].map((tab) => {
-              const Icon = tab.icon;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-4 py-2.5 text-xs font-bold rounded-t-xl transition-all flex items-center gap-2 border-b-2 shrink-0 ${
-                    activeTab === tab.id
-                      ? 'bg-white text-[#06163c] border-[#06163c] shadow-xs'
-                      : 'text-slate-500 hover:text-slate-900 border-transparent'
-                  }`}
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{tab.label}</span>
-                </button>
-              );
-            })}
-          </div>
+          {/* 2. Structured Order Navigation Stepper */}
+          {viewLayout === 'stepper' && (
+            <div className="bg-slate-50 border-b border-slate-200 px-4 sm:px-6 py-2.5 overflow-x-auto shrink-0">
+              <div className="flex items-center justify-between gap-2 min-w-[650px]">
+                {STEPS_CONFIG.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = activeStep === item.step;
+                  const isDone = activeStep > item.step;
 
-          {/* Form Body with Smooth Scrollable Content */}
-          <form
-            id="product-edit-form"
-            onSubmit={handleSave}
-            className="flex-1 flex flex-col overflow-hidden min-h-0 bg-slate-50/50"
-          >
-            {/* Scrollable Form Content */}
-            <div
-              id="product-form-scrollable-container"
-              className="flex-1 overflow-y-auto overscroll-contain p-4 sm:p-6 lg:p-8 scroll-smooth touch-pan-y focus:outline-none"
-              tabIndex={0}
-            >
-              <div className="max-w-6xl mx-auto space-y-6">
-                {/* TAB 1: DETAILS */}
-                {activeTab === 'details' && (
-              <div className="space-y-5">
-                {/* Publishing Banner */}
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  return (
+                    <button
+                      key={item.step}
+                      type="button"
+                      onClick={() => setActiveStep(item.step)}
+                      className={`flex-1 py-2 px-3 rounded-xl flex items-center justify-center gap-2 text-xs font-bold transition-all cursor-pointer ${
+                        isActive
+                          ? 'bg-[#06163c] text-white shadow-sm ring-2 ring-blue-500/20'
+                          : isDone
+                          ? 'bg-emerald-50 text-emerald-900 border border-emerald-200 hover:bg-emerald-100'
+                          : 'bg-white border border-slate-200 text-slate-500 hover:text-slate-800'
+                      }`}
+                    >
+                      <span
+                        className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${
+                          isActive
+                            ? 'bg-sky-400 text-[#06163c]'
+                            : isDone
+                            ? 'bg-emerald-600 text-white'
+                            : 'bg-slate-200 text-slate-600'
+                        }`}
+                      >
+                        {isDone ? '✓' : item.step}
+                      </span>
+                      <Icon className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">{item.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {/* 3. Form Content Body */}
+          <form onSubmit={(e) => handleSave(e)} className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-8">
+            {/* STICKY TOP QUICK-SAVE BANNER */}
+            <div className="sticky top-0 z-20 -mx-5 sm:-mx-7 -mt-5 sm:-mt-7 mb-4 px-5 sm:px-7 py-3 bg-white/95 backdrop-blur-md border-b border-slate-200/90 shadow-xs flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-xs font-black text-slate-900 truncate">
+                      {name.trim() || (productToEdit ? productToEdit.name : 'New Garment SKU (Draft)')}
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-blue-50 text-blue-800 border border-blue-200">
+                      {sku || 'SKU-PENDING'}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-500 hidden sm:flex items-center gap-2 mt-0.5">
+                    <span>Category: <strong className="text-slate-700">{categoryLabel}</strong></span>
+                    <span>•</span>
+                    <span>Price: <strong className="text-emerald-700 font-mono">Ksh {Number(basePrice || 0).toLocaleString()}</strong></span>
+                    <span>•</span>
+                    <span>Stock: <strong className="text-blue-900 font-mono">{stockOnHand || 0} pcs</strong></span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2.5 ml-auto shrink-0">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-3 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  id="btn-sticky-top-save-action"
+                  onClick={() => handleSave()}
+                  className="px-4 sm:px-5 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer active:scale-95 border border-emerald-400/40"
+                  title="Save Garment SKU & Sync Instantly (Ctrl+S / ⌘S)"
+                >
+                  <CheckCircle2 className="w-4 h-4 text-emerald-100" />
+                  <span>{productToEdit ? 'Save Changes Now' : 'Save Product Now'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* STAGE 1: IDENTITY & CATEGORY */}
+            {(viewLayout === 'all' || activeStep === 1) && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-[#06163c] text-white flex items-center justify-center text-xs font-black">
+                      1
+                    </span>
+                    <h3 className="font-black text-sm uppercase tracking-wider text-slate-900 font-['Outfit']">
+                      Garment Identity, Classification & SKU Code
+                    </h3>
+                  </div>
+                  <span className="text-[11px] text-slate-500">Essential storefront & catalog taxonomy</span>
+                </div>
+
+                {/* Publishing State & Visibility Ribbon */}
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-blue-50 via-slate-50 to-indigo-50 border border-blue-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3">
-                    <div className={`w-3.5 h-3.5 rounded-full ${published ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                    <div
+                      className={`w-3.5 h-3.5 rounded-full shrink-0 ${
+                        published ? 'bg-emerald-500 ring-4 ring-emerald-200 animate-pulse' : 'bg-slate-400'
+                      }`}
+                    />
                     <div>
                       <span className="text-xs font-bold text-slate-900 block">
-                        Storefront Live Visibility: {published ? 'Published & Active' : 'Draft / Hidden'}
+                        Storefront Status: {published ? '✓ Live & Published' : 'Draft / Factory Internal'}
                       </span>
                       <span className="text-[11px] text-slate-600">
                         {published
-                          ? 'This garment is visible in the public catalog, 3D customizer, and customer quote estimator.'
+                          ? 'Garment is visible in the public catalog, 3D customizer, and quotation estimator.'
                           : 'Hidden from public storefront. Visible only to factory administrators in ERP.'}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2.5 flex-wrap shrink-0">
-                    <button
-                      type="button"
-                      id="published-toggle-btn"
-                      onClick={() => setPublished(!published)}
-                      className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
-                        published
-                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                          : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
-                      }`}
-                      title="Toggle storefront visibility"
-                    >
-                      {published ? '✓ Published (Click to Draft)' : 'Draft (Click to Publish)'}
-                    </button>
-
-                    <button
-                      type="button"
-                      id="save-product-banner-btn"
-                      onClick={() => handleSave()}
-                      className="px-5 py-2.5 rounded-xl text-xs sm:text-sm font-black text-white bg-[#06163c] hover:bg-blue-900 active:scale-95 shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer border border-blue-900/40 shrink-0"
-                      title="Save product and synchronize immediately"
-                    >
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                      <span className="whitespace-nowrap font-bold">
-                        {productToEdit ? 'Save Changes' : 'Save New Product'}
-                      </span>
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPublished(!published)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer ${
+                      published
+                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                        : 'bg-slate-200 hover:bg-slate-300 text-slate-700'
+                    }`}
+                  >
+                    {published ? '✓ Published (Click to Draft)' : 'Draft (Click to Publish)'}
+                  </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                {/* Wide Grid for Name, SKU, Category, and Tagline */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+                  <div className="md:col-span-5">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
                       Garment Name *
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder="e.g. Tailored Academic Blazer"
+                      placeholder="e.g. Tailored Academic School Blazer"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-semibold text-slate-900"
+                      className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold text-slate-900"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                      Tagline / Subtitle
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. Precision structured suiting with crest embroidery"
-                      value={tagline}
-                      onChange={(e) => setTagline(e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                      Platform Category
+                  <div className="md:col-span-4">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
+                      Platform Uniform Category
                     </label>
                     <select
                       value={category}
                       onChange={(e) => handleCategoryChange(e.target.value as UniformCategory)}
-                      className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold text-slate-800"
+                      className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold text-slate-800 cursor-pointer"
                     >
                       {CATEGORY_OPTIONS.map((c) => (
                         <option key={c.id} value={c.id}>
@@ -723,131 +764,114 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                     </select>
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                  <div className="md:col-span-3">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
+                      Garment SKU Code *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. BLZ-NAV-01"
+                      value={sku}
+                      onChange={(e) => setSku(e.target.value.toUpperCase())}
+                      className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono font-bold text-slate-900"
+                    />
+                  </div>
+
+                  <div className="md:col-span-6">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
+                      Garment Tagline / Short Subtitle
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Precision structured suiting with bespoke crest embroidery"
+                      value={tagline}
+                      onChange={(e) => setTagline(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="md:col-span-3">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-1">
                       Ribbon Badge (Optional)
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Best Seller, Anti-Microbial, New"
+                      placeholder="e.g. Best Seller, Anti-Stain, New"
                       value={badge}
                       onChange={(e) => setBadge(e.target.value)}
                       className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     />
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                      Featured / Popular Item
-                    </label>
-                    <div className="flex items-center gap-2 pt-2">
+                  <div className="md:col-span-3 flex flex-col justify-end">
+                    <label className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 flex items-center gap-2 cursor-pointer hover:bg-slate-100 transition-colors">
                       <input
                         type="checkbox"
-                        id="popularCheckbox"
                         checked={popular}
                         onChange={(e) => setPopular(e.target.checked)}
                         className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
                       />
-                      <label htmlFor="popularCheckbox" className="text-xs text-slate-700 font-medium cursor-pointer">
-                        Pin to Featured Showcase
-                      </label>
-                    </div>
+                      <span className="text-xs font-bold text-slate-800">
+                        ⭐ Pin to Featured Showcase
+                      </span>
+                    </label>
                   </div>
                 </div>
+              </div>
+            )}
 
-                {/* Multi-Image Studio: Multi-File Upload, Custom URLs, and Curated Presets */}
-                <div className="space-y-3 pt-2 bg-slate-50/80 p-4 rounded-2xl border border-slate-200">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-200">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider">
-                          Garment Multi-Image Gallery
-                        </label>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#06163c] text-white">
-                          {images.length} {images.length === 1 ? 'Image' : 'Images'}
-                        </span>
-                      </div>
-                      <p className="text-[11px] text-slate-500 mt-0.5">
-                        Add multiple angles (front, back, fabric close-up, on-model). Image #1 is the main storefront cover.
-                      </p>
-                    </div>
-
-                    <div className="inline-flex p-0.5 bg-slate-200/80 rounded-xl text-[11px] font-semibold self-start sm:self-auto">
-                      <button
-                        type="button"
-                        onClick={() => setImageSourceMode('upload')}
-                        className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all ${
-                          imageSourceMode === 'upload'
-                            ? 'bg-white text-[#06163c] shadow-xs font-bold'
-                            : 'text-slate-600 hover:text-slate-900'
-                        }`}
-                      >
-                        <Upload className="w-3.5 h-3.5" />
-                        <span>Upload Files</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setImageSourceMode('url')}
-                        className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all ${
-                          imageSourceMode === 'url'
-                            ? 'bg-white text-[#06163c] shadow-xs font-bold'
-                            : 'text-slate-600 hover:text-slate-900'
-                        }`}
-                      >
-                        <LinkIcon className="w-3.5 h-3.5" />
-                        <span>Add URL</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setImageSourceMode('presets')}
-                        className={`flex items-center gap-1.5 px-3 py-1 rounded-lg transition-all ${
-                          imageSourceMode === 'presets'
-                            ? 'bg-white text-[#06163c] shadow-xs font-bold'
-                            : 'text-slate-600 hover:text-slate-900'
-                        }`}
-                      >
-                        <FileImage className="w-3.5 h-3.5" />
-                        <span>Factory Presets</span>
-                      </button>
-                    </div>
+            {/* STAGE 2: MULTI-ANGLE PHOTO STUDIO (Wide 2-Column Studio) */}
+            {(viewLayout === 'all' || activeStep === 2) && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-[#06163c] text-white flex items-center justify-center text-xs font-black">
+                      2
+                    </span>
+                    <h3 className="font-black text-sm uppercase tracking-wider text-slate-900 font-['Outfit']">
+                      High-Resolution Multi-Angle Photography Studio
+                    </h3>
                   </div>
+                  <span className="text-[11px] text-slate-500">
+                    {images.length} angle(s) loaded • First image is storefront primary cover
+                  </span>
+                </div>
 
-                  {/* Active Preview Showcase & Thumbnail Strip */}
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
-                    {/* Active Selected Image Preview */}
-                    <div className="md:col-span-5 relative bg-slate-900 rounded-2xl overflow-hidden aspect-4/3 flex items-center justify-center border-2 border-slate-200 shadow-inner group">
+                {/* Wide 2-Column Photography Studio Layout */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-slate-50/80 p-5 rounded-3xl border border-slate-200">
+                  {/* Left Column (5 cols): Large Showcase Preview */}
+                  <div className="lg:col-span-5 space-y-3">
+                    <div className="relative bg-slate-950 rounded-2xl overflow-hidden aspect-4/3 flex items-center justify-center border-2 border-slate-200 shadow-inner group">
                       <img
-                        src={images[activePreviewIdx] || images[0] || PRESET_GARMENT_IMAGES[0].url}
+                        src={images[activePreviewIdx] || images[0] || PRESET_GARMENT_IMAGES[2].url}
                         alt={`Garment angle ${activePreviewIdx + 1}`}
                         className="w-full h-full object-cover"
                         referrerPolicy="no-referrer"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = PRESET_GARMENT_IMAGES[0].url;
-                        }}
                       />
 
-                      {/* Cover Badge or Make Cover Action */}
-                      <div className="absolute top-2.5 left-2.5 z-10">
+                      {/* Primary Cover Badge */}
+                      <div className="absolute top-3 left-3 z-10">
                         {activePreviewIdx === 0 ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-emerald-600 text-white shadow-md">
-                            <Star className="w-3 h-3 fill-white" />
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-black bg-emerald-600 text-white shadow-md">
+                            <Star className="w-3.5 h-3.5 fill-white" />
                             Primary Storefront Cover
                           </span>
                         ) : (
                           <button
                             type="button"
                             onClick={() => handleSetPrimary(activePreviewIdx)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold bg-white/95 text-[#06163c] hover:bg-[#06163c] hover:text-white shadow-md transition-all cursor-pointer"
+                            className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-white text-[#06163c] hover:bg-[#06163c] hover:text-white shadow-md transition-all cursor-pointer"
                           >
-                            <Star className="w-3 h-3 text-amber-500" />
+                            <Star className="w-3.5 h-3.5 text-amber-500" />
                             Make Primary Cover
                           </button>
                         )}
                       </div>
 
-                      {/* Counter & Controls */}
-                      <div className="absolute bottom-2.5 left-2.5 right-2.5 flex items-center justify-between text-white text-[11px] font-bold z-10 pointer-events-none">
-                        <span className="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-sm pointer-events-auto">
+                      {/* Controls dock inside preview */}
+                      <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-white text-xs font-bold z-10 pointer-events-none">
+                        <span className="px-2.5 py-1 rounded-md bg-black/60 backdrop-blur-sm pointer-events-auto">
                           Photo {activePreviewIdx + 1} of {images.length}
                         </span>
 
@@ -857,30 +881,32 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                               <button
                                 type="button"
                                 onClick={() =>
-                                  setActivePreviewIdx((prev) => (prev > 0 ? prev - 1 : images.length - 1))
+                                  setActivePreviewIdx((prev) =>
+                                    prev > 0 ? prev - 1 : images.length - 1
+                                  )
                                 }
                                 className="p-1.5 rounded-lg bg-black/60 hover:bg-black/90 text-white backdrop-blur-sm cursor-pointer"
                                 title="Previous photo"
                               >
-                                <ChevronLeft className="w-3.5 h-3.5" />
+                                <ChevronLeft className="w-4 h-4" />
                               </button>
                               <button
                                 type="button"
                                 onClick={() =>
-                                  setActivePreviewIdx((prev) => (prev < images.length - 1 ? prev + 1 : 0))
+                                  setActivePreviewIdx((prev) => (prev + 1) % images.length)
                                 }
                                 className="p-1.5 rounded-lg bg-black/60 hover:bg-black/90 text-white backdrop-blur-sm cursor-pointer"
                                 title="Next photo"
                               >
-                                <ChevronRight className="w-3.5 h-3.5" />
+                                <ChevronRight className="w-4 h-4" />
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleRemoveImage(activePreviewIdx)}
-                                className="p-1.5 rounded-lg bg-red-600/80 hover:bg-red-700 text-white backdrop-blur-sm ml-1 cursor-pointer"
+                                className="p-1.5 rounded-lg bg-rose-600/80 hover:bg-rose-700 text-white backdrop-blur-sm ml-1 cursor-pointer"
                                 title="Delete this angle"
                               >
-                                <Trash2 className="w-3.5 h-3.5" />
+                                <Trash2 className="w-4 h-4" />
                               </button>
                             </>
                           )}
@@ -888,99 +914,181 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                       </div>
                     </div>
 
-                    {/* Right column: Thumbnails strip + Input Source */}
-                    <div className="md:col-span-7 space-y-3">
-                      {/* Thumbnails grid */}
-                      <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-[11px] font-bold text-slate-700 uppercase">
-                            Attached Angles ({images.length})
-                          </span>
-                          <span className="text-[10px] text-slate-500">
-                            Click any to preview or delete
-                          </span>
-                        </div>
+                    <p className="text-[11px] text-slate-500 text-center">
+                      Tip: Multiple angles (Front, Back, Stitching Close-up, Collar) dramatically increase institutional quote requests.
+                    </p>
+                  </div>
 
-                        <div className="flex flex-wrap gap-2 max-h-36 overflow-y-auto p-1 bg-white rounded-xl border border-slate-200">
-                          {images.map((imgUrl, idx) => {
-                            const isCurrent = activePreviewIdx === idx;
-                            const isCover = idx === 0;
-                            return (
-                              <div
-                                key={idx}
-                                className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 cursor-pointer transition-all group shrink-0 ${
-                                  isCurrent
-                                    ? 'border-[#06163c] ring-2 ring-blue-400/40 shadow-md'
-                                    : 'border-slate-200 hover:border-slate-400 opacity-80 hover:opacity-100'
-                                }`}
-                                onClick={() => setActivePreviewIdx(idx)}
-                              >
-                                <img
-                                  src={imgUrl}
-                                  alt={`Thumb ${idx + 1}`}
-                                  className="w-full h-full object-cover"
-                                  referrerPolicy="no-referrer"
-                                  onError={(e) => {
-                                    (e.target as HTMLImageElement).src = PRESET_GARMENT_IMAGES[0].url;
-                                  }}
-                                />
-                                {isCover && (
-                                  <span className="absolute top-1 left-1 px-1 py-0.5 rounded text-[8px] font-extrabold bg-emerald-600 text-white shadow-xs">
-                                    Cover
-                                  </span>
-                                )}
-                                {images.length > 1 && (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleRemoveImage(idx);
-                                    }}
-                                    className="absolute top-1 right-1 p-1 rounded-md bg-black/70 hover:bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                                    title="Remove this image"
-                                  >
-                                    <X className="w-2.5 h-2.5" />
-                                  </button>
-                                )}
-                                <span className="absolute bottom-1 right-1 px-1 rounded text-[8px] font-bold bg-black/60 text-white">
-                                  #{idx + 1}
-                                </span>
-                              </div>
-                            );
-                          })}
-
-                          {/* Quick add trigger button */}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              if (imageSourceMode === 'upload') {
-                                fileInputRef.current?.click();
-                              } else {
-                                setImageSourceMode('upload');
-                                setTimeout(() => fileInputRef.current?.click(), 50);
-                              }
-                            }}
-                            className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#06163c] bg-slate-50 hover:bg-blue-50/50 flex flex-col items-center justify-center text-slate-500 hover:text-[#06163c] transition-colors shrink-0"
-                            title="Add another photo"
-                          >
-                            <Plus className="w-5 h-5 mb-0.5" />
-                            <span className="text-[9px] font-bold">+ Angle</span>
-                          </button>
-                        </div>
+                  {/* Right Column (7 cols): Thumbnails strip + Multi-Source Picker */}
+                  <div className="lg:col-span-7 space-y-4">
+                    {/* Multi-angle Attached Strip */}
+                    <div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                          Attached Angle Thumbnails ({images.length})
+                        </span>
+                        <span className="text-[10px] text-slate-500">
+                          Click to preview • Reorder by setting cover
+                        </span>
                       </div>
 
-                      {/* Source Mode 1: Multi-file Upload */}
+                      <div className="flex flex-wrap gap-2.5 p-2 bg-white rounded-2xl border border-slate-200 max-h-40 overflow-y-auto">
+                        {images.map((imgUrl, idx) => {
+                          const isCurrent = activePreviewIdx === idx;
+                          const isCover = idx === 0;
+
+                          return (
+                            <div
+                              key={idx}
+                              onClick={() => setActivePreviewIdx(idx)}
+                              className={`relative w-20 h-20 rounded-xl overflow-hidden border-2 cursor-pointer transition-all group shrink-0 ${
+                                isCurrent
+                                  ? 'border-[#06163c] ring-2 ring-blue-500/40 shadow-md scale-105'
+                                  : 'border-slate-200 hover:border-slate-400 opacity-85 hover:opacity-100'
+                              }`}
+                            >
+                              <img
+                                src={imgUrl}
+                                alt={`Thumb ${idx + 1}`}
+                                className="w-full h-full object-cover"
+                                referrerPolicy="no-referrer"
+                              />
+                              {isCover && (
+                                <span className="absolute top-1 left-1 px-1.5 py-0.5 rounded text-[8px] font-black bg-emerald-600 text-white shadow-xs">
+                                  Cover
+                                </span>
+                              )}
+                              {images.length > 1 && (
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemoveImage(idx);
+                                  }}
+                                  className="absolute top-1 right-1 p-1 rounded-md bg-black/70 hover:bg-rose-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                  title="Remove photo"
+                                >
+                                  <X className="w-2.5 h-2.5" />
+                                </button>
+                              )}
+                              <span className="absolute bottom-1 right-1 px-1 rounded text-[8px] font-bold bg-black/60 text-white font-mono">
+                                #{idx + 1}
+                              </span>
+                            </div>
+                          );
+                        })}
+
+                        {/* Add Trigger */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (imageSourceMode === 'upload') {
+                              fileInputRef.current?.click();
+                            } else {
+                              setImageSourceMode('upload');
+                              setTimeout(() => fileInputRef.current?.click(), 50);
+                            }
+                          }}
+                          className="w-20 h-20 rounded-xl border-2 border-dashed border-slate-300 hover:border-[#06163c] bg-slate-50 hover:bg-blue-50 flex flex-col items-center justify-center text-slate-500 hover:text-[#06163c] transition-colors shrink-0 cursor-pointer"
+                        >
+                          <Plus className="w-5 h-5 mb-0.5" />
+                          <span className="text-[9px] font-bold">+ Photo</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Source Mode Tabs */}
+                    <div className="space-y-3 pt-2">
+                      <div className="inline-flex p-0.5 bg-slate-200/80 rounded-xl text-xs font-bold">
+                        <button
+                          type="button"
+                          onClick={() => setImageSourceMode('presets')}
+                          className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+                            imageSourceMode === 'presets'
+                              ? 'bg-white text-[#06163c] shadow-xs'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          <FileImage className="w-3.5 h-3.5" />
+                          <span>Factory Curated Library</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setImageSourceMode('upload')}
+                          className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+                            imageSourceMode === 'upload'
+                              ? 'bg-white text-[#06163c] shadow-xs'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          <Upload className="w-3.5 h-3.5" />
+                          <span>Multi-File Upload</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setImageSourceMode('url')}
+                          className={`px-3 py-1.5 rounded-lg flex items-center gap-1.5 transition-all cursor-pointer ${
+                            imageSourceMode === 'url'
+                              ? 'bg-white text-[#06163c] shadow-xs'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          <LinkIcon className="w-3.5 h-3.5" />
+                          <span>Web Asset URL</span>
+                        </button>
+                      </div>
+
+                      {/* Source A: Curated Presets Grid */}
+                      {imageSourceMode === 'presets' && (
+                        <div className="space-y-2">
+                          <p className="text-[11px] text-slate-500">
+                            Click any factory garment photo below to add it as an angle to this product:
+                          </p>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-48 overflow-y-auto p-1 bg-white rounded-2xl border border-slate-200">
+                            {PRESET_GARMENT_IMAGES.map((preset, idx) => {
+                              const alreadyAdded = images.includes(preset.url);
+                              return (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={() => handleAddImage(preset.url)}
+                                  className={`p-1.5 rounded-xl border text-left transition-all flex items-center gap-2 cursor-pointer ${
+                                    alreadyAdded
+                                      ? 'bg-emerald-50 border-emerald-300'
+                                      : 'bg-slate-50 hover:bg-blue-50 border-slate-200'
+                                  }`}
+                                >
+                                  <img
+                                    src={preset.url}
+                                    alt={preset.name}
+                                    className="w-10 h-10 rounded-lg object-cover shrink-0"
+                                    referrerPolicy="no-referrer"
+                                  />
+                                  <div className="min-w-0 flex-1">
+                                    <span className="text-[11px] font-bold text-slate-900 block truncate">
+                                      {preset.name}
+                                    </span>
+                                    <span className="text-[9px] text-slate-500 capitalize truncate block">
+                                      {alreadyAdded ? '✓ Added' : '+ Add Angle'}
+                                    </span>
+                                  </div>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Source B: Multi-File Upload */}
                       {imageSourceMode === 'upload' && (
                         <div className="space-y-2">
                           <input
                             ref={fileInputRef}
                             type="file"
                             multiple
-                            accept="image/png, image/jpeg, image/webp, image/svg+xml, image/gif"
+                            accept="image/*"
                             className="hidden"
-                            onChange={(e) => {
-                              handleMultipleFiles(e.target.files);
-                            }}
+                            onChange={(e) => handleMultipleFiles(e.target.files)}
                           />
 
                           <div
@@ -995,33 +1103,30 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                               handleMultipleFiles(e.dataTransfer.files);
                             }}
                             onClick={() => fileInputRef.current?.click()}
-                            className={`border-2 border-dashed rounded-xl p-3.5 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1 ${
+                            className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all flex flex-col items-center justify-center gap-1.5 ${
                               isImageDragging
                                 ? 'border-[#06163c] bg-blue-100/50 scale-[1.01]'
-                                : 'border-slate-300 hover:border-[#06163c] bg-white hover:bg-blue-50/30'
+                                : 'border-slate-300 hover:border-[#06163c] bg-white hover:bg-blue-50/40'
                             }`}
                           >
-                            <div className="p-1.5 bg-blue-50 rounded-full text-[#06163c]">
-                              <UploadCloud className="w-4 h-4 text-[#06163c]" />
+                            <div className="p-2.5 bg-blue-50 text-[#06163c] rounded-full">
+                              <UploadCloud className="w-6 h-6" />
                             </div>
-                            <div className="text-xs">
-                              <span className="font-bold text-[#06163c]">Upload Multiple Garment Images</span> or drag & drop here
-                            </div>
-                            <p className="text-[10px] text-slate-500">
-                              You can select multiple photos at once (Front, Back, Close-up, Tag). PNG, JPG, WebP up to 10MB each.
+                            <span className="text-xs font-bold text-slate-800">
+                              Choose Multiple Photos or Drag & Drop Here
+                            </span>
+                            <p className="text-[10px] text-slate-500 max-w-sm">
+                              Select front, back, side and fabric close-up images at once. Supports JPG, PNG, WebP.
                             </p>
                           </div>
 
                           {uploadedFileName && (
-                            <div className="flex items-center justify-between px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-900 text-xs">
-                              <div className="flex items-center gap-2 truncate">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                                <span className="font-semibold truncate">{uploadedFileName}</span>
-                              </div>
+                            <div className="flex items-center justify-between px-3 py-2 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-900 text-xs font-bold">
+                              <span>✓ {uploadedFileName}</span>
                               <button
                                 type="button"
                                 onClick={() => setUploadedFileName('')}
-                                className="text-slate-400 hover:text-slate-600 font-bold ml-2"
+                                className="text-slate-400 hover:text-slate-600"
                               >
                                 Dismiss
                               </button>
@@ -1030,116 +1135,79 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                         </div>
                       )}
 
-                      {/* Source Mode 2: Direct Image URL */}
+                      {/* Source C: Direct URL */}
                       {imageSourceMode === 'url' && (
                         <div className="space-y-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex gap-2">
                             <input
                               type="url"
-                              placeholder="Paste high-res image URL (e.g. https://images.unsplash.com/...)"
+                              placeholder="https://example.com/high-res-garment.jpg"
                               value={customUrlInput}
                               onChange={(e) => setCustomUrlInput(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') {
-                                  e.preventDefault();
-                                  handleAddImage(customUrlInput);
-                                }
-                              }}
                               className="flex-1 px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
                             />
                             <button
                               type="button"
                               onClick={() => handleAddImage(customUrlInput)}
                               disabled={!customUrlInput.trim()}
-                              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-[#06163c] text-white hover:bg-blue-900 disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex items-center gap-1"
+                              className="px-4 py-2 rounded-xl text-xs font-bold bg-[#06163c] hover:bg-blue-900 text-white disabled:opacity-50 cursor-pointer"
                             >
-                              <Plus className="w-3.5 h-3.5" />
-                              <span>Add Angle</span>
+                              Add URL
                             </button>
-                          </div>
-                          <p className="text-[10px] text-slate-500">
-                            Enter any image URL to add an additional viewpoint to this product.
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Source Mode 3: Factory Curated Presets */}
-                      {imageSourceMode === 'presets' && (
-                        <div className="space-y-2">
-                          <span className="text-[11px] text-slate-700 block font-bold">
-                            Click to add factory product photography into your gallery:
-                          </span>
-                          <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
-                            {PRESET_GARMENT_IMAGES.map((preset, idx) => {
-                              const alreadyAdded = images.includes(preset.url);
-                              return (
-                                <button
-                                  key={idx}
-                                  type="button"
-                                  onClick={() => handleAddImage(preset.url)}
-                                  className={`px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all flex items-center gap-1.5 ${
-                                    alreadyAdded
-                                      ? 'bg-emerald-100 text-emerald-900 border border-emerald-300 font-bold'
-                                      : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
-                                  }`}
-                                >
-                                  {alreadyAdded ? (
-                                    <Check className="w-3 h-3 text-emerald-600" />
-                                  ) : (
-                                    <Plus className="w-3 h-3 text-slate-400" />
-                                  )}
-                                  <span>{preset.name}</span>
-                                </button>
-                              );
-                            })}
                           </div>
                         </div>
                       )}
                     </div>
                   </div>
                 </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                    Garment Description & Manufacturing Specs
-                  </label>
-                  <textarea
-                    rows={3}
-                    placeholder="Provide a detailed description of the garment cut, tailoring construction, durability, and use cases..."
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                  />
-                </div>
               </div>
             )}
 
-            {/* TAB 2: PRICING & INVENTORY */}
-            {activeTab === 'pricing' && (
-              <div className="space-y-5">
-                <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 flex items-start gap-3">
-                  <Package className="w-5 h-5 text-blue-700 flex-shrink-0 mt-0.5" />
-                  <div className="text-xs text-blue-950">
-                    <span className="font-bold block">Synchronized SKU & ERP Factory Parameters</span>
-                    Pricing and stock counts entered here immediately sync with factory inventory valuation, quotation generators, and live M-Pesa billing.
+            {/* STAGE 3: COMMERCIAL PRICING & LOGISTICS (Wide 4-Column Layout) */}
+            {(viewLayout === 'all' || activeStep === 3) && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-[#06163c] text-white flex items-center justify-center text-xs font-black">
+                      3
+                    </span>
+                    <h3 className="font-black text-sm uppercase tracking-wider text-slate-900 font-['Outfit']">
+                      Commercial Pricing, Production Costing & Stock Logistics
+                    </h3>
+                  </div>
+                  <span className="text-[11px] text-slate-500">Real-time margin & warehouse asset valuation</span>
+                </div>
+
+                {/* Real-Time Commercial Profitability Card */}
+                <div className="p-5 rounded-2xl bg-[#06163c] text-white flex flex-wrap items-center justify-between gap-6 shadow-md border border-blue-950">
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] uppercase tracking-widest text-sky-300 font-black">
+                      Gross Profit Margin Per Unit
+                    </span>
+                    <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-400">
+                      {formatKsh(grossMarginKsh)}{' '}
+                      <span className="text-sm font-bold text-emerald-200">({grossMarginPercent}%)</span>
+                    </div>
+                    <span className="text-[11px] text-slate-300">
+                      Selling Price ({formatKsh(basePrice)}) - Production Cost ({formatKsh(unitCost)})
+                    </span>
+                  </div>
+
+                  <div className="space-y-0.5 sm:text-right">
+                    <span className="text-[10px] uppercase tracking-widest text-sky-300 font-black">
+                      Total Stock Asset Valuation
+                    </span>
+                    <div className="text-xl sm:text-2xl font-black font-mono text-sky-300">
+                      {formatKsh(totalStockAssetKsh)}
+                    </div>
+                    <span className="text-[11px] text-slate-300">
+                      {stockOnHand} units on hand in inventory
+                    </span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                      Garment SKU *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. BLZ-NAV-YM"
-                      value={sku}
-                      onChange={(e) => setSku(e.target.value.toUpperCase())}
-                      className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono font-bold text-slate-900"
-                    />
-                  </div>
-
+                {/* 4-Column Inputs: Financials */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
                       Selling Price (Ksh) *
@@ -1163,13 +1231,13 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                       min="0"
                       value={unitCost}
                       onChange={(e) => setUnitCost(Number(e.target.value))}
-                      className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono font-medium text-slate-700"
+                      className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono text-slate-800"
                     />
                   </div>
 
                   <div>
                     <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                      Min Order Quantity (MOQ)
+                      Minimum Order Qty (MOQ)
                     </label>
                     <input
                       type="number"
@@ -1179,12 +1247,26 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                       className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono"
                     />
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
                     <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                      Stock on Hand (Units)
+                      Production Lead Time (Days)
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={leadTimeDays}
+                      onChange={(e) => setLeadTimeDays(Number(e.target.value))}
+                      className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-mono"
+                    />
+                  </div>
+                </div>
+
+                {/* 4-Column Inputs: Warehouse Logistics */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                      Stock On Hand (Available)
                     </label>
                     <input
                       type="number"
@@ -1214,7 +1296,7 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                     </label>
                     <input
                       type="text"
-                      placeholder="e.g. Warehouse Shelf A3"
+                      placeholder="e.g. Main Warehouse, Bay A"
                       value={location}
                       onChange={(e) => setLocation(e.target.value)}
                       className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -1234,324 +1316,407 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                     />
                   </div>
                 </div>
-
-                {/* Profit Margin Preview Card */}
-                <div className="p-4 rounded-2xl bg-slate-900 text-white flex flex-wrap items-center justify-between gap-4">
-                  <div>
-                    <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block">
-                      Estimated Gross Unit Margin
-                    </span>
-                    <span className="text-xl font-black text-emerald-400 font-mono">
-                      {formatKsh(Math.max(0, basePrice - unitCost))} (
-                      {basePrice > 0 ? Math.round(((basePrice - unitCost) / basePrice) * 100) : 0}%)
-                    </span>
-                  </div>
-
-                  <div className="text-right">
-                    <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block">
-                      Total Warehouse Stock Asset Value
-                    </span>
-                    <span className="text-lg font-black text-sky-300 font-mono">
-                      {formatKsh(stockOnHand * basePrice)}
-                    </span>
-                  </div>
-                </div>
               </div>
             )}
 
-            {/* TAB 3: SIZES, COLORS & FABRIC SPECS */}
-            {activeTab === 'specs' && (
+            {/* STAGE 4: SIZING, COLORS & FABRIC SPECIFICATIONS */}
+            {(viewLayout === 'all' || activeStep === 4) && (
               <div className="space-y-6">
-                {/* Available Color Variants */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-slate-700 uppercase">
-                      Color Swatches & Options
-                    </label>
-                    <span className="text-[11px] text-slate-500">{colors.length} colors configured</span>
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-[#06163c] text-white flex items-center justify-center text-xs font-black">
+                      4
+                    </span>
+                    <h3 className="font-black text-sm uppercase tracking-wider text-slate-900 font-['Outfit']">
+                      Sizing Matrix, Color Swatches & Fabric Specifications
+                    </h3>
                   </div>
+                  <span className="text-[11px] text-slate-500">
+                    {colors.length} color(s) • {sizes.length} size(s)
+                  </span>
+                </div>
 
-                  {/* Active Colors Chips */}
-                  <div className="flex flex-wrap gap-2">
-                    {colors.map((col, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-2 pl-2 pr-1.5 py-1 rounded-xl bg-slate-100 border border-slate-200 text-xs font-semibold"
-                      >
-                        <span
-                          className="w-3.5 h-3.5 rounded-full border border-slate-300 shadow-2xs"
-                          style={{ backgroundColor: col.hex }}
-                        />
-                        <span>{col.name}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveColor(idx)}
-                          className="p-1 hover:text-red-600 rounded-md transition-colors"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                {/* 2-Column Layout for Colors vs Sizing Matrix */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Left Column: Color Swatches */}
+                  <div className="space-y-3 p-5 rounded-2xl bg-slate-50/80 border border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                        Available Color Swatches
+                      </span>
+                      <span className="text-[11px] text-slate-500">{colors.length} active swatches</span>
+                    </div>
 
-                  {/* Add Color Form */}
-                  <div className="flex flex-wrap items-center gap-2 p-3 bg-slate-50 border border-slate-200 rounded-2xl">
-                    <input
-                      type="color"
-                      value={newColorHex}
-                      onChange={(e) => setNewColorHex(e.target.value)}
-                      className="w-8 h-8 rounded-lg cursor-pointer border border-slate-300"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Color name (e.g. Burgundy Red)"
-                      value={newColorName}
-                      onChange={(e) => setNewColorName(e.target.value)}
-                      className="px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none flex-1 min-w-[150px]"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddColor}
-                      className="px-3 py-1.5 bg-[#06163c] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-xs"
-                    >
-                      + Add Color
-                    </button>
-
-                    {/* Quick Presets */}
-                    <div className="w-full flex flex-wrap gap-1 pt-1.5 border-t border-slate-200">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase mr-1">Presets:</span>
-                      {PRESET_COLORS.map((pc, idx) => (
-                        <button
+                    {/* Chips */}
+                    <div className="flex flex-wrap gap-2 min-h-12 p-2 bg-white rounded-xl border border-slate-200">
+                      {colors.map((col, idx) => (
+                        <div
                           key={idx}
-                          type="button"
-                          onClick={() => {
-                            if (!colors.some((c) => c.name === pc.name)) {
-                              setColors((prev) => [...prev, pc]);
-                            }
-                          }}
-                          className="px-2 py-0.5 text-[10px] rounded bg-white border border-slate-200 hover:bg-blue-50 text-slate-600 flex items-center gap-1"
+                          className="flex items-center gap-2 pl-2 pr-1.5 py-1 rounded-lg bg-slate-100 border border-slate-200 text-xs font-semibold"
                         >
-                          <span className="w-2 h-2 rounded-full" style={{ backgroundColor: pc.hex }} />
-                          {pc.name}
-                        </button>
+                          <span
+                            className="w-3.5 h-3.5 rounded-full border border-slate-300 shadow-xs shrink-0"
+                            style={{ backgroundColor: col.hex }}
+                          />
+                          <span className="text-xs">{col.name}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveColor(idx)}
+                            className="p-0.5 hover:text-rose-600 rounded transition-colors"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
                       ))}
+                    </div>
+
+                    {/* Add Custom Color */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <input
+                        type="color"
+                        value={newColorHex}
+                        onChange={(e) => setNewColorHex(e.target.value)}
+                        className="w-9 h-9 rounded-xl cursor-pointer border border-slate-300 p-0.5 bg-white"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Color name (e.g. Maroon Burgundy)"
+                        value={newColorName}
+                        onChange={(e) => setNewColorName(e.target.value)}
+                        className="px-3 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none flex-1 min-w-[140px]"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddColor}
+                        className="px-4 py-2 bg-[#06163c] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer"
+                      >
+                        + Add Color
+                      </button>
+                    </div>
+
+                    {/* Quick Color Presets */}
+                    <div className="pt-2 border-t border-slate-200">
+                      <span className="text-[10px] text-slate-500 font-bold uppercase block mb-1.5">
+                        Quick Preset Swatches:
+                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {PRESET_COLORS.map((pc, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => {
+                              if (!colors.some((c) => c.name === pc.name)) {
+                                setColors((prev) => [...prev, pc]);
+                              }
+                            }}
+                            className="px-2 py-1 text-[10px] rounded-lg bg-white border border-slate-200 hover:bg-blue-50 text-slate-700 flex items-center gap-1 cursor-pointer"
+                          >
+                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: pc.hex }} />
+                            <span>{pc.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Column: Sizing Matrix */}
+                  <div className="space-y-3 p-5 rounded-2xl bg-slate-50/80 border border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800 uppercase tracking-wide">
+                        Available Size Matrix
+                      </span>
+                      <span className="text-[11px] text-slate-500">{sizes.length} active sizes</span>
+                    </div>
+
+                    {/* Active Sizes Chips */}
+                    <div className="flex flex-wrap gap-1.5 min-h-12 p-2 bg-white rounded-xl border border-slate-200">
+                      {sizes.map((s, idx) => (
+                        <span
+                          key={idx}
+                          className="px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 text-blue-950 text-xs font-bold flex items-center gap-1.5"
+                        >
+                          {s}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveSize(s)}
+                            className="hover:text-rose-600 cursor-pointer"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Add Custom Size */}
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="Add custom size (e.g. Size 38R, Age 10-11, 3XL)"
+                        value={newSizeInput}
+                        onChange={(e) => setNewSizeInput(e.target.value)}
+                        className="px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none flex-1"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddSize}
+                        className="px-4 py-2 bg-[#06163c] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer"
+                      >
+                        + Add Size
+                      </button>
+                    </div>
+
+                    {/* Quick Sizing Template Buttons */}
+                    <div className="pt-2 border-t border-slate-200">
+                      <span className="text-[10px] text-slate-500 font-bold uppercase block mb-1.5">
+                        Quick Sizing Templates:
+                      </span>
+                      <div className="flex flex-wrap gap-1.5">
+                        {SIZE_PRESETS.map((preset, idx) => (
+                          <button
+                            key={idx}
+                            type="button"
+                            onClick={() => handleApplySizePreset(preset.sizes)}
+                            className="px-2.5 py-1 text-[10px] font-bold rounded-lg bg-white border border-slate-200 hover:bg-blue-50 hover:border-blue-300 text-slate-700 cursor-pointer transition-colors"
+                          >
+                            {preset.name}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Available Sizes */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-slate-700 uppercase">
-                      Available Size Matrix
-                    </label>
-                    <span className="text-[11px] text-slate-500">{sizes.length} sizes configured</span>
-                  </div>
+                {/* Fabric Specifications & Features */}
+                <div className="p-5 rounded-2xl bg-slate-50/80 border border-slate-200 space-y-4">
+                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wide block">
+                    Fabric Technical Specifications & Durability
+                  </span>
 
-                  <div className="flex flex-wrap gap-1.5">
-                    {sizes.map((s, idx) => (
-                      <span
-                        key={idx}
-                        className="px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 text-blue-900 text-xs font-bold flex items-center gap-1.5"
-                      >
-                        {s}
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveSize(s)}
-                          className="hover:text-red-600"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      placeholder="Add custom size (e.g. Size 38R, Age 10-11, 3XL)"
-                      value={newSizeInput}
-                      onChange={(e) => setNewSizeInput(e.target.value)}
-                      className="px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none flex-1 max-w-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddSize}
-                      className="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow-xs"
-                    >
-                      + Add Size
-                    </button>
-                  </div>
-                </div>
-
-                {/* Fabric Specifications */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                      Fabric Composition
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 65% Polyester, 35% Viscose"
-                      value={fabricComp}
-                      onChange={(e) => setFabricComp(e.target.value)}
-                      className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
-                      Fabric GSM / Weight
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 280 GSM"
-                      value={fabricWeight}
-                      onChange={(e) => setFabricWeight(e.target.value)}
-                      className="w-full px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
-                    />
-                  </div>
-                </div>
-
-                {/* Fabric Features List */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold text-slate-700 uppercase">
-                    Fabric & Garment Features
-                  </label>
-                  <div className="space-y-1.5">
-                    {fabricFeatures.map((feat, idx) => (
-                      <div
-                        key={idx}
-                        className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-800"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Check className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
-                          <span>{feat}</span>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveFeature(idx)}
-                          className="text-slate-400 hover:text-red-600 p-1"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center gap-2 pt-1">
-                    <input
-                      type="text"
-                      placeholder="Add feature (e.g. Anti-shrink, Teflon stain shield)..."
-                      value={newFeatureInput}
-                      onChange={(e) => setNewFeatureInput(e.target.value)}
-                      className="px-3.5 py-2 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none flex-1"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleAddFeature}
-                      className="px-3 py-2 bg-slate-800 hover:bg-slate-900 text-white font-bold text-xs rounded-xl shadow-xs"
-                    >
-                      + Add
-                    </button>
-                  </div>
-                </div>
-
-                {/* Customization Options Checkboxes */}
-                <div className="space-y-2 pt-2 border-t border-slate-200">
-                  <label className="block text-xs font-bold text-slate-700 uppercase">
-                    Supported Branding & Customization Techniques
-                  </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                    {[
-                      { key: 'embroidery', label: 'Tajima Direct Embroidery' },
-                      { key: 'screenPrinting', label: 'Screen Printing' },
-                      { key: 'wovenPatch', label: 'Woven Crest Patches' },
-                      { key: 'reflectiveStripes', label: '3M Reflective Striping' },
-                      { key: 'heatTransfer', label: 'Vinyl Heat Transfer' },
-                    ].map((opt) => (
-                      <label
-                        key={opt.key}
-                        className={`p-2.5 rounded-xl border flex items-center gap-2 text-xs font-medium cursor-pointer transition-all ${
-                          (customization as any)[opt.key]
-                            ? 'bg-blue-50 border-blue-300 text-blue-950 font-bold'
-                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                        }`}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={!!(customization as any)[opt.key]}
-                          onChange={(e) =>
-                            setCustomization((prev) => ({
-                              ...prev,
-                              [opt.key]: e.target.checked,
-                            }))
-                          }
-                          className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
-                        />
-                        <span>{opt.label}</span>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                        Fabric Composition
                       </label>
-                    ))}
+                      <input
+                        type="text"
+                        placeholder="e.g. 65% Polyester, 35% Combed Viscose Suiting"
+                        value={fabricComp}
+                        onChange={(e) => setFabricComp(e.target.value)}
+                        className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 uppercase mb-1">
+                        Fabric GSM / Weight
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 280 GSM"
+                        value={fabricWeight}
+                        onChange={(e) => setFabricWeight(e.target.value)}
+                        className="w-full px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Features tags */}
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-slate-700 uppercase">
+                      Fabric & Durability Features Tags
+                    </label>
+                    <div className="flex flex-wrap gap-2">
+                      {fabricFeatures.map((feat, idx) => (
+                        <span
+                          key={idx}
+                          className="px-3 py-1 rounded-xl bg-white border border-slate-200 text-xs text-slate-800 font-medium flex items-center gap-1.5 shadow-2xs"
+                        >
+                          <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span>{feat}</span>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveFeature(idx)}
+                            className="text-slate-400 hover:text-rose-600 cursor-pointer ml-1"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-1">
+                      <input
+                        type="text"
+                        placeholder="Add feature (e.g. Stain-resistant, Double-stitched seams)..."
+                        value={newFeatureInput}
+                        onChange={(e) => setNewFeatureInput(e.target.value)}
+                        className="px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none flex-1"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddFeature}
+                        className="px-4 py-2 bg-[#06163c] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer"
+                      >
+                        + Add Feature
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Customization Techniques Checkboxes */}
+                  <div className="space-y-2 pt-2 border-t border-slate-200">
+                    <label className="block text-xs font-bold text-slate-700 uppercase">
+                      Supported In-House Branding & Customization Techniques
+                    </label>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                      {[
+                        { key: 'embroidery', label: 'Tajima Direct Embroidery' },
+                        { key: 'screenPrinting', label: 'Screen Printing' },
+                        { key: 'wovenPatch', label: 'Woven Crest Patches' },
+                        { key: 'reflectiveStripes', label: '3M Reflective Striping' },
+                        { key: 'heatTransfer', label: 'Vinyl Heat Transfer' },
+                      ].map((opt) => (
+                        <label
+                          key={opt.key}
+                          className={`p-3 rounded-xl border flex items-center gap-2 text-xs font-medium cursor-pointer transition-all ${
+                            (customization as any)[opt.key]
+                              ? 'bg-blue-50 border-blue-400 text-blue-950 font-bold shadow-2xs'
+                              : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={!!(customization as any)[opt.key]}
+                            onChange={(e) =>
+                              setCustomization((prev) => ({
+                                ...prev,
+                                [opt.key]: e.target.checked,
+                              }))
+                            }
+                            className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 cursor-pointer"
+                          />
+                          <span>{opt.label}</span>
+                        </label>
+                      ))}
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
-              </div>
-            </div>
+            {/* STAGE 5: GARMENT DESCRIPTION & TARGET INSTITUTIONS */}
+            {(viewLayout === 'all' || activeStep === 5) && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-lg bg-[#06163c] text-white flex items-center justify-center text-xs font-black">
+                      5
+                    </span>
+                    <h3 className="font-black text-sm uppercase tracking-wider text-slate-900 font-['Outfit']">
+                      Manufacturing Craftsmanship Description & Target Institutions
+                    </h3>
+                  </div>
+                  <span className="text-[11px] text-slate-500">Storefront customer overview</span>
+                </div>
 
-            {/* Pinned Bottom Actions Bar */}
-            <div className="shrink-0 bg-white border-t border-slate-200 px-5 sm:px-8 py-3.5 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-[0_-4px_16px_rgba(0,0,0,0.05)] z-20 select-none">
-              <div className="flex items-center gap-2 sm:gap-3 text-xs text-slate-600 flex-wrap w-full sm:w-auto">
-                <span className="font-mono font-bold bg-slate-100 text-slate-800 px-2.5 py-1 rounded-md border border-slate-200">
-                  {sku || 'SKU-PENDING'}
-                </span>
-                <span className="font-semibold text-slate-900">
-                  Price: <span className="text-blue-900 font-bold">{formatKsh(basePrice)}</span>
-                </span>
-                <span className="text-slate-300 hidden sm:inline">|</span>
-                <span className="hidden sm:inline">
-                  Cost: <span className="font-semibold text-slate-700">{formatKsh(unitCost)}</span>
-                </span>
-                <span className="text-slate-300 hidden sm:inline">|</span>
-                <span className="font-semibold text-emerald-600 hidden sm:inline">
-                  Margin: {basePrice > 0 ? Math.max(0, Math.round(((basePrice - unitCost) / basePrice) * 100)) : 0}%
-                </span>
-                <span className="text-slate-300">|</span>
-                <span className="text-slate-500">
-                  Stock: <strong className="text-slate-800">{stockOnHand}</strong> pcs
-                </span>
-                <span className="text-slate-300">|</span>
-                <span className={published ? 'text-emerald-700 font-bold' : 'text-slate-500 font-medium'}>
-                  {published ? '● Live Storefront' : '○ Draft Only'}
-                </span>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Detailed Description */}
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-slate-700 uppercase">
+                      Garment Craftsmanship & Catalog Description
+                    </label>
+                    <textarea
+                      rows={5}
+                      placeholder="Detail the garment cut, tailoring construction, durability, stress points, and institutional benefits..."
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none leading-relaxed"
+                    />
+                  </div>
+
+                  {/* Ideal For / Target Audience */}
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-slate-700 uppercase">
+                      Ideal For / Target Institutions & Industries
+                    </label>
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 min-h-[96px] space-y-2">
+                      <div className="flex flex-wrap gap-1.5">
+                        {idealFor.map((item, idx) => (
+                          <span
+                            key={idx}
+                            className="px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-xs font-semibold text-slate-800 flex items-center gap-1.5 shadow-2xs"
+                          >
+                            <span>{item}</span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveIdeal(idx)}
+                              className="text-slate-400 hover:text-rose-600"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-1">
+                        <input
+                          type="text"
+                          placeholder="e.g. Secondary School Prefects, Safari Lodge Staff..."
+                          value={newIdealInput}
+                          onChange={(e) => setNewIdealInput(e.target.value)}
+                          className="px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none flex-1"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddIdeal}
+                          className="px-3.5 py-1.5 bg-[#06163c] hover:bg-blue-900 text-white font-bold text-xs rounded-xl shadow-xs cursor-pointer"
+                        >
+                          + Add Target
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 4. Modal Sticky Bottom Navigation & Actions */}
+            <div className="pt-5 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 sticky bottom-0 bg-white/95 backdrop-blur-md pb-2">
+              {/* Stepper Progress or Info */}
+              <div className="text-xs text-slate-500 flex items-center gap-3">
+                {viewLayout === 'stepper' ? (
+                  <span className="font-bold text-slate-700">
+                    Step {activeStep} of 5: {STEPS_CONFIG[activeStep - 1].label}
+                  </span>
+                ) : (
+                  <span className="font-bold text-slate-700">
+                    Wide Full-Form Overview ({CATEGORY_OPTIONS.find((c) => c.id === category)?.label})
+                  </span>
+                )}
               </div>
 
+              {/* Action Buttons */}
               <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
-                {activeTab !== 'details' && (
+                {/* Previous Step in Stepper Mode */}
+                {viewLayout === 'stepper' && activeStep > 1 && (
                   <button
                     type="button"
-                    onClick={() => {
-                      if (activeTab === 'specs') setActiveTab('pricing');
-                      else if (activeTab === 'pricing') setActiveTab('details');
-                    }}
-                    className="px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer"
+                    onClick={() => setActiveStep((prev) => Math.max(1, prev - 1) as StageStep)}
+                    className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 border border-slate-200 transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
-                    <ChevronLeft className="w-4 h-4" />
+                    <ArrowLeft className="w-3.5 h-3.5" />
                     <span>Previous</span>
                   </button>
                 )}
-                {activeTab !== 'specs' && (
+
+                {/* Next Step in Stepper Mode */}
+                {viewLayout === 'stepper' && activeStep < 5 && (
                   <button
                     type="button"
-                    onClick={() => {
-                      if (activeTab === 'details') setActiveTab('pricing');
-                      else if (activeTab === 'pricing') setActiveTab('specs');
-                    }}
-                    className="px-4 py-2.5 rounded-xl text-xs font-bold text-blue-900 bg-blue-50 hover:bg-blue-100 transition-colors flex items-center gap-1.5 cursor-pointer"
+                    onClick={() => setActiveStep((prev) => Math.min(5, prev + 1) as StageStep)}
+                    className="px-5 py-2.5 rounded-xl text-xs font-bold text-white bg-[#06163c] hover:bg-blue-900 shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
                   >
-                    <span>Next Tab</span>
-                    <ChevronRight className="w-4 h-4" />
+                    <span>Next: {STEPS_CONFIG[activeStep].short}</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 )}
 
@@ -1562,12 +1727,15 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                 >
                   Cancel
                 </button>
+
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl text-xs font-bold text-white bg-[#06163c] hover:bg-blue-900 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  className="px-6 py-2.5 rounded-xl text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                 >
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  <span>{productToEdit ? 'Update Garment & Sync Inventory' : 'Publish New SKU & Save'}</span>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-100" />
+                  <span>
+                    {productToEdit ? 'Update Garment & Sync ERP' : 'Publish Garment SKU & Save'}
+                  </span>
                 </button>
               </div>
             </div>
