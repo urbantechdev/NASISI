@@ -173,7 +173,7 @@ export default function App() {
     // Default starter item to showcase instant quote readiness
     return [
       {
-        id: 'initial-blazer-demo',
+        id: 'initial-blazer',
         product: UNIFORM_PRODUCTS[0],
         selectedColor: 'Royal Blue',
         quantities: { 'Youth M': 20, 'Adult S': 30 },
@@ -302,6 +302,7 @@ export default function App() {
             onOpenTerms={() => navigateToView('terms')}
             onOpenCookies={() => navigateToView('cookies')}
             onOpenLocation={() => navigateToView('location')}
+            onOpenAdminERP={() => navigateToView('erp')}
           />
 
           <main className="flex-1 pt-32 sm:pt-36 md:pt-40 pb-24 lg:pb-0">

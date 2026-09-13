@@ -24,6 +24,7 @@ export const getInitialsAvatar = (name: string, bg: string = '#06163c'): string 
  * Any other Gmail account automatically accesses the customer interface for checkout.
  */
 export const WHITELISTED_ADMIN_EMAILS: string[] = [
+  'naisiaetext@gmail.com',
   'urbaninteriorkenya@gmail.com',
   'veronicanjus@gmail.com',
   'nasisiknitwear.ke@gmail.com',
@@ -37,131 +38,16 @@ export const isWhitelistedAdminEmail = (emailOrStaffId: string | null | undefine
 };
 
 export const ALLOWED_ADMIN_ACCOUNTS_INFO = [
+  { email: 'naisiaetext@gmail.com', label: 'Primary Super Admin' },
   { email: 'urbaninteriorkenya@gmail.com', label: 'Urban Interior Kenya Admin' },
   { email: 'veronicanjus@gmail.com', label: 'Veronica Njus (Managing Director)' },
   { email: 'nasisiknitwear.ke@gmail.com', label: 'Nasisi Knitwear Executive' },
   { email: 'optimumengineeringke@gmail.com', label: 'Optimum Engineering Admin' },
 ];
 
-export const INITIAL_ADMIN_USERS: AdminUser[] = [
-  {
-    id: 'user-urban-interior',
-    name: 'Urban Interior Kenya',
-    email: 'urbaninteriorkenya@gmail.com',
-    role: 'Super Admin',
-    staffId: 'NAS-ADM-URB',
-    phone: '+254 722 419 820',
-    department: 'Executive Administration & Operations',
-    avatar: getInitialsAvatar('Urban Interior Kenya', '#1e3a8a'),
-    bio: 'Enterprise Super Administrator and operational lead for Nasisi Uniforms.',
-    location: 'Nairobi HQ',
-    status: 'active',
-    lastLogin: 'Verified Whitelisted Admin',
-    joinedDate: 'January 2021',
-    twoFactorEnabled: true,
-    notificationPreferences: {
-      emailAlerts: true,
-      smsAlerts: true,
-      newOrders: true,
-      mpesaReconciliations: true,
-    },
-    recentActivities: [
-      {
-        id: 'act-urb-1',
-        action: 'Authorized Enterprise ERP Production & Factory Access',
-        timestamp: 'Just now',
-        category: 'security',
-      },
-    ],
-  },
-  {
-    id: 'user-veronica',
-    name: 'Veronica Njus',
-    email: 'veronicanjus@gmail.com',
-    role: 'Super Admin',
-    staffId: 'NAS-DIR-001',
-    phone: '+254 722 419 820',
-    department: 'Executive Management & Factory Oversight',
-    avatar: getInitialsAvatar('Veronica Njus', '#06163c'),
-    bio: 'Managing Director & Enterprise Executive leading Nasisi Uniforms & Knitwear manufacturing operations across Kenya.',
-    location: 'Nairobi HQ, Uhuru Market Complex, Nairobi',
-    status: 'active',
-    lastLogin: 'Verified Whitelisted Admin',
-    joinedDate: 'January 2021',
-    twoFactorEnabled: true,
-    notificationPreferences: {
-      emailAlerts: true,
-      smsAlerts: true,
-      newOrders: true,
-      mpesaReconciliations: true,
-    },
-    recentActivities: [
-      {
-        id: 'act-1',
-        action: 'Authorized Enterprise ERP Production & Factory Access',
-        timestamp: 'Just now',
-        category: 'security',
-      },
-    ],
-  },
-  {
-    id: 'user-nasisi-knitwear',
-    name: 'Nasisi Knitwear Executive',
-    email: 'nasisiknitwear.ke@gmail.com',
-    role: 'Super Admin',
-    staffId: 'NAS-EXEC-KNIT',
-    phone: '+254 728 102 929',
-    department: 'Factory & Production Oversight',
-    avatar: getInitialsAvatar('Nasisi Knitwear', '#0b2a6f'),
-    bio: 'Executive factory leadership & administrator for Nasisi Uniforms & Knitwear Kenya.',
-    location: 'Nairobi Factory Bay 1',
-    status: 'active',
-    lastLogin: 'Verified Whitelisted Admin',
-    joinedDate: 'January 2021',
-    twoFactorEnabled: true,
-    notificationPreferences: {
-      emailAlerts: true,
-      smsAlerts: true,
-      newOrders: true,
-      mpesaReconciliations: true,
-    },
-    recentActivities: [
-      {
-        id: 'act-knit-1',
-        action: 'Verified Cloud Database & Production Queue',
-        timestamp: 'Just now',
-        category: 'production',
-      },
-    ],
-  },
-  {
-    id: 'user-optimum',
-    name: 'Optimum Engineering Admin',
-    email: 'optimumengineeringke@gmail.com',
-    role: 'Super Admin',
-    staffId: 'NAS-TECH-OPT',
-    phone: '+254 722 419 820',
-    department: 'Operations & ERP Engineering',
-    avatar: getInitialsAvatar('Optimum Engineering', '#0284c7'),
-    bio: 'Systems Engineer & Enterprise Super Administrator for ERP Infrastructure.',
-    location: 'Nairobi HQ',
-    status: 'active',
-    lastLogin: 'Verified Whitelisted Admin',
-    joinedDate: 'January 2022',
-    twoFactorEnabled: true,
-    notificationPreferences: {
-      emailAlerts: true,
-      smsAlerts: true,
-      newOrders: true,
-      mpesaReconciliations: true,
-    },
-    recentActivities: [
-      {
-        id: 'act-opt-1',
-        action: 'Verified Cloud Database & Firebase Authentication Integration',
-        timestamp: 'Just now',
-        category: 'security',
-      },
-    ],
-  },
-];
+/**
+ * Clean initial admin users list. No mock or demo users.
+ * Real staff users are loaded from Firebase Auth when logging in with Google
+ * or created by verified administrators in the ERP User Manager.
+ */
+export const INITIAL_ADMIN_USERS: AdminUser[] = [];

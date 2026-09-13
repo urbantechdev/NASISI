@@ -33,10 +33,12 @@ import {
 
 interface ERPInventoryManagerProps {
   onOpenAddStockModal: () => void;
+  onViewOnStorefront?: (productId: string) => void;
 }
 
 export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
   onOpenAddStockModal,
+  onViewOnStorefront,
 }) => {
   const {
     inventory,
@@ -531,6 +533,16 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
                       {/* Actions */}
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {onViewOnStorefront && (
+                            <button
+                              onClick={() => onViewOnStorefront(prod.id)}
+                              className="p-1.5 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-lg text-xs font-bold cursor-pointer transition-colors"
+                              title="View this Garment live on Storefront"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+
                           <button
                             onClick={() => handleOpenEditProduct(prod)}
                             className="p-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded-lg text-xs font-bold cursor-pointer transition-colors"
@@ -799,6 +811,7 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
         isOpen={isProductModalOpen}
         onClose={() => setIsProductModalOpen(false)}
         productToEdit={editingProduct}
+        onViewOnStorefront={onViewOnStorefront}
       />
     </div>
   );

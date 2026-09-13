@@ -11,6 +11,7 @@ service cloud.firestore {
     function isWhitelistedAdmin() {
       return isSignedIn() && (
         request.auth.token.email in [
+          'naisiaetext@gmail.com',
           'urbaninteriorkenya@gmail.com',
           'veronicanjus@gmail.com',
           'nasisiknitwear.ke@gmail.com',

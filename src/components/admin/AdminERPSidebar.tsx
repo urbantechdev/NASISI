@@ -39,6 +39,7 @@ interface AdminERPSidebarProps {
   onOpenNewDocModal: (type?: 'invoice' | 'quotation' | 'receipt' | 'delivery_note') => void;
   onOpenNewPaymentModal: () => void;
   onOpenNewInventoryModal: () => void;
+  onOpenPostProductModal?: () => void;
   onSwitchToStorefront: () => void;
   isOpenMobile: boolean;
   onCloseMobile: () => void;
@@ -52,6 +53,7 @@ export const AdminERPSidebar: React.FC<AdminERPSidebarProps> = ({
   onOpenNewDocModal,
   onOpenNewPaymentModal,
   onOpenNewInventoryModal,
+  onOpenPostProductModal,
   isOpenMobile,
   onCloseMobile,
   onOpenProfileModal,
@@ -235,6 +237,23 @@ export const AdminERPSidebar: React.FC<AdminERPSidebarProps> = ({
             );
           })}
         </div>
+
+        {/* Quick Post Product Live Button */}
+        {onOpenPostProductModal && (
+          <div className="relative z-10 px-3 py-2 border-t border-[#0d2342]/70">
+            <button
+              type="button"
+              onClick={() => {
+                onOpenPostProductModal();
+                onCloseMobile();
+              }}
+              className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-blue-700 via-indigo-600 to-sky-600 hover:from-blue-600 hover:to-sky-500 text-white text-xs font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer border border-sky-400/30 active:scale-95"
+            >
+              <Sparkles className="w-4 h-4 text-cyan-200" />
+              <span>+ Post Product Live</span>
+            </button>
+          </div>
+        )}
 
         {/* User Profile & Logout Bottom Card */}
         {currentUser && (

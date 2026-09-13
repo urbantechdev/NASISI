@@ -57,7 +57,6 @@ interface ERPContextType {
   login: (emailOrStaffId: string, password?: string) => Promise<{ success: boolean; role: 'admin' | 'customer'; error?: string }>;
   loginWithGoogle: () => Promise<{ success: boolean; role: 'admin' | 'customer'; error?: string }>;
   registerWithEmail: (email: string, password: string, fullName?: string) => Promise<{ success: boolean; role: 'admin' | 'customer'; error?: string }>;
-  quickDemoLogin?: (userId: string) => void;
   logout: () => void;
   updateUserProfile: (updates: Partial<AdminUser>) => void;
   changePassword: (oldPass: string, newPass: string) => { success: boolean; error?: string };
@@ -91,6 +90,8 @@ interface ERPContextType {
   togglePublishProduct: (id: string) => void;
   duplicateProduct: (id: string) => UniformProduct;
   syncAllProductsToInventory: () => void;
+  recentlyPostedProductId: string | null;
+  setRecentlyPostedProductId: (id: string | null) => void;
 
   // Document Operations
   createDocument: (doc: Omit<ERPDocument, 'id' | 'createdAt' | 'updatedAt'>) => ERPDocument;
@@ -215,6 +216,17 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     return INITIAL_SYNCHRONIZED_PRODUCTS;
   });
+
+  const [deletedProductIds, setDeletedProductIds] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem('nasisi_erp_deleted_products');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
+  const [recentlyPostedProductId, setRecentlyPostedProductId] = useState<string | null>(null);
 
   // Inventory items with synced platform garments + raw materials
   const [inventory, setInventory] = useState<ERPInventoryItem[]>(() => {
@@ -395,9 +407,10 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           if (remoteProducts.length > 0) {
             setProducts((prev) => {
               const remoteMap = new Map(remoteProducts.map((p) => [p.id, p]));
-              const merged = [...remoteProducts];
+              const validRemote = remoteProducts.filter((p) => !deletedProductIds.has(p.id));
+              const merged = [...validRemote];
               prev.forEach((localProd) => {
-                if (!remoteMap.has(localProd.id)) {
+                if (!remoteMap.has(localProd.id) && !deletedProductIds.has(localProd.id)) {
                   merged.push(localProd);
                 }
               });
@@ -587,13 +600,14 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const saved = localStorage.getItem(STORAGE_KEYS.ADMIN_USERS);
       if (saved) {
         const parsed: AdminUser[] = JSON.parse(saved);
-        const filtered = parsed
-          .filter((u) => isWhitelistedAdminEmail(u.email))
+        const demoIds = ['user-urban-interior', 'user-veronica', 'user-nasisi-knitwear', 'user-optimum'];
+        const nonDemo = parsed
+          .filter((u) => !demoIds.includes(u.id) && !u.id.startsWith('demo-') && !u.id.startsWith('user-whitelisted-'))
           .map((u) => ({
             ...u,
             avatar: u.avatar && !u.avatar.includes('unsplash') ? u.avatar : getInitialsAvatar(u.name, '#06163c'),
           }));
-        if (filtered.length > 0) return filtered;
+        if (nonDemo.length > 0) return nonDemo;
       }
     } catch {
       // fallback
@@ -606,6 +620,11 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const saved = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
       if (saved) {
         const parsed: AdminUser = JSON.parse(saved);
+        const demoIds = ['user-urban-interior', 'user-veronica', 'user-nasisi-knitwear', 'user-optimum'];
+        if (parsed && (demoIds.includes(parsed.id) || parsed.id?.startsWith('demo-') || parsed.id?.startsWith('user-whitelisted-'))) {
+          localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
+          return null;
+        }
         if (parsed && parsed.avatar && parsed.avatar.includes('unsplash')) {
           parsed.avatar = getInitialsAvatar(parsed.name || 'User', isWhitelistedAdminEmail(parsed.email) ? '#06163c' : '#0284c7');
         }
@@ -628,7 +647,16 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const isWhitelistedAdmin = Boolean(
     currentUser &&
     currentUser.role !== 'Customer' &&
-    (isWhitelistedAdminEmail(currentUser.email) || isWhitelistedAdminEmail(currentUser.staffId))
+    (
+      isWhitelistedAdminEmail(currentUser.email) ||
+      isWhitelistedAdminEmail(currentUser.staffId) ||
+      adminUsers.some(
+        (u) =>
+          u.email.toLowerCase() === currentUser.email?.toLowerCase() &&
+          u.role !== 'Customer' &&
+          u.status === 'active'
+      )
+    )
   );
   const isCustomer = Boolean(currentUser && currentUser.role === 'Customer');
 
@@ -645,8 +673,10 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
-        const email = firebaseUser.email || '';
-        const isWhitelisted = isWhitelistedAdminEmail(email);
+        const email = (firebaseUser.email || '').trim();
+        const isWhitelisted =
+          isWhitelistedAdminEmail(email) ||
+          adminUsers.some((u) => u.email.toLowerCase() === email.toLowerCase() && u.role !== 'Customer');
         const displayName = firebaseUser.displayName || email.split('@')[0] || 'User';
 
         if (isWhitelisted) {
@@ -658,7 +688,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             ? {
                 ...existing,
                 status: 'active',
-                lastLogin: 'Just now (Firebase Verified Admin)',
+                lastLogin: 'Just now (Google Verified Admin)',
                 avatar: firebaseUser.photoURL || existing.avatar || getInitialsAvatar(existing.name, '#06163c'),
               }
             : {
@@ -670,16 +700,22 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 phone: '+254 722 419 820',
                 department: 'Executive Management & Factory Oversight',
                 avatar: firebaseUser.photoURL || getInitialsAvatar(displayName, '#06163c'),
-                bio: 'Authorized enterprise administrator via Firebase Identity.',
+                bio: 'Authorized enterprise administrator via Google Identity.',
                 location: 'Nairobi HQ, Kenya',
                 status: 'active',
-                lastLogin: 'Just now (Firebase Verified Admin)',
+                lastLogin: 'Just now (Google Verified Admin)',
                 joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
                 twoFactorEnabled: true,
               };
 
           setCurrentUser(signedInAdmin);
           localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(signedInAdmin));
+          setAdminUsers((prev) => {
+            const found = prev.some((u) => u.id === signedInAdmin.id || u.email.toLowerCase() === signedInAdmin.email.toLowerCase());
+            return found
+              ? prev.map((u) => (u.id === signedInAdmin.id || u.email.toLowerCase() === signedInAdmin.email.toLowerCase() ? signedInAdmin : u))
+              : [signedInAdmin, ...prev];
+          });
         } else {
           // Regular customer account: access restricted to storefront checkout
           const customerUser: AdminUser = {
@@ -694,7 +730,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             bio: 'Verified customer account for customized uniform quotes and express checkout.',
             location: 'Kenya',
             status: 'active',
-            lastLogin: 'Just now (Firebase Customer)',
+            lastLogin: 'Just now (Google Customer)',
             joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
             twoFactorEnabled: false,
           };
@@ -713,7 +749,9 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const result = await signInWithPopup(auth, googleProvider);
       const user = result.user;
       const email = (user.email || '').trim();
-      const isWhitelisted = isWhitelistedAdminEmail(email);
+      const isWhitelisted =
+        isWhitelistedAdminEmail(email) ||
+        adminUsers.some((u) => u.email.toLowerCase() === email.toLowerCase() && u.role !== 'Customer');
       const displayName = user.displayName || email.split('@')[0] || 'Google User';
 
       if (isWhitelisted) {
@@ -722,7 +760,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         );
         const newActivity: AdminUserActivity = {
           id: `act-${Date.now()}`,
-          action: 'Signed in via Google OAuth Single Sign-On (Whitelisted Admin)',
+          action: 'Signed in via Google OAuth Single Sign-On',
           timestamp: 'Just now',
           category: 'auth',
         };
@@ -774,10 +812,10 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           phone: user.phoneNumber || '+254 700 000 000',
           department: 'Storefront Client Accounts',
           avatar: user.photoURL || getInitialsAvatar(displayName, '#0284c7'),
-          bio: 'Verified customer account for customized uniform quotes and express checkout.',
+          bio: 'Verified customer account for quotation requests and checkout.',
           location: 'Kenya',
           status: 'active',
-          lastLogin: 'Just now (Google Auth Customer)',
+          lastLogin: 'Just now (Google Customer)',
           joinedDate: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
           twoFactorEnabled: false,
         };
@@ -797,6 +835,10 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         errorMsg = 'Sign-in popup was blocked by your browser. Please allow popups for this site or open in a new tab.';
       } else if (err?.code === 'auth/popup-closed-by-user') {
         errorMsg = 'Google sign-in window was closed before completing.';
+      } else if (err?.code === 'auth/cancelled-popup-request') {
+        errorMsg = 'Only one sign-in pop-up window can be open at a time.';
+      } else if (err?.code === 'auth/network-request-failed') {
+        errorMsg = 'Network connection error. Please check your internet connection.';
       }
       return {
         success: false,
@@ -889,9 +931,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // grant authorized enterprise access even if Firebase password isn't provisioned.
       if (isWhitelistedAdminEmail(trimmed)) {
         console.log('Authorized whitelisted admin recognized:', trimmed);
-        const existing =
-          adminUsers.find((u) => u.email.toLowerCase() === trimmed) ||
-          INITIAL_ADMIN_USERS.find((u) => u.email.toLowerCase() === trimmed);
+        const existing = adminUsers.find((u) => u.email.toLowerCase() === trimmed);
 
         const adminUser: AdminUser = existing
           ? {
@@ -1008,8 +1048,6 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const quickDemoLogin = () => {};
-
   const logout = () => {
     try {
       firebaseSignOut(auth).catch(() => {});
@@ -1107,7 +1145,35 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     // 1. Add to Products list
-    setProducts((prev) => [newProduct, ...prev]);
+    setProducts((prev) => [newProduct, ...prev.filter((p) => p.id !== id)]);
+    setRecentlyPostedProductId(id);
+
+    // Remove from deleted set if it was previously there
+    setDeletedProductIds((prev) => {
+      if (prev.has(id)) {
+        const next = new Set(prev);
+        next.delete(id);
+        try {
+          localStorage.setItem('nasisi_erp_deleted_products', JSON.stringify([...next]));
+        } catch {
+          // fallback
+        }
+        return next;
+      }
+      return prev;
+    });
+
+    // Also persist immediately to localStorage
+    try {
+      const existing = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
+      const list = existing ? JSON.parse(existing) : [];
+      localStorage.setItem(
+        STORAGE_KEYS.PRODUCTS,
+        JSON.stringify([newProduct, ...list.filter((p: any) => p.id !== id)])
+      );
+    } catch {
+      // fallback
+    }
 
     // 2. Synchronize to Inventory as a Finished Garment SKU
     setInventory((prev) => {
@@ -1218,9 +1284,30 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteProduct = (id: string) => {
+    setDeletedProductIds((prev) => {
+      const next = new Set(prev);
+      next.add(id);
+      try {
+        localStorage.setItem('nasisi_erp_deleted_products', JSON.stringify([...next]));
+      } catch {
+        // fallback
+      }
+      return next;
+    });
+
     setProducts((prev) => prev.filter((p) => p.id !== id));
     // Also remove corresponding item from inventory
     setInventory((prev) => prev.filter((item) => item.productId !== id && item.id !== `inv-${id}`));
+
+    try {
+      const existing = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
+      if (existing) {
+        const list = JSON.parse(existing);
+        localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(list.filter((p: any) => p.id !== id)));
+      }
+    } catch {
+      // fallback
+    }
 
     // Asynchronously delete from Firestore
     try {
@@ -1998,7 +2085,6 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         login,
         loginWithGoogle,
         registerWithEmail,
-        quickDemoLogin,
         logout,
         updateUserProfile,
         changePassword,
@@ -2021,6 +2107,8 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         togglePublishProduct,
         duplicateProduct,
         syncAllProductsToInventory,
+        recentlyPostedProductId,
+        setRecentlyPostedProductId,
         createDocument,
         updateDocument,
         deleteDocument,

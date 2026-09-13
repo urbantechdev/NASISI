@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { useERP } from '../../context/ERPContext';
 import { NasisiLogo } from '../NasisiLogo';
-import { ALLOWED_ADMIN_ACCOUNTS_INFO } from '../../data/adminUserData';
 
 interface AdminLoginPageProps {
   onBackToStorefront: () => void;
@@ -36,26 +35,6 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState(false);
   const [customerNotice, setCustomerNotice] = useState<string | null>(null);
-
-  const handleFastAdminLogin = async (adminEmail: string) => {
-    setErrorMessage(null);
-    setCustomerNotice(null);
-    setIsLoading(true);
-    setEmailOrId(adminEmail);
-    setPassword('authorized-enterprise-admin');
-    try {
-      const res = await login(adminEmail, 'authorized-enterprise-admin');
-      if (res.success && res.role === 'admin') {
-        setSuccessNotice(true);
-      } else {
-        setErrorMessage(res.error || 'Could not authenticate administrator.');
-        setIsLoading(false);
-      }
-    } catch {
-      setErrorMessage('Failed to sign in. Please try again.');
-      setIsLoading(false);
-    }
-  };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,8 +109,9 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
         setErrorMessage(res.error || 'Google login could not be completed.');
         setIsGoogleLoading(false);
       }
-    } catch {
-      setErrorMessage('Google Authentication was cancelled or blocked by browser.');
+    } catch (err: any) {
+      console.warn('Google Auth Error:', err);
+      setErrorMessage(err?.message || 'Google Authentication was cancelled or blocked by browser.');
       setIsGoogleLoading(false);
     }
   };
@@ -214,40 +194,6 @@ export const AdminLoginPage: React.FC<AdminLoginPageProps> = ({
               </>
             )}
           </motion.button>
-
-          {/* Authorized Admin Quick Access Card */}
-          <div className="mb-3 p-3 rounded-2xl bg-blue-50/70 border border-blue-200/80">
-            <div className="flex items-center justify-between mb-1.5">
-              <div className="flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-[#06163c]">
-                <Shield className="w-3.5 h-3.5 text-blue-700" />
-                <span>Authorized Admin Direct Access</span>
-              </div>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">
-                Whitelisted
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-500 mb-2">
-              Select an authorized management profile for 1-click enterprise sign in:
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-              {ALLOWED_ADMIN_ACCOUNTS_INFO.map((account) => (
-                <button
-                  key={account.email}
-                  type="button"
-                  onClick={() => handleFastAdminLogin(account.email)}
-                  disabled={isLoading || isGoogleLoading}
-                  className="flex flex-col text-left p-2 rounded-xl bg-white hover:bg-blue-100/60 border border-slate-200/90 hover:border-blue-300 transition-all shadow-2xs hover:shadow-xs active:scale-98 cursor-pointer disabled:opacity-50 group"
-                >
-                  <span className="text-xs font-bold text-slate-800 group-hover:text-[#06163c] transition-colors line-clamp-1">
-                    {account.label}
-                  </span>
-                  <span className="text-[10px] text-slate-400 font-mono line-clamp-1">
-                    {account.email}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
 
           {/* Divider */}
           <div className="relative my-4 flex items-center justify-center">

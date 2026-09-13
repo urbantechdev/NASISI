@@ -56,6 +56,7 @@ interface ERPProductEditModalProps {
   isOpen: boolean;
   onClose: () => void;
   productToEdit?: UniformProduct | null;
+  onViewOnStorefront?: (product: UniformProduct) => void;
 }
 
 const CATEGORY_OPTIONS: { id: UniformCategory; label: string }[] = [
@@ -71,6 +72,214 @@ const CATEGORY_OPTIONS: { id: UniformCategory; label: string }[] = [
   { id: 'service', label: 'Service & Corporate (Legacy)' },
   { id: 'workwear', label: 'Workwear & Industrial (Legacy)' },
   { id: 'knitwear', label: 'Custom Knitwear & Fleece (Legacy)' },
+];
+
+export interface GarmentTemplate {
+  name: string;
+  category: UniformCategory;
+  categoryLabel: string;
+  basePrice: number;
+  unitCost: number;
+  minOrder: number;
+  leadTimeDays: number;
+  stockOnHand: number;
+  image: string;
+  tagline: string;
+  colors: { name: string; hex: string; bgClass: string }[];
+  sizes: string[];
+  fabricComp: string;
+  fabricWeight: string;
+  fabricFeatures: string[];
+  description: string;
+  idealFor: string[];
+  customization: {
+    embroidery?: boolean;
+    screenPrinting?: boolean;
+    wovenPatch?: boolean;
+    reflectiveStripes?: boolean;
+    heatTransfer?: boolean;
+  };
+}
+
+const PRODUCT_TEMPLATES: GarmentTemplate[] = [
+  {
+    name: 'High-Vis Industrial Safety Vest',
+    category: 'safety_industrial',
+    categoryLabel: '1. Safety & Industrial Wear',
+    basePrice: 1650,
+    unitCost: 850,
+    minOrder: 10,
+    leadTimeDays: 4,
+    stockOnHand: 150,
+    image: highVisSafetyVestImg,
+    tagline: 'KEBS & OSHA compliant heavy-duty fluorescent vest with 360° prism reflective tapes',
+    colors: [
+      { name: 'Safety Fluorescent Orange', hex: '#EA580C', bgClass: 'bg-[#EA580C]' },
+      { name: 'Safety Fluorescent Yellow', hex: '#CA8A04', bgClass: 'bg-[#CA8A04]' },
+    ],
+    sizes: ['M', 'L', 'XL', '2XL', '3XL'],
+    fabricComp: '100% Breathable Warp-Knit Polyester',
+    fabricWeight: '130 GSM',
+    fabricFeatures: [
+      '3M High-Gloss Micro-Prismatic Reflective Striping',
+      'Heavy-duty front resin zipper',
+      'Dual ID pocket & radio holder',
+      'Anti-fray binding',
+    ],
+    description:
+      'Kenyan manufactured high-visibility executive safety vest engineered for construction foremen, road contractors, mining inspectors, and aviation marshals.',
+    idealFor: ['Civil Engineers', 'Mining & Port Staff', 'Construction Crews', 'Traffic & Security Officers'],
+    customization: { embroidery: true, screenPrinting: true, wovenPatch: true, reflectiveStripes: true, heatTransfer: true },
+  },
+  {
+    name: 'Tailored Academic School Blazer',
+    category: 'school',
+    categoryLabel: '3. School & Institutional Uniforms',
+    basePrice: 3800,
+    unitCost: 2100,
+    minOrder: 20,
+    leadTimeDays: 10,
+    stockOnHand: 80,
+    image: academicSchoolBlazerImg,
+    tagline: 'Structured tailored blazer with reinforced brass button placket and bullion chest crest embroidery',
+    colors: [
+      { name: 'Royal Blue', hex: '#06163c', bgClass: 'bg-[#06163c]' },
+      { name: 'Maroon / Burgundy', hex: '#881337', bgClass: 'bg-[#881337]' },
+      { name: 'Bottle Green', hex: '#14532D', bgClass: 'bg-[#14532D]' },
+    ],
+    sizes: ['Age 8-9', 'Age 10-11', 'Age 12-13', 'Adult S', 'Adult M', 'Adult L'],
+    fabricComp: '65% Poly, 35% Viscose Suiting Twill with Satin Lining',
+    fabricWeight: '270 GSM',
+    fabricFeatures: [
+      'Wrinkle-resistant resin finish',
+      'Interior passport & pen pocket',
+      'Double vented back for ease of movement',
+      'Reinforced shoulder pads',
+    ],
+    description:
+      'Premier academic blazer designed for prestigious Kenyan academies and high schools with custom chest embroidery and gold/silver piping options.',
+    idealFor: ['High School Students', 'School Prefects', 'Choir & Debate Teams', 'Graduation Uniforms'],
+    customization: { embroidery: true, screenPrinting: false, wovenPatch: true, reflectiveStripes: false, heatTransfer: false },
+  },
+  {
+    name: 'Pro-Flex Medical Scrubs Set',
+    category: 'healthcare',
+    categoryLabel: '5. Medical & Healthcare Wear',
+    basePrice: 2850,
+    unitCost: 1400,
+    minOrder: 5,
+    leadTimeDays: 5,
+    stockOnHand: 110,
+    image: medicalScrubSetImg,
+    tagline: '4-way stretch antimicrobial V-neck scrub top and multi-pocket cargo jogger pant',
+    colors: [
+      { name: 'Ceil Sky Blue', hex: '#38BDF8', bgClass: 'bg-[#38BDF8]' },
+      { name: 'Teal Scrub Green', hex: '#0D9488', bgClass: 'bg-[#0D9488]' },
+      { name: 'Deep Navy', hex: '#0F172A', bgClass: 'bg-[#0F172A]' },
+    ],
+    sizes: ['XS', 'S', 'M', 'L', 'XL', '2XL'],
+    fabricComp: '72% Poly, 21% Rayon, 7% Spandex Silky Weave',
+    fabricWeight: '190 GSM',
+    fabricFeatures: [
+      'Fluid-barrier antimicrobial silver-ion weave',
+      'Moisture-wicking cool dry tech',
+      '6 utility cargo pockets',
+      'Reinforced knee stitching',
+    ],
+    description:
+      'Engineered for intensive 12-hour hospital shifts, theatre nurses, surgeons, and dental staff in Kenya with ultra-comfortable stretch fabric.',
+    idealFor: ['Doctors & Surgeons', 'Nurses & Midwives', 'Pharmacy Technicians', 'Dental Clinics'],
+    customization: { embroidery: true, screenPrinting: false, wovenPatch: true, reflectiveStripes: false, heatTransfer: true },
+  },
+  {
+    name: 'Executive Master Chef Jacket',
+    category: 'hospitality',
+    categoryLabel: '6. Hospitality & Restaurant Wear',
+    basePrice: 2950,
+    unitCost: 1550,
+    minOrder: 5,
+    leadTimeDays: 6,
+    stockOnHand: 75,
+    image: chefJacketExecutiveImg,
+    tagline: 'Double-breasted breathable hospitality chef coat with French cuffs and underarm mesh vents',
+    colors: [
+      { name: 'Crisp White', hex: '#F8FAFC', bgClass: 'bg-[#F8FAFC]' },
+      { name: 'Classic Black', hex: '#18181B', bgClass: 'bg-[#18181B]' },
+    ],
+    sizes: ['S', 'M', 'L', 'XL', '2XL', '3XL'],
+    fabricComp: '100% Ring-Spun Egyptian Cotton Twill',
+    fabricWeight: '220 GSM',
+    fabricFeatures: [
+      'Underarm Cool-Vent mesh airflow',
+      'Cloth covered knot buttons',
+      'Reversible front closure',
+      'Thermometer / spoon sleeve pocket',
+    ],
+    description:
+      'Designed for head chefs, culinary colleges, luxury hotel kitchen staff, and bakeries. Resists grease, high heat, and commercial laundering.',
+    idealFor: ['Executive Chefs', 'Pastry Bakers', 'Hotel Kitchen Staff', 'Culinary Institutes'],
+    customization: { embroidery: true, screenPrinting: false, wovenPatch: true, reflectiveStripes: false, heatTransfer: false },
+  },
+  {
+    name: 'Corporate Performance Pique Polo',
+    category: 'corporate',
+    categoryLabel: '2. Corporate Wear',
+    basePrice: 1950,
+    unitCost: 1050,
+    minOrder: 10,
+    leadTimeDays: 5,
+    stockOnHand: 200,
+    image: corporateServicePoloImg,
+    tagline: 'Subtle honeycomb pique weave with anti-curl collar and corporate chest logo embroidery',
+    colors: [
+      { name: 'Royal Blue', hex: '#06163c', bgClass: 'bg-[#06163c]' },
+      { name: 'Crisp White', hex: '#F8FAFC', bgClass: 'bg-[#F8FAFC]' },
+      { name: 'Heather Grey', hex: '#94A3B8', bgClass: 'bg-[#94A3B8]' },
+    ],
+    sizes: ['S', 'M', 'L', 'XL', '2XL', '3XL'],
+    fabricComp: '100% Combed Compact Cotton Pique',
+    fabricWeight: '220 GSM',
+    fabricFeatures: [
+      'Anti-curl knitted collar & cuffs',
+      'Colorfast reactive dye',
+      'Side vents with contrast herringbone tape',
+      'Double-needle hem',
+    ],
+    description:
+      'Smart casual corporate uniforms for banks, tech companies, sales executives, and field staff across Nairobi and East Africa.',
+    idealFor: ['Bank & Telecom Staff', 'Field Service Engineers', 'Retail Store Associates', 'Corporate Events'],
+    customization: { embroidery: true, screenPrinting: true, wovenPatch: true, reflectiveStripes: false, heatTransfer: true },
+  },
+  {
+    name: 'Heavy-Duty Workwear Boiler Suit',
+    category: 'safety_industrial',
+    categoryLabel: '1. Safety & Industrial Wear',
+    basePrice: 3400,
+    unitCost: 1750,
+    minOrder: 10,
+    leadTimeDays: 7,
+    stockOnHand: 90,
+    image: industrialWorkwearOverallImg,
+    tagline: 'Triple-stitched 100% cotton drill overall with heavy-duty two-way brass zipper',
+    colors: [
+      { name: 'Deep Navy', hex: '#0F172A', bgClass: 'bg-[#0F172A]' },
+      { name: 'Royal Blue', hex: '#06163c', bgClass: 'bg-[#06163c]' },
+      { name: 'Safety Fluorescent Orange', hex: '#EA580C', bgClass: 'bg-[#EA580C]' },
+    ],
+    sizes: ['36', '38', '40', '42', '44', '46', '48'],
+    fabricComp: '100% Heavy Cotton Drill',
+    fabricWeight: '310 GSM',
+    fabricFeatures: [
+      'Two-way heavy brass zip',
+      'Elasticated action-back waistband',
+      'Bar-tacked stress points',
+      'Deep tool & rule pockets',
+    ],
+    description:
+      'Built for mechanics, factory operators, oil refineries, and industrial manufacturing plants in Kenya requiring maximum protection and durability.',
+    idealFor: ['Auto Mechanics', 'Factory Machine Operators', 'Electricians & Welders', 'Maintenance Crews'],
+    customization: { embroidery: true, screenPrinting: true, wovenPatch: true, reflectiveStripes: true, heatTransfer: true },
+  },
 ];
 
 const PRESET_GARMENT_IMAGES = [
@@ -129,6 +338,7 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
   isOpen,
   onClose,
   productToEdit,
+  onViewOnStorefront,
 }) => {
   const { addProduct, updateProduct } = useERP();
 
@@ -413,8 +623,39 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
     setSku(`SKU-GAR-${prefix}-${Math.floor(100 + Math.random() * 900)}`);
   };
 
-  // Save product payload
-  const handleSave = (e?: React.FormEvent) => {
+  // 1-Click Fast Template Applicator
+  const handleApplyTemplate = (tmpl: GarmentTemplate) => {
+    setName(tmpl.name);
+    setCategory(tmpl.category);
+    setCategoryLabel(tmpl.categoryLabel);
+    setBasePrice(tmpl.basePrice);
+    setUnitCost(tmpl.unitCost);
+    setMinOrder(tmpl.minOrder);
+    setLeadTimeDays(tmpl.leadTimeDays);
+    setStockOnHand(tmpl.stockOnHand);
+    setTagline(tmpl.tagline);
+    setImages([tmpl.image]);
+    setActivePreviewIdx(0);
+    setColors(tmpl.colors);
+    setSizes(tmpl.sizes);
+    setFabricComp(tmpl.fabricComp);
+    setFabricWeight(tmpl.fabricWeight);
+    setFabricFeatures(tmpl.fabricFeatures);
+    setDescription(tmpl.description);
+    setIdealFor(tmpl.idealFor);
+    setCustomization({
+      embroidery: !!tmpl.customization.embroidery,
+      screenPrinting: !!tmpl.customization.screenPrinting,
+      heatTransfer: !!tmpl.customization.heatTransfer,
+      reflectiveStripes: !!tmpl.customization.reflectiveStripes,
+      wovenPatch: !!tmpl.customization.wovenPatch,
+    });
+    const prefix = tmpl.category.substring(0, 3).toUpperCase();
+    setSku(`SKU-GAR-${prefix}-${Math.floor(100 + Math.random() * 900)}`);
+  };
+
+  // Save product payload with optional direct redirect to live storefront
+  const handleSave = (e?: React.FormEvent, andViewOnStorefront: boolean = false) => {
     if (e) e.preventDefault();
     if (!name.trim()) {
       alert('Please enter a product name.');
@@ -464,25 +705,34 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
       idealFor,
     };
 
+    let resultProduct: UniformProduct;
     if (productToEdit) {
       updateProduct(productToEdit.id, payload);
+      resultProduct = { ...productToEdit, ...payload };
     } else {
-      addProduct(payload);
+      resultProduct = addProduct(payload);
     }
 
     onClose();
+
+    if (andViewOnStorefront && onViewOnStorefront) {
+      onViewOnStorefront(resultProduct);
+    }
   };
 
   const handleSaveRef = useRef(handleSave);
   handleSaveRef.current = handleSave;
 
-  // Keyboard shortcut Ctrl+S or Cmd+S for fast saving anywhere
+  // Keyboard shortcut: Ctrl+S / Cmd+S for save, Ctrl+Enter / Cmd+Enter for save & view live on storefront
   useEffect(() => {
     if (!isOpen) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
         e.preventDefault();
-        handleSaveRef.current();
+        handleSaveRef.current(undefined, true);
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        handleSaveRef.current(undefined, false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -566,6 +816,22 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                   <span className="hidden md:inline">Wide Full Form</span>
                 </button>
               </div>
+
+              {/* PUBLISH & VIEW LIVE STOREFRONT BUTTON */}
+              <button
+                type="button"
+                id="btn-modal-top-save-and-view"
+                onClick={() => handleSave(undefined, true)}
+                className="px-3.5 sm:px-4 py-2 bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 hover:from-blue-500 hover:to-sky-500 text-white text-xs sm:text-sm font-black rounded-xl shadow-[0_4px_16px_rgba(37,99,235,0.35)] hover:shadow-[0_6px_22px_rgba(37,99,235,0.5)] transition-all flex items-center gap-1.5 cursor-pointer active:scale-95 border border-sky-400/40 shrink-0"
+                title="Publish product and view live on customer storefront immediately (Ctrl+Enter / ⌘Enter)"
+              >
+                <Eye className="w-4 h-4 text-sky-200 shrink-0" />
+                <span className="tracking-wide hidden xs:inline">Publish & View Live</span>
+                <span className="tracking-wide xs:hidden">View Live</span>
+                <span className="hidden xl:inline-block text-[10px] font-mono px-1.5 py-0.5 rounded bg-blue-900/80 text-sky-200 border border-blue-500/50">
+                  ⌘↵
+                </span>
+              </button>
 
               {/* PRIMARY PROMINENT TOP SAVE BUTTON */}
               <button
@@ -729,6 +995,43 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                   >
                     {published ? '✓ Published (Click to Draft)' : 'Draft (Click to Publish)'}
                   </button>
+                </div>
+
+                {/* 1-Click Kenyan Garment Fast Templates */}
+                <div className="p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white border border-blue-900/60 shadow-md">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 mb-2.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-md bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+                        <Sparkles className="w-3.5 h-3.5" />
+                      </div>
+                      <span className="text-xs font-black uppercase tracking-wider text-cyan-200">
+                        1-Click Ready-to-Post Garment Templates
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-blue-200/70">
+                      Click any preset below to auto-fill specs, Kenyan pricing & images instantly
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin scrollbar-thumb-white/20">
+                    {PRODUCT_TEMPLATES.map((tmpl) => (
+                      <button
+                        key={tmpl.name}
+                        type="button"
+                        onClick={() => handleApplyTemplate(tmpl)}
+                        className="px-3 py-2 rounded-xl bg-white/10 hover:bg-cyan-500 hover:text-slate-950 border border-white/15 text-xs font-bold whitespace-nowrap transition-all cursor-pointer flex items-center gap-2 shrink-0 group active:scale-95 shadow-xs"
+                      >
+                        <img
+                          src={tmpl.image}
+                          alt={tmpl.name}
+                          className="w-5 h-5 rounded-lg object-cover border border-white/20"
+                        />
+                        <span>{tmpl.name}</span>
+                        <span className="text-[10px] opacity-75 group-hover:opacity-100 font-mono bg-black/20 group-hover:bg-cyan-900/20 px-1.5 py-0.5 rounded">
+                          Ksh {tmpl.basePrice.toLocaleString()}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Wide Grid for Name, SKU, Category, and Tagline */}
@@ -1726,6 +2029,16 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                   className="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
                 >
                   Cancel
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSave(undefined, true)}
+                  className="px-5 py-2.5 rounded-xl text-xs font-black text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 hover:from-blue-500 hover:to-sky-500 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer border border-sky-400/40"
+                  title="Publish product and view live on storefront immediately"
+                >
+                  <Eye className="w-4 h-4 text-sky-200" />
+                  <span>Publish & View Live</span>
                 </button>
 
                 <button

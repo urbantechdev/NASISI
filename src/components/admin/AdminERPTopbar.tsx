@@ -29,6 +29,7 @@ interface AdminERPTopbarProps {
   onOpenNewDocModal: (type?: 'invoice' | 'quotation' | 'receipt' | 'delivery_note') => void;
   onOpenNewPaymentModal: () => void;
   onOpenNewInventoryModal: () => void;
+  onOpenPostProductModal?: () => void;
   onSwitchToStorefront: () => void;
   onOpenProfileModal?: () => void;
   onLogout?: () => void;
@@ -40,6 +41,7 @@ export const AdminERPTopbar: React.FC<AdminERPTopbarProps> = ({
   onOpenNewDocModal,
   onOpenNewPaymentModal,
   onOpenNewInventoryModal,
+  onOpenPostProductModal,
   onSwitchToStorefront,
   onOpenProfileModal,
   onLogout,
@@ -148,6 +150,22 @@ export const AdminERPTopbar: React.FC<AdminERPTopbarProps> = ({
 
           {/* Bottom Tier: Fast-Action CTAs */}
           <div className="flex items-center gap-2 sm:gap-2.5 shrink-0">
+            {/* Quick Post Garment Product Live */}
+            {onOpenPostProductModal && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                type="button"
+                onClick={onOpenPostProductModal}
+                className="inline-flex items-center gap-1.5 px-3 sm:px-3.5 py-2 bg-gradient-to-r from-blue-700 via-indigo-700 to-sky-700 hover:from-blue-600 hover:to-sky-600 text-white text-xs font-bold rounded-xl shadow-xs transition-all cursor-pointer border border-sky-400/30"
+                title="Publish a new Kenyan uniform/garment SKU live to customer storefront catalog"
+              >
+                <Sparkles className="w-4 h-4 text-cyan-300" />
+                <span className="hidden sm:inline">+ Post Product</span>
+                <span className="sm:hidden">+ Product</span>
+              </motion.button>
+            )}
+
             {/* Quick Create Invoice */}
             <motion.button
               whileHover={{ scale: 1.02 }}
