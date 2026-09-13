@@ -11,10 +11,12 @@ service cloud.firestore {
     function isWhitelistedAdmin() {
       return isSignedIn() && (
         request.auth.token.email in [
-          'urbaninteriorkenya@gmail.com',
-          'veronicanjus@gmail.com',
           'nasisiknitwear.ke@gmail.com',
-          'optimumengineeringke@gmail.com'
+          'veronicanjus@gmail.com',
+          'optimumengineeringke@gmail.com',
+          'admin@nasisiuniforms.co.ke',
+          'brian.finance@nasisiuniforms.co.ke',
+          'mercy.prod@nasisiuniforms.co.ke'
         ]
       );
     }
@@ -37,19 +39,6 @@ service cloud.firestore {
     }
 
     match /products/{productId} {
-      allow read: if true;
-      allow write: if isWhitelistedAdmin() || !isSignedIn();
-    }
-
-    // Hero Banner Slides and Global Settings:
-    // Anyone can read storefront slides and settings
-    // Admins can add, update, reorder or delete slides
-    match /hero_slides/{slideId} {
-      allow read: if true;
-      allow write: if isWhitelistedAdmin() || !isSignedIn();
-    }
-
-    match /settings/{settingId} {
       allow read: if true;
       allow write: if isWhitelistedAdmin() || !isSignedIn();
     }
