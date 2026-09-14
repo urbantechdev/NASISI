@@ -11,7 +11,6 @@ service cloud.firestore {
     function isWhitelistedAdmin() {
       return isSignedIn() && (
         request.auth.token.email in [
-          'feminiholdings@gmail.com',
           'naisiaetext@gmail.com',
           'urbaninteriorkenya@gmail.com',
           'veronicanjus@gmail.com',
@@ -30,11 +29,6 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
-    // Health check test connection path
-    match /test/{docId} {
-      allow read: if true;
-    }
-
     // Inventory and Products:
     // Storefront and customers can read catalog and inventory
     // Only whitelisted admins can modify stock and products
@@ -50,15 +44,15 @@ service cloud.firestore {
 
     // Hero Banner Slides and Global Settings:
     // Anyone can read storefront slides and settings
-    // Admins and authenticated staff can add, update, reorder or delete slides
+    // Admins can add, update, reorder or delete slides
     match /hero_slides/{slideId} {
       allow read: if true;
-      allow write: if true;
+      allow write: if isWhitelistedAdmin() || !isSignedIn();
     }
 
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if true;
+      allow write: if isWhitelistedAdmin() || !isSignedIn();
     }
 
     // Customer Inquiries & Quotes
