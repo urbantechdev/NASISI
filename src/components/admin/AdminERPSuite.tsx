@@ -127,7 +127,10 @@ export const AdminERPSuite: React.FC<AdminERPSuiteProps> = ({
       {/* 1. Full-Width Sticky/Fixed Top Header Bar */}
       <AdminERPTopbar
         activeTab={activeTab}
+        isMobileMenuOpen={isMobileMenuOpen}
         onOpenMobileMenu={() => setIsMobileMenuOpen(true)}
+        onToggleMobileMenu={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        onCloseMobileMenu={() => setIsMobileMenuOpen(false)}
         onOpenNewDocModal={handleOpenCreateDoc}
         onOpenNewPaymentModal={() => setIsRecordPaymentModalOpen(true)}
         onOpenNewInventoryModal={() => setIsAddStockModalOpen(true)}

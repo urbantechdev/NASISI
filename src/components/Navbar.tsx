@@ -49,6 +49,7 @@ interface NavbarProps {
   onOpenTerms?: () => void;
   onOpenCookies?: () => void;
   onOpenLocation?: () => void;
+  onOpenAdminERP?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -85,6 +86,10 @@ export const Navbar: React.FC<NavbarProps> = ({
   const cartTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const mockupTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const sizeGuideTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const sizeGuideRef = useRef<HTMLDivElement>(null);
+  const mockupRef = useRef<HTMLDivElement>(null);
+  const cartRef = useRef<HTMLDivElement>(null);
 
   const closeAllHeaderPreviews = () => {
     setServicesDropdownOpen(false);
@@ -166,11 +171,21 @@ export const Navbar: React.FC<NavbarProps> = ({
   // Click outside to close navbar search & desktop popovers
   useEffect(() => {
     const handleOutsideClick = (e: MouseEvent) => {
-      if (navSearchRef.current && !navSearchRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (navSearchRef.current && !navSearchRef.current.contains(target)) {
         setIsNavSearchOpen(false);
       }
-      if (desktopSearchRef.current && !desktopSearchRef.current.contains(e.target as Node)) {
+      if (desktopSearchRef.current && !desktopSearchRef.current.contains(target)) {
         setDesktopSearchOpen(false);
+      }
+      if (sizeGuideRef.current && !sizeGuideRef.current.contains(target)) {
+        setSizeGuidePreviewOpen(false);
+      }
+      if (mockupRef.current && !mockupRef.current.contains(target)) {
+        setMockupPreviewOpen(false);
+      }
+      if (cartRef.current && !cartRef.current.contains(target)) {
+        setCartPreviewOpen(false);
       }
     };
     document.addEventListener('mousedown', handleOutsideClick);
@@ -381,10 +396,10 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="absolute top-0 left-0 w-48 sm:w-64 h-[1px] bg-gradient-to-r from-transparent via-white/40 to-cyan-300/40 shadow-[0_0_6px_#38bdf8] animate-scanner-laser-delayed pointer-events-none" />
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8 relative z-10">
+        <div className="flex items-center justify-between gap-3 w-full relative">
           {/* Logo in White / Brand Light Variant - Enlarged with restored subtitle & slogan */}
-          <a href="#" className="focus:outline-none flex items-center group shrink-0" aria-label="NASISI Home">
+          <a href="#" className="focus:outline-none flex items-center group min-w-0 flex-1 sm:flex-initial" aria-label="NASISI Home">
             <NasisiLogo
               size="xl"
               variant="white"
@@ -739,13 +754,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             </a>
           </nav>
 
-          {/* Action CTAs - Right-Side Icon Buttons with Live Preview Windows (Top of Everything) */}
-          <div className="hidden sm:flex items-center gap-2 sm:gap-2.5 relative z-30">
+          {/* Action CTAs - Right-Side Icon Buttons with Live Preview Windows (Top of Everything, Desktop only) */}
+          <div className={`hidden lg:flex items-center gap-2 sm:gap-2.5 relative ${isAnyHeaderPreviewOpen ? 'z-[100000]' : 'z-30'}`}>
             {/* 0. Desktop Search Toggle & Live Product Search Preview Window */}
-            <div className="relative" ref={desktopSearchRef}>
+            <div className={`relative ${desktopSearchOpen ? 'z-[100000]' : 'z-20'}`} ref={desktopSearchRef}>
               <button
                 type="button"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   const next = !desktopSearchOpen;
                   closeAllHeaderPreviews();
                   setDesktopSearchOpen(next);
@@ -858,15 +874,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* 1. Size Guide Icon Button with Quick Preview Window */}
             <div
-              className="relative"
+              ref={sizeGuideRef}
+              className={`relative ${sizeGuidePreviewOpen ? 'z-[100000]' : 'z-20'}`}
               onMouseEnter={handleSizeGuideMouseEnter}
               onMouseLeave={handleSizeGuideMouseLeave}
             >
               <button
                 id="navbar-size-guide-btn"
-                onClick={() => {
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const next = !sizeGuidePreviewOpen;
                   closeAllHeaderPreviews();
-                  onOpenSizeGuide();
+                  setSizeGuidePreviewOpen(next);
                 }}
                 className={`btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 cursor-pointer ${
                   sizeGuidePreviewOpen
@@ -959,16 +979,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* 2. Live Mockup Studio Icon Button with Quick Preview Window */}
             <div
-              className="relative"
+              ref={mockupRef}
+              className={`relative ${mockupPreviewOpen ? 'z-[100000]' : 'z-20'}`}
               onMouseEnter={handleMockupMouseEnter}
               onMouseLeave={handleMockupMouseLeave}
             >
               <button
                 id="navbar-live-mockup-btn"
                 type="button"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const next = !mockupPreviewOpen;
                   closeAllHeaderPreviews();
-                  onOpenCustomizer();
+                  setMockupPreviewOpen(next);
                 }}
                 className={`btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 cursor-pointer ${
                   mockupPreviewOpen
@@ -1058,15 +1081,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* 3. Quote Request / Cart Icon Button with Quick Preview Window */}
             <div
-              className="relative"
+              ref={cartRef}
+              className={`relative ${cartPreviewOpen ? 'z-[100000]' : 'z-20'}`}
               onMouseEnter={handleCartMouseEnter}
               onMouseLeave={handleCartMouseLeave}
             >
               <button
                 id="navbar-quote-cart-btn"
-                onClick={() => {
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const next = !cartPreviewOpen;
                   closeAllHeaderPreviews();
-                  onOpenQuoteModal();
+                  setCartPreviewOpen(next);
                 }}
                 className={`btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 rounded-xl transition-all duration-200 cursor-pointer ${
                   cartPreviewOpen
@@ -1239,52 +1266,40 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Mobile menu toggle button */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <button
-              id="mobile-quote-btn"
-              onClick={() => {
-                setServicesDropdownOpen(false);
-                setMobileMenuOpen(false);
-                onOpenQuoteModal();
-              }}
-              className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm transition-all active:scale-95 cursor-pointer"
-              aria-label="View Quote Cart"
-            >
-              <ShoppingBag className="w-5 h-5 text-[#06163c]" />
-              {totalItemsCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[18px] h-[18px] px-1 text-[10px] font-black bg-[#06163c] text-white rounded-full border-2 border-white shadow-xs">
-                  {totalItemsCount}
-                </span>
-              )}
-            </button>
-
+          {/* Mobile Header Right: Hamburger ONLY */}
+          <div className="flex items-center lg:hidden shrink-0 ml-auto z-20">
             <button
               id="mobile-menu-toggle-btn"
+              type="button"
               onClick={() => {
-                setServicesDropdownOpen(false);
+                closeAllHeaderPreviews();
                 setMobileMenuOpen(!mobileMenuOpen);
               }}
-              className="relative flex items-center justify-center w-10 h-10 rounded-xl bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm focus:outline-none transition-all active:scale-95 cursor-pointer"
-              aria-label="Toggle Menu"
+              className="btn-shimmer-sweep relative flex items-center justify-center w-10 h-10 shrink-0 rounded-xl bg-white hover:bg-blue-50 text-[#06163c] border border-white/90 shadow-sm focus:outline-none transition-all active:scale-90 cursor-pointer"
+              aria-label={mobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+              title="Navigation Menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5 text-[#06163c]" /> : <Menu className="w-5 h-5 text-[#06163c]" />}
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5 text-[#06163c] transition-transform duration-200" />
+              ) : (
+                <Menu className="w-5 h-5 text-[#06163c] transition-transform duration-200" />
+              )}
             </button>
           </div>
         </div>
 
-        {/* Responsive Hamburger Navigation Drawer (Full screen on mobile, right slide-over on desktop) */}
+        {/* Responsive Hamburger Navigation (Fullscreen on mobile, slide-over on desktop) */}
         {mobileMenuOpen && createPortal(
-          <div className="fixed inset-0 z-[9990] flex justify-end">
+          <div className="fixed inset-0 z-[100000] flex justify-end">
             {/* Backdrop for desktop with blur and click-to-close */}
             <div
-              className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity animate-fadeIn"
+              className="hidden lg:block fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity animate-fadeIn"
               onClick={() => setMobileMenuOpen(false)}
               aria-hidden="true"
             />
 
-            {/* Slide-over Drawer Panel */}
-            <div className="relative z-10 w-full sm:w-[500px] lg:w-[540px] h-full bg-white text-slate-900 flex flex-col shadow-2xl overflow-hidden animate-slide-in-right">
+            {/* Fullscreen on mobile, slide-over on desktop */}
+            <div className="relative z-10 w-full h-full h-[100dvh] lg:w-[540px] bg-white text-slate-900 flex flex-col shadow-2xl overflow-hidden animate-fadeIn lg:animate-slide-in-right">
               {/* Header Bar with logo & close */}
               <div className="relative bg-white/95 backdrop-blur-md shrink-0 shadow-xs border-b border-slate-200/80">
                 <div className="flex items-center justify-between px-5 py-4">
@@ -1384,7 +1399,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                           </div>
                           <div className="text-right shrink-0">
                             <span className="text-xs font-extrabold text-[#06163c] block">
-                              ${p.price.base.toFixed(2)}
+                              Ksh {(p.basePrice || 0).toLocaleString()}
                             </span>
                             <span className="text-[9px] text-emerald-600 font-bold uppercase">Ready</span>
                           </div>
@@ -1703,10 +1718,15 @@ export const Navbar: React.FC<NavbarProps> = ({
       )}
       </div>
 
-      {/* Clean Wave Curve on the Bottom Edge matching the header bar color */}
-      <div className="absolute top-full left-0 right-0 w-full overflow-hidden leading-none pointer-events-none -mt-[1px]">
+      {/* Clean Wave Curve on the Bottom Edge matching the header bar color - hidden when preview windows/dropdowns/menus are open so it never blocks or overlaps preview windows */}
+      <div
+        className={`absolute top-full left-0 right-0 w-full overflow-hidden leading-none pointer-events-none -mt-[1px] transition-all duration-200 z-0 ${
+          isAnyHeaderPreviewOpen || mobileMenuOpen ? 'opacity-0 invisible pointer-events-none' : 'opacity-100'
+        }`}
+        aria-hidden="true"
+      >
         <svg
-          className="w-full h-7 sm:h-9 md:h-10 lg:h-12 block relative z-10"
+          className="w-full h-7 sm:h-9 md:h-10 lg:h-12 block relative z-0 pointer-events-none"
           viewBox="0 0 1440 60"
           fill="none"
           preserveAspectRatio="none"

@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   Menu,
+  X,
   Plus,
   CreditCard,
   Boxes,
@@ -25,7 +26,10 @@ import { NasisiLogo } from '../NasisiLogo';
 
 interface AdminERPTopbarProps {
   activeTab: ERPTabType;
+  isMobileMenuOpen?: boolean;
   onOpenMobileMenu: () => void;
+  onToggleMobileMenu?: () => void;
+  onCloseMobileMenu?: () => void;
   onOpenNewDocModal: (type?: 'invoice' | 'quotation' | 'receipt' | 'delivery_note') => void;
   onOpenNewPaymentModal: () => void;
   onOpenNewInventoryModal: () => void;
@@ -37,7 +41,10 @@ interface AdminERPTopbarProps {
 
 export const AdminERPTopbar: React.FC<AdminERPTopbarProps> = ({
   activeTab,
+  isMobileMenuOpen = false,
   onOpenMobileMenu,
+  onToggleMobileMenu,
+  onCloseMobileMenu,
   onOpenNewDocModal,
   onOpenNewPaymentModal,
   onOpenNewInventoryModal,
@@ -50,42 +57,33 @@ export const AdminERPTopbar: React.FC<AdminERPTopbarProps> = ({
 
   return (
     <header className="fixed top-0 left-0 right-0 h-32 bg-white text-slate-900 z-40 select-none">
-      <div className="w-full h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-6 relative z-10">
-        {/* Left: Vertically Centered Logo & Title Block */}
-        <div className="flex items-center gap-3.5 sm:gap-4 shrink-0">
-          {/* Mobile hamburger menu toggle */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            type="button"
-            onClick={onOpenMobileMenu}
-            className="lg:hidden p-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition-colors border border-slate-200"
-            aria-label="Toggle navigation menu"
-          >
-            <Menu className="w-5 h-5" />
-          </motion.button>
-
+      <div className="w-full h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 sm:gap-6 relative z-10">
+        {/* Left: Vertically Centered Logo & Title Block (Comfortably fit on mobile without touching hamburger) */}
+        <div className="flex items-center gap-3 sm:gap-5 min-w-0 flex-1 sm:flex-initial">
           {/* Logo & Enterprise Title Brand Group */}
-          <div className="flex items-center gap-5">
-            <NasisiLogo size="2xl" className="scale-100 origin-left" />
-            <div className="hidden sm:flex flex-col border-l-2 border-slate-200 pl-4 py-1">
-              <div className="flex items-center gap-2">
-                <span className="text-sm sm:text-base font-black tracking-wider uppercase text-[#06163c] leading-tight font-['Outfit']">
+          <div className="flex items-center gap-2.5 sm:gap-4 min-w-0">
+            <NasisiLogo
+              size="xl"
+              className="scale-85 xs:scale-90 sm:scale-100 origin-left shrink-0 transition-transform"
+            />
+            <div className="flex flex-col border-l-2 border-slate-200 pl-2.5 sm:pl-4 py-0.5 sm:py-1 min-w-0">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="text-xs sm:text-base font-black tracking-wider uppercase text-[#06163c] leading-tight font-['Outfit'] whitespace-nowrap">
                   Enterprise ERP
                 </span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/80">
+                <span className="text-[9px] sm:text-[10px] font-bold px-1.5 sm:px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/80 shrink-0">
                   PRO
                 </span>
               </div>
-              <span className="text-xs font-mono text-emerald-600 font-bold leading-tight mt-0.5">
+              <span className="text-[10px] sm:text-xs font-mono text-emerald-600 font-bold leading-tight mt-0.5 truncate">
                 ● Kenya Tax Engine (Ksh)
               </span>
             </div>
           </div>
         </div>
 
-        {/* Right: Badges and Action Controls (Clean 2-tier stacked right block) */}
-        <div className="flex flex-col items-end justify-center gap-2 sm:gap-2.5 py-1">
+        {/* Right Desktop: Badges and Action Controls (Clean 2-tier stacked right block - Hidden on Mobile) */}
+        <div className="hidden lg:flex flex-col items-end justify-center gap-2 sm:gap-2.5 py-1 shrink-0">
           {/* Top Tier: Customer Storefront Switcher & Profile */}
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Customer Storefront Switcher */}
@@ -206,6 +204,25 @@ export const AdminERPTopbar: React.FC<AdminERPTopbarProps> = ({
               <span>+ Add SKU</span>
             </motion.button>
           </div>
+        </div>
+
+        {/* Mobile Header Right: Hamburger Button ONLY (Aligned on the far right, matching user section Navbar) */}
+        <div className="flex items-center lg:hidden shrink-0 ml-auto z-20">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.92 }}
+            type="button"
+            onClick={onToggleMobileMenu || onOpenMobileMenu}
+            className="btn-shimmer-sweep relative flex items-center justify-center w-11 h-11 shrink-0 rounded-2xl bg-[#06163c] hover:bg-blue-900 text-white shadow-md border border-[#0d2342] focus:outline-none transition-all active:scale-90 cursor-pointer"
+            aria-label={isMobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+            title={isMobileMenuOpen ? 'Close Navigation Menu' : 'Open Navigation Menu'}
+          >
+            {isMobileMenuOpen ? (
+              <X className="w-5 h-5 text-white transition-transform duration-200" />
+            ) : (
+              <Menu className="w-5 h-5 text-white transition-transform duration-200" />
+            )}
+          </motion.button>
         </div>
       </div>
 

@@ -19,6 +19,8 @@ import {
   Image as ImageIcon,
   LogOut,
   User,
+  Store,
+  ArrowUpRight,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { useERP } from '../../context/ERPContext';
@@ -54,6 +56,7 @@ export const AdminERPSidebar: React.FC<AdminERPSidebarProps> = ({
   onOpenNewPaymentModal,
   onOpenNewInventoryModal,
   onOpenPostProductModal,
+  onSwitchToStorefront,
   isOpenMobile,
   onCloseMobile,
   onOpenProfileModal,
@@ -238,9 +241,26 @@ export const AdminERPSidebar: React.FC<AdminERPSidebarProps> = ({
           })}
         </div>
 
-        {/* Quick Post Product Live Button */}
-        {onOpenPostProductModal && (
-          <div className="relative z-10 px-3 py-2 border-t border-[#0d2342]/70">
+        {/* Customer Storefront & Quick Action Live Buttons */}
+        <div className="relative z-10 px-3 py-2 space-y-2 border-t border-[#0d2342]/70">
+          {onSwitchToStorefront && (
+            <button
+              type="button"
+              onClick={() => {
+                onSwitchToStorefront();
+                onCloseMobile();
+              }}
+              className="w-full py-2 px-3 rounded-xl bg-white/5 hover:bg-white/10 text-sky-200 hover:text-white text-xs font-semibold transition-all flex items-center justify-between cursor-pointer border border-white/10 active:scale-95"
+            >
+              <div className="flex items-center gap-2">
+                <Store className="w-4 h-4 text-sky-400" />
+                <span>Customer Storefront</span>
+              </div>
+              <ArrowUpRight className="w-3.5 h-3.5 text-slate-400" />
+            </button>
+          )}
+
+          {onOpenPostProductModal && (
             <button
               type="button"
               onClick={() => {
@@ -252,8 +272,8 @@ export const AdminERPSidebar: React.FC<AdminERPSidebarProps> = ({
               <Sparkles className="w-4 h-4 text-cyan-200" />
               <span>+ Post Product Live</span>
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* User Profile & Logout Bottom Card */}
         {currentUser && (

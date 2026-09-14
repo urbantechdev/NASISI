@@ -41,6 +41,9 @@ import {
   setDoc,
   deleteDoc,
   onSnapshot,
+  getDocs,
+  getDoc,
+  writeBatch,
   handleFirestoreError,
   OperationType,
   testFirestoreConnection,
@@ -90,6 +93,7 @@ interface ERPContextType {
   logout: () => void;
   updateUserProfile: (updates: Partial<AdminUser>) => void;
   changePassword: (oldPass: string, newPass: string) => { success: boolean; error?: string };
+  resetUserPassword: (userId: string, newPass: string) => { success: boolean; error?: string };
   isFirebaseConnected: boolean;
 
   // Data
@@ -163,6 +167,7 @@ interface ERPContextType {
   updateHeroConfig: (updates: Partial<HeroConfig>) => void;
   resetHeroToDefault: () => void;
   syncHeroSlidesFromRepo: () => void;
+  syncHeroToDatabase: () => Promise<{ success: boolean; count: number; error?: string }>;
 }
 
 const ERPContext = createContext<ERPContextType | undefined>(undefined);
@@ -490,13 +495,60 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           });
 
           if (remoteSlides.length > 0) {
-            remoteSlides.sort((a, b) => a.order - b.order);
+            remoteSlides.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
             setHeroSlides(remoteSlides);
+          }
+        } else {
+          // If Firestore hero_slides collection is empty, automatically seed INITIAL_HERO_SLIDES
+          try {
+            const batch = writeBatch(db);
+            INITIAL_HERO_SLIDES.forEach((slide, idx) => {
+              const slideRef = doc(db, 'hero_slides', slide.id);
+              batch.set(slideRef, sanitizeFirestorePayload({ ...slide, order: idx }));
+            });
+            batch.commit().catch((err) => {
+              handleFirestoreError(err, OperationType.WRITE, 'hero_slides/autoSeed');
+            });
+          } catch (e) {
+            console.warn('Firestore hero_slides auto-seed error:', e);
           }
         }
       },
       (error) => {
         handleFirestoreError(error, OperationType.LIST, 'hero_slides');
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  // Real-time Firestore Sync for Hero Configuration Settings
+  useEffect(() => {
+    const configDocRef = doc(db, 'settings', 'hero_config');
+    const unsubscribe = onSnapshot(
+      configDocRef,
+      (snapshot) => {
+        if (snapshot.exists()) {
+          const remoteConfig = snapshot.data() as Partial<HeroConfig>;
+          if (remoteConfig) {
+            setHeroConfig((prev) => ({
+              ...prev,
+              ...remoteConfig,
+            }));
+          }
+        } else {
+          // Auto-seed initial hero configuration to Firestore
+          try {
+            setDoc(configDocRef, sanitizeFirestorePayload(INITIAL_HERO_CONFIG)).catch((err) => {
+              handleFirestoreError(err, OperationType.CREATE, 'settings/hero_config');
+            });
+          } catch (e) {
+            console.warn('Firestore hero_config auto-seed error:', e);
+          }
+        }
+      },
+      (error) => {
+        handleFirestoreError(error, OperationType.READ, 'settings/hero_config');
       }
     );
 
@@ -574,9 +626,9 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     setHeroSlides((prev) => [...prev, newSlide]);
 
-    // Sync to Firestore
+    // Sync to Firestore database
     try {
-      setDoc(doc(db, 'hero_slides', newSlide.id), newSlide).catch((err) => {
+      setDoc(doc(db, 'hero_slides', newSlide.id), sanitizeFirestorePayload(newSlide)).catch((err) => {
         handleFirestoreError(err, OperationType.CREATE, `hero_slides/${newSlide.id}`);
       });
     } catch (e) {
@@ -591,9 +643,9 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       prev.map((slide) => (slide.id === id ? { ...slide, ...updates } : slide))
     );
 
-    // Sync to Firestore
+    // Sync to Firestore database
     try {
-      setDoc(doc(db, 'hero_slides', id), updates, { merge: true }).catch((err) => {
+      setDoc(doc(db, 'hero_slides', id), sanitizeFirestorePayload(updates), { merge: true }).catch((err) => {
         handleFirestoreError(err, OperationType.UPDATE, `hero_slides/${id}`);
       });
     } catch (e) {
@@ -604,7 +656,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const deleteHeroSlide = (id: string) => {
     setHeroSlides((prev) => prev.filter((slide) => slide.id !== id));
 
-    // Sync to Firestore
+    // Sync to Firestore database
     try {
       deleteDoc(doc(db, 'hero_slides', id)).catch((err) => {
         handleFirestoreError(err, OperationType.DELETE, `hero_slides/${id}`);
@@ -614,27 +666,93 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const reorderHeroSlides = (newSlides: HeroSlide[]) => {
-    setHeroSlides(newSlides.map((s, idx) => ({ ...s, order: idx })));
+  const reorderHeroSlides = async (newSlides: HeroSlide[]) => {
+    const ordered = newSlides.map((s, idx) => ({ ...s, order: idx }));
+    setHeroSlides(ordered);
+
+    // Atomically sync reordered slide sequence to Firestore database
+    try {
+      const batch = writeBatch(db);
+      ordered.forEach((s, idx) => {
+        const slideRef = doc(db, 'hero_slides', s.id);
+        batch.set(slideRef, sanitizeFirestorePayload({ ...s, order: idx }), { merge: true });
+      });
+      await batch.commit();
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, 'hero_slides/reorder');
+    }
   };
 
   const updateHeroConfig = (updates: Partial<HeroConfig>) => {
     setHeroConfig((prev) => ({ ...prev, ...updates }));
+
+    // Sync to Firestore database
+    try {
+      setDoc(doc(db, 'settings', 'hero_config'), sanitizeFirestorePayload(updates), { merge: true }).catch((err) => {
+        handleFirestoreError(err, OperationType.UPDATE, 'settings/hero_config');
+      });
+    } catch (e) {
+      console.warn('Firestore updateHeroConfig error:', e);
+    }
   };
 
-  const resetHeroToDefault = () => {
+  const resetHeroToDefault = async () => {
     setHeroSlides(INITIAL_HERO_SLIDES);
     setHeroConfig(INITIAL_HERO_CONFIG);
     safeRemoveItem(STORAGE_KEYS.HERO_SLIDES);
     safeRemoveItem(STORAGE_KEYS.HERO_CONFIG);
+
+    // Sync reset defaults to Firestore
+    try {
+      const batch = writeBatch(db);
+      INITIAL_HERO_SLIDES.forEach((s, idx) => {
+        batch.set(doc(db, 'hero_slides', s.id), sanitizeFirestorePayload({ ...s, order: idx }));
+      });
+      batch.set(doc(db, 'settings', 'hero_config'), sanitizeFirestorePayload(INITIAL_HERO_CONFIG), { merge: true });
+      await batch.commit();
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, 'hero_slides/reset');
+    }
   };
 
-  const syncHeroSlidesFromRepo = () => {
+  const syncHeroSlidesFromRepo = async () => {
     setHeroSlides(INITIAL_HERO_SLIDES);
     setHeroConfig(INITIAL_HERO_CONFIG);
     safeSetItem(STORAGE_KEYS.HERO_SLIDES, JSON.stringify(INITIAL_HERO_SLIDES));
     safeSetItem(STORAGE_KEYS.HERO_CONFIG, JSON.stringify(INITIAL_HERO_CONFIG));
     safeSetItem('nasisi_hero_repo_sync_v4', 'true');
+
+    // Sync to Firestore
+    try {
+      const batch = writeBatch(db);
+      INITIAL_HERO_SLIDES.forEach((s, idx) => {
+        batch.set(doc(db, 'hero_slides', s.id), sanitizeFirestorePayload({ ...s, order: idx }));
+      });
+      batch.set(doc(db, 'settings', 'hero_config'), sanitizeFirestorePayload(INITIAL_HERO_CONFIG), { merge: true });
+      await batch.commit();
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, 'hero_slides/syncRepo');
+    }
+  };
+
+  /**
+   * Explicitly pushes all current hero slides and banner configuration to the Firestore database.
+   * Ensures production storefront and all client instances sync immediately.
+   */
+  const syncHeroToDatabase = async (): Promise<{ success: boolean; count: number; error?: string }> => {
+    try {
+      const batch = writeBatch(db);
+      heroSlides.forEach((slide, idx) => {
+        const slideRef = doc(db, 'hero_slides', slide.id);
+        batch.set(slideRef, sanitizeFirestorePayload({ ...slide, order: idx }), { merge: true });
+      });
+      batch.set(doc(db, 'settings', 'hero_config'), sanitizeFirestorePayload(heroConfig), { merge: true });
+      await batch.commit();
+      return { success: true, count: heroSlides.length };
+    } catch (err: any) {
+      handleFirestoreError(err, OperationType.WRITE, 'hero_slides/syncHeroToDatabase');
+      return { success: false, count: 0, error: err?.message || 'Database synchronization error.' };
+    }
   };
 
   // =========================================================================
@@ -1138,6 +1256,22 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       recentActivities: [newActivity, ...(currentUser.recentActivities || []).slice(0, 9)],
     });
 
+    return { success: true };
+  };
+
+  const resetUserPassword = (userId: string, newPass: string) => {
+    if (!newPass || newPass.trim().length < 4) {
+      return { success: false, error: 'Password must be at least 4 characters long.' };
+    }
+    let storedPasswords: Record<string, string> = {};
+    try {
+      const saved = safeGetItem(STORAGE_KEYS.PASSWORDS);
+      if (saved) storedPasswords = JSON.parse(saved);
+    } catch {
+      // fallback
+    }
+    storedPasswords[userId] = newPass.trim();
+    safeSetItem(STORAGE_KEYS.PASSWORDS, JSON.stringify(storedPasswords));
     return { success: true };
   };
 
@@ -2085,6 +2219,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         logout,
         updateUserProfile,
         changePassword,
+        resetUserPassword,
         isFirebaseConnected,
         addHeroSlide,
         updateHeroSlide,
@@ -2093,6 +2228,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateHeroConfig,
         resetHeroToDefault,
         syncHeroSlidesFromRepo,
+        syncHeroToDatabase,
         raiseInquiryTicket,
         updateInquiryTicket,
         deleteInquiryTicket,

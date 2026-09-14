@@ -64,7 +64,7 @@ export const ERPUserModal: React.FC<ERPUserModalProps> = ({
   onClose,
   userToEdit,
 }) => {
-  const { addAdminUser, updateAdminUser, adminUsers, uploadImageToCloud } = useERP();
+  const { addAdminUser, updateAdminUser, resetUserPassword, adminUsers, uploadImageToCloud } = useERP();
 
   const isEditing = Boolean(userToEdit);
 
@@ -242,7 +242,7 @@ export const ERPUserModal: React.FC<ERPUserModalProps> = ({
 
       // If a new password was typed in edit mode, reset it
       if (formData.password && formData.password.trim().length >= 4) {
-        useERP().resetUserPassword(userToEdit.id, formData.password.trim());
+        resetUserPassword(userToEdit.id, formData.password.trim());
       }
 
       setSuccessMessage('Staff profile updated successfully.');

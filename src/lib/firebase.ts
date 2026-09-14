@@ -17,7 +17,9 @@ import {
   deleteDoc,
   onSnapshot,
   getDocs,
+  getDoc,
   getDocFromServer,
+  writeBatch,
   limit,
   query,
 } from 'firebase/firestore';
@@ -70,5 +72,8 @@ export {
   setDoc,
   deleteDoc,
   onSnapshot,
+  getDocs,
+  getDoc,
+  writeBatch,
 };
 export type { FirebaseUser };

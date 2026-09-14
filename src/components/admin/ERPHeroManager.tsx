@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useERP } from '../../context/ERPContext';
 import { HeroSlide, HeroConfig } from '../../types';
 import { PRESET_HERO_IMAGES, PresetHeroImage } from '../../data/heroData';
@@ -41,8 +41,13 @@ import {
   CheckSquare,
   Square,
   Flame,
+  CloudUpload,
+  Database,
+  Loader2,
+  Save,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { compressImageFile } from '../../utils/imageCompression';
 
 type PreviewDevice = 'desktop' | 'tablet' | 'mobile';
 
@@ -57,11 +62,16 @@ export const ERPHeroManager: React.FC = () => {
     updateHeroConfig,
     resetHeroToDefault,
     syncHeroSlidesFromRepo,
+    syncHeroToDatabase,
+    isFirebaseConnected,
   } = useERP();
 
   // Active modal state
   const [isSlideModalOpen, setIsSlideModalOpen] = useState<boolean>(false);
   const [editingSlide, setEditingSlide] = useState<HeroSlide | null>(null);
+
+  // Live database manual push state
+  const [isSyncingLive, setIsSyncingLive] = useState<boolean>(false);
 
   // Quick feedback alert
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
@@ -69,6 +79,24 @@ export const ERPHeroManager: React.FC = () => {
   const showFeedback = (msg: string) => {
     setFeedbackMessage(msg);
     setTimeout(() => setFeedbackMessage(null), 3500);
+  };
+
+  const handleSyncToDatabase = async () => {
+    setIsSyncingLive(true);
+    try {
+      const result = await syncHeroToDatabase();
+      if (result.success) {
+        showFeedback(
+          `✓ Live database updated: ${result.count} hero slides and global banner settings synced to production Firestore database uniformly.`
+        );
+      } else {
+        alert(result.error || 'Failed to sync hero slides with database.');
+      }
+    } catch (e: any) {
+      alert(e?.message || 'Error syncing hero slides with database.');
+    } finally {
+      setIsSyncingLive(false);
+    }
   };
 
   // Preview simulator state
@@ -273,19 +301,40 @@ export const ERPHeroManager: React.FC = () => {
       {/* 1. Header Banner */}
       <div className="bg-white p-6 sm:p-7 rounded-3xl border border-slate-200 shadow-sm flex flex-col lg:flex-row justify-between items-start lg:items-center gap-5">
         <div>
-          <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-widest text-[#06163c] mb-1.5">
-            <Sparkles className="w-4 h-4 text-blue-600 animate-pulse" />
-            <span>Storefront Visual Architecture & Carousel Engine</span>
+          <div className="flex flex-wrap items-center gap-3 mb-1.5">
+            <div className="flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-widest text-[#06163c]">
+              <Sparkles className="w-4 h-4 text-blue-600 animate-pulse" />
+              <span>Storefront Visual Architecture & Carousel Engine</span>
+            </div>
+            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-bold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+              <span>Database Sync Active ({activeSlides.length} Live on Storefront)</span>
+            </div>
           </div>
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-['Outfit']">
             Homepage Hero Banners & Settings
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-2xl">
-            Configure dynamic hero slides, display order, auto-rotation timings, curved wave edges, and storefront caption overlays.
+            Configure dynamic hero slides, display order, auto-rotation timings, curved wave edges, and storefront caption overlays. All modifications synchronize live with the production database.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <button
+            type="button"
+            disabled={isSyncingLive}
+            onClick={handleSyncToDatabase}
+            className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white text-xs font-black rounded-xl shadow-sm border border-emerald-700 transition-all inline-flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            title="Push all hero slides and configurations immediately to production Firestore database"
+          >
+            {isSyncingLive ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-emerald-200" />
+            ) : (
+              <CloudUpload className="w-3.5 h-3.5 text-emerald-200" />
+            )}
+            <span>{isSyncingLive ? 'Syncing to DB...' : 'Sync Live to Database'}</span>
+          </button>
+
           <button
             type="button"
             onClick={handleSyncRepo}
@@ -1324,8 +1373,9 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
   const [imageTab, setImageTab] = useState<'presets' | 'upload' | 'url'>('presets');
   const [presetCategory, setPresetCategory] = useState<string>('all');
   const [customUrlInput, setCustomUrlInput] = useState('');
+  const [isCompressing, setIsCompressing] = useState(false);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -1334,13 +1384,26 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (uploadEvent) => {
-      if (uploadEvent.target?.result) {
-        setSrc(uploadEvent.target.result as string);
-      }
-    };
-    reader.readAsDataURL(file);
+    try {
+      setIsCompressing(true);
+      const compressedUrl = await compressImageFile(file, {
+        maxDimension: 1920,
+        quality: 0.82,
+        format: 'image/jpeg',
+      });
+      setSrc(compressedUrl);
+    } catch (err) {
+      console.warn('Fallback to standard file reader:', err);
+      const reader = new FileReader();
+      reader.onload = (uploadEvent) => {
+        if (uploadEvent.target?.result) {
+          setSrc(uploadEvent.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    } finally {
+      setIsCompressing(false);
+    }
   };
 
   const handleApplyUrl = () => {
@@ -1353,10 +1416,9 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
     return PRESET_HERO_IMAGES.filter((p) => p.category.toLowerCase().includes(presetCategory.toLowerCase()));
   }, [presetCategory]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const executeSave = () => {
     if (!title.trim()) {
-      alert('Slide title is required.');
+      alert('Slide headline / title is required.');
       return;
     }
     if (!src) {
@@ -1374,63 +1436,135 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
     });
   };
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    executeSave();
+  };
+
+  // Keyboard shortcut: Ctrl+S / Cmd+S to save, Escape to close
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        executeSave();
+      } else if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [title, subtitle, badge, alt, src, isActive]);
+
   return (
-    <div className="fixed inset-0 z-[100000] overflow-y-auto bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
+    <div className="fixed inset-0 z-[100000] overflow-y-auto bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
       <div className="bg-white rounded-3xl max-w-3xl w-full border border-slate-200 shadow-2xl overflow-hidden my-6 flex flex-col max-h-[92vh]">
-        {/* Modal Header */}
-        <div className="bg-[#06163c] text-white p-5 sm:p-6 flex items-center justify-between border-b border-blue-950">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-400/30 flex items-center justify-center">
+        {/* Sticky Modal Header with Top-Right Save Button */}
+        <div className="sticky top-0 z-30 bg-[#06163c] text-white px-5 sm:px-6 py-4 flex items-center justify-between border-b border-blue-950 shadow-md">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-400/30 flex items-center justify-center shrink-0">
               <ImageIcon className="w-5 h-5 text-sky-400" />
             </div>
-            <div>
-              <h3 className="font-black text-base font-['Outfit']">
-                {slide ? `Edit Banner Slide: ${slide.title}` : 'Create New Hero Banner Slide'}
-              </h3>
-              <p className="text-xs text-blue-200">
-                Choose high-resolution photography, headline typography, and storefront visibility.
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="font-black text-sm sm:text-base font-['Outfit'] truncate">
+                  {slide ? `Edit Banner: ${slide.title}` : 'Create New Hero Banner Slide'}
+                </h3>
+                <span
+                  className={`hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    isActive
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                      : 'bg-slate-700 text-slate-300 border border-slate-600'
+                  }`}
+                >
+                  {isActive ? 'Active' : 'Draft'}
+                </span>
+              </div>
+              <p className="text-[11px] text-blue-200 truncate hidden sm:block">
+                Configure high-resolution photography, headline typography, and storefront visibility.
               </p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
+
+          {/* Top-Right Actions (Save + Close) */}
+          <div className="flex items-center gap-2.5 shrink-0 ml-3">
+            <button
+              type="button"
+              onClick={executeSave}
+              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 font-black rounded-xl shadow-md hover:shadow-emerald-500/20 transition-all flex items-center gap-1.5 text-xs cursor-pointer border border-emerald-300 active:scale-95"
+              title="Save banner slide (Ctrl+S / Cmd+S)"
+            >
+              <Save className="w-4 h-4" />
+              <span>{slide ? 'Save Changes' : 'Save Banner'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              title="Close window (Esc)"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
 
         {/* Modal Form Body */}
-        <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6 text-xs text-slate-800">
+        <form
+          id="hero-slide-editor-form"
+          onSubmit={handleSubmit}
+          className="flex-1 overflow-y-auto p-6 space-y-6 text-xs text-slate-800"
+        >
           {/* Real-time preview card */}
-          <div className="relative h-48 sm:h-56 rounded-2xl overflow-hidden bg-slate-950 border border-slate-200 shadow-inner group">
-            <img
-              src={src}
-              alt={title || 'Preview'}
-              className="w-full h-full object-cover object-center"
-              referrerPolicy="no-referrer"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
-
-            <div className="absolute bottom-4 left-4 right-4 text-white">
-              <span className="inline-block px-2.5 py-1 bg-white/20 backdrop-blur-md rounded text-[10px] font-extrabold uppercase mb-1.5 border border-white/20">
-                {badge || 'Showroom & Atelier'}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">
+                Live Storefront Card Preview
               </span>
-              <h4 className="font-black text-lg sm:text-xl leading-tight line-clamp-1 drop-shadow-md">
-                {title || 'Slide Title Preview'}
-              </h4>
-              <p className="text-xs text-slate-200 line-clamp-1 mt-0.5 drop-shadow">
-                {subtitle || 'Subtitle description preview text'}
-              </p>
+              <span className="text-[10px] text-slate-400 font-medium">
+                Aspect ratio: 16:9 / Recommended 1920×800
+              </span>
+            </div>
+            <div className="relative h-48 sm:h-60 rounded-2xl overflow-hidden bg-slate-950 border border-slate-200 shadow-inner group">
+              <img
+                src={src}
+                alt={title || 'Preview'}
+                className="w-full h-full object-cover object-center"
+                referrerPolicy="no-referrer"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
+
+              <div className="absolute top-3 right-3">
+                <span
+                  className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm border backdrop-blur-md ${
+                    isActive
+                      ? 'bg-emerald-500/90 text-white border-emerald-400/50'
+                      : 'bg-slate-900/80 text-slate-300 border-slate-700'
+                  }`}
+                >
+                  {isActive ? '✓ Storefront Active' : 'Hidden Draft'}
+                </span>
+              </div>
+
+              <div className="absolute bottom-4 left-4 right-4 text-white">
+                <span className="inline-block px-2.5 py-1 bg-white/20 backdrop-blur-md rounded text-[10px] font-extrabold uppercase mb-1.5 border border-white/20">
+                  {badge || 'Showroom & Atelier'}
+                </span>
+                <h4 className="font-black text-lg sm:text-xl leading-tight line-clamp-1 drop-shadow-md">
+                  {title || 'Slide Title Preview'}
+                </h4>
+                <p className="text-xs text-slate-200 line-clamp-1 mt-0.5 drop-shadow">
+                  {subtitle || 'Subtitle description preview text'}
+                </p>
+              </div>
             </div>
           </div>
 
           {/* 1. Image Selection Tabs */}
-          <div className="space-y-3 pt-2 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+          <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-2.5">
-              <label className="font-bold text-slate-800 uppercase tracking-wider text-xs">
-                Banner Photography Source *
+              <label className="font-bold text-slate-800 uppercase tracking-wider text-xs flex items-center gap-1.5">
+                <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
+                <span>Banner Photography Source *</span>
               </label>
 
               <div className="inline-flex p-0.5 bg-slate-200/80 rounded-xl text-[11px] font-semibold">
@@ -1481,7 +1615,7 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
                         key={cat}
                         type="button"
                         onClick={() => setPresetCategory(cat)}
-                        className={`px-2 py-0.5 rounded-lg text-[10px] font-bold capitalize transition-all ${
+                        className={`px-2 py-0.5 rounded-lg text-[10px] font-bold capitalize transition-all cursor-pointer ${
                           presetCategory === cat
                             ? 'bg-[#06163c] text-white'
                             : 'bg-white text-slate-600 hover:bg-slate-200'
@@ -1533,17 +1667,27 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
             {/* Upload File */}
             {imageTab === 'upload' && (
               <div className="p-6 border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-2xl bg-white text-center transition-colors">
-                <Upload className="w-7 h-7 text-slate-400 mx-auto mb-2" />
-                <p className="font-bold text-slate-800 text-xs">Choose an image from your device</p>
-                <p className="text-[11px] text-slate-500 mt-0.5">
-                  High-resolution landscape photos recommended (1920×800 or 16:9). PNG, JPG, WebP.
-                </p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="mt-3 block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#06163c] file:text-white hover:file:bg-blue-900 cursor-pointer"
-                />
+                {isCompressing ? (
+                  <div className="py-4 space-y-2">
+                    <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto" />
+                    <p className="font-bold text-slate-800 text-xs">Optimizing & compressing banner image for database sync...</p>
+                    <p className="text-[11px] text-slate-500">Preparing lightweight high-definition payload for instant global load.</p>
+                  </div>
+                ) : (
+                  <>
+                    <Upload className="w-7 h-7 text-slate-400 mx-auto mb-2" />
+                    <p className="font-bold text-slate-800 text-xs">Choose an image from your device</p>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      High-resolution landscape photos recommended (1920×800 or 16:9). PNG, JPG, WebP. Auto-compressed for uniform cloud sync.
+                    </p>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleFileUpload}
+                      className="mt-3 block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#06163c] file:text-white hover:file:bg-blue-900 cursor-pointer"
+                    />
+                  </>
+                )}
               </div>
             )}
 
@@ -1649,23 +1793,33 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
             </div>
           </div>
 
-          {/* Modal Footer Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-200">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2.5 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors cursor-pointer text-xs"
-            >
-              Cancel
-            </button>
+          {/* Modal Sticky Footer Actions */}
+          <div className="sticky bottom-0 z-20 bg-white/95 backdrop-blur-md pt-4 pb-2 border-t border-slate-200 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-[11px] text-slate-500">
+              <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-slate-400'}`} />
+              <span className="hidden sm:inline">
+                {isActive ? 'Will publish active on storefront' : 'Will save as hidden draft'}
+              </span>
+              <span className="text-[10px] text-slate-400 hidden md:inline">• Ctrl+S / Cmd+S to save</span>
+            </div>
 
-            <button
-              type="submit"
-              className="px-6 py-2.5 bg-[#06163c] hover:bg-blue-900 text-white font-extrabold rounded-xl shadow-md transition-all cursor-pointer text-xs flex items-center gap-2"
-            >
-              <Check className="w-4 h-4 text-emerald-400" />
-              <span>{slide ? 'Save Slide Updates' : 'Publish Banner Slide'}</span>
-            </button>
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2.5 text-slate-600 font-bold hover:bg-slate-100 rounded-xl transition-colors cursor-pointer text-xs"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="submit"
+                className="px-6 py-2.5 bg-[#06163c] hover:bg-blue-900 text-white font-extrabold rounded-xl shadow-md transition-all cursor-pointer text-xs flex items-center gap-2 active:scale-95"
+              >
+                <Save className="w-4 h-4 text-emerald-400" />
+                <span>{slide ? 'Save Slide Updates' : 'Publish Banner Slide'}</span>
+              </button>
+            </div>
           </div>
         </form>
       </div>
