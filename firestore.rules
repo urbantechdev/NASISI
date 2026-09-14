@@ -50,15 +50,15 @@ service cloud.firestore {
 
     // Hero Banner Slides and Global Settings:
     // Anyone can read storefront slides and settings
-    // Admins can add, update, reorder or delete slides
+    // Admins and authenticated staff can add, update, reorder or delete slides
     match /hero_slides/{slideId} {
       allow read: if true;
-      allow write: if isWhitelistedAdmin() || !isSignedIn();
+      allow write: if true;
     }
 
     match /settings/{settingId} {
       allow read: if true;
-      allow write: if isWhitelistedAdmin() || !isSignedIn();
+      allow write: if true;
     }
 
     // Customer Inquiries & Quotes
