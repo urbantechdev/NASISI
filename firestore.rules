@@ -11,6 +11,7 @@ service cloud.firestore {
     function isWhitelistedAdmin() {
       return isSignedIn() && (
         request.auth.token.email in [
+          'feminiholdings@gmail.com',
           'naisiaetext@gmail.com',
           'urbaninteriorkenya@gmail.com',
           'veronicanjus@gmail.com',
@@ -27,6 +28,11 @@ service cloud.firestore {
     // Default deny catch-all
     match /{document=**} {
       allow read, write: if false;
+    }
+
+    // Health check test connection path
+    match /test/{docId} {
+      allow read: if true;
     }
 
     // Inventory and Products:
