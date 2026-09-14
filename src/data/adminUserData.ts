@@ -24,6 +24,7 @@ export const getInitialsAvatar = (name: string, bg: string = '#06163c'): string 
  * Any other Gmail account automatically accesses the customer interface for checkout.
  */
 export const WHITELISTED_ADMIN_EMAILS: string[] = [
+  'feminiholdings@gmail.com',
   'urbaninteriorkenya@gmail.com',
   'veronicanjus@gmail.com',
   'nasisiknitwear.ke@gmail.com',
@@ -37,6 +38,7 @@ export const isWhitelistedAdminEmail = (emailOrStaffId: string | null | undefine
 };
 
 export const ALLOWED_ADMIN_ACCOUNTS_INFO = [
+  { email: 'feminiholdings@gmail.com', label: 'Femini Holdings (Master Admin)' },
   { email: 'urbaninteriorkenya@gmail.com', label: 'Urban Interior Kenya Admin' },
   { email: 'veronicanjus@gmail.com', label: 'Veronica Njus (Managing Director)' },
   { email: 'nasisiknitwear.ke@gmail.com', label: 'Nasisi Knitwear Executive' },
@@ -44,6 +46,36 @@ export const ALLOWED_ADMIN_ACCOUNTS_INFO = [
 ];
 
 export const INITIAL_ADMIN_USERS: AdminUser[] = [
+  {
+    id: 'user-femini-holdings',
+    name: 'Femini Holdings',
+    email: 'feminiholdings@gmail.com',
+    role: 'Super Admin',
+    staffId: 'NAS-ADM-FEM',
+    phone: '+254 700 000 000',
+    department: 'Enterprise Direction & Factory Operations',
+    avatar: getInitialsAvatar('Femini Holdings', '#06163c'),
+    bio: 'Primary Enterprise Administrator and factory operations executive.',
+    location: 'Nairobi HQ',
+    status: 'active',
+    lastLogin: 'Verified Whitelisted Admin',
+    joinedDate: 'Current Session',
+    twoFactorEnabled: true,
+    notificationPreferences: {
+      emailAlerts: true,
+      smsAlerts: true,
+      newOrders: true,
+      mpesaReconciliations: true,
+    },
+    recentActivities: [
+      {
+        id: 'act-fem-1',
+        action: 'Authorized Enterprise ERP Production & Catalog Management',
+        timestamp: 'Just now',
+        category: 'security',
+      },
+    ],
+  },
   {
     id: 'user-urban-interior',
     name: 'Urban Interior Kenya',

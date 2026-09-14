@@ -17,6 +17,7 @@ import {
   deleteDoc,
   onSnapshot,
   getDocs,
+  getDocFromServer,
   limit,
   query,
 } from 'firebase/firestore';
@@ -47,11 +48,13 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 
 export async function testFirestoreConnection(): Promise<boolean> {
   try {
-    const q = query(collection(db, '_health_check'), limit(1));
-    await getDocs(q);
+    await getDocFromServer(doc(db, 'test', 'connection'));
     return true;
-  } catch (err) {
-    console.log('Firebase Firestore connection notice:', err);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes('the client is offline')) {
+      console.warn('Firebase configuration notice: client is offline.');
+      return false;
+    }
     return true;
   }
 }

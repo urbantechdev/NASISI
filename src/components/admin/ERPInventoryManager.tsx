@@ -56,10 +56,21 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [syncedNotice, setSyncedNotice] = useState(false);
+  const [productToast, setProductToast] = useState<{ message: string; type: 'success' | 'info' } | null>(null);
 
   // Product modal state
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<UniformProduct | null>(null);
+
+  const handleProductSaved = (product: UniformProduct, isEdit: boolean) => {
+    setProductToast({
+      message: `Product "${product.name}" (${product.sku}) was successfully ${isEdit ? 'updated' : 'created'} and synced to inventory!`,
+      type: 'success',
+    });
+    setTimeout(() => {
+      setProductToast(null);
+    }, 4500);
+  };
 
   // Calculations
   const totalStockCount = inventory.reduce((sum, i) => sum + i.stockOnHand, 0);
@@ -196,6 +207,28 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Dynamic Product Action Toast Notice */}
+      {productToast && (
+        <motion.div
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 flex items-center justify-between gap-3 text-xs shadow-xs font-semibold"
+        >
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{productToast.message}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setProductToast(null)}
+            className="text-emerald-500 hover:text-emerald-800 cursor-pointer text-xs"
+          >
+            ✕
+          </button>
+        </motion.div>
+      )}
 
       {/* Valuation & Metric Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -812,6 +845,7 @@ export const ERPInventoryManager: React.FC<ERPInventoryManagerProps> = ({
         onClose={() => setIsProductModalOpen(false)}
         productToEdit={editingProduct}
         onViewOnStorefront={onViewOnStorefront}
+        onProductSaved={handleProductSaved}
       />
     </div>
   );

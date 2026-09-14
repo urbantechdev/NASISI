@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Cookie, ShieldCheck, X, Check, SlidersHorizontal, ArrowRight } from 'lucide-react';
+import { safeGetItem, safeSetItem } from '../utils/storage';
 
 interface CookieConsentBannerProps {
   onOpenCookiePolicy: () => void;
@@ -14,7 +15,7 @@ export const CookieConsentBanner: React.FC<CookieConsentBannerProps> = ({
 
   useEffect(() => {
     try {
-      const consent = localStorage.getItem('nasisi_cookie_consent_status');
+      const consent = safeGetItem('nasisi_cookie_consent_status');
       if (!consent) {
         // Show banner after a slight delay so it doesn't jarringly block the initial load
         const timer = setTimeout(() => setIsVisible(true), 1200);
@@ -27,8 +28,8 @@ export const CookieConsentBanner: React.FC<CookieConsentBannerProps> = ({
 
   const handleAcceptAll = () => {
     try {
-      localStorage.setItem('nasisi_cookie_consent_status', 'accepted_all');
-      localStorage.setItem(
+      safeSetItem('nasisi_cookie_consent_status', 'accepted_all');
+      safeSetItem(
         'nasisi_cookie_preferences',
         JSON.stringify({
           essential: true,
@@ -45,8 +46,8 @@ export const CookieConsentBanner: React.FC<CookieConsentBannerProps> = ({
 
   const handleRejectNonEssential = () => {
     try {
-      localStorage.setItem('nasisi_cookie_consent_status', 'rejected_optional');
-      localStorage.setItem(
+      safeSetItem('nasisi_cookie_consent_status', 'rejected_optional');
+      safeSetItem(
         'nasisi_cookie_preferences',
         JSON.stringify({
           essential: true,

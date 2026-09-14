@@ -46,6 +46,35 @@ import {
   testFirestoreConnection,
   FirebaseUser,
 } from '../lib/firebase';
+import {
+  safeGetItem,
+  safeSetItem,
+  safeRemoveItem,
+  purgeStaleStorage,
+} from '../utils/storage';
+
+/**
+ * Recursively strips undefined values so that Firestore setDoc/updateDoc
+ * never fails with "Unsupported field value: undefined".
+ */
+export const sanitizeFirestorePayload = (obj: any): any => {
+  if (obj === null || obj === undefined) return null;
+  if (Array.isArray(obj)) {
+    return obj
+      .map(sanitizeFirestorePayload)
+      .filter((v) => v !== undefined && v !== null);
+  }
+  if (typeof obj === 'object' && !(obj instanceof Date)) {
+    const cleaned: Record<string, any> = {};
+    for (const [k, v] of Object.entries(obj)) {
+      if (v !== undefined) {
+        cleaned[k] = sanitizeFirestorePayload(v);
+      }
+    }
+    return cleaned;
+  }
+  return obj;
+};
 
 interface ERPContextType {
   // Admin & Customer Authentication & Profile
@@ -167,30 +196,51 @@ const INITIAL_SYNCHRONIZED_PRODUCTS: UniformProduct[] = UNIFORM_PRODUCTS.map((p,
 }));
 
 export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Purge any stale legacy localStorage keys on mount to maintain free quota
+  useEffect(() => {
+    purgeStaleStorage();
+  }, []);
+
   const [businessProfile, setBusinessProfile] = useState<ERPBusinessProfile>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.PROFILE);
-    return saved ? JSON.parse(saved) : INITIAL_BUSINESS_PROFILE;
+    try {
+      const saved = safeGetItem(STORAGE_KEYS.PROFILE);
+      return saved ? JSON.parse(saved) : INITIAL_BUSINESS_PROFILE;
+    } catch {
+      return INITIAL_BUSINESS_PROFILE;
+    }
   });
 
   const [customers, setCustomers] = useState<ERPCustomer[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.CUSTOMERS);
-    return saved ? JSON.parse(saved) : INITIAL_CUSTOMERS;
+    try {
+      const saved = safeGetItem(STORAGE_KEYS.CUSTOMERS);
+      return saved ? JSON.parse(saved) : INITIAL_CUSTOMERS;
+    } catch {
+      return INITIAL_CUSTOMERS;
+    }
   });
 
   const [documents, setDocuments] = useState<ERPDocument[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.DOCUMENTS);
-    return saved ? JSON.parse(saved) : INITIAL_DOCUMENTS;
+    try {
+      const saved = safeGetItem(STORAGE_KEYS.DOCUMENTS);
+      return saved ? JSON.parse(saved) : INITIAL_DOCUMENTS;
+    } catch {
+      return INITIAL_DOCUMENTS;
+    }
   });
 
   const [transactions, setTransactions] = useState<ERPPaymentTransaction[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.TRANSACTIONS);
-    return saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
+    try {
+      const saved = safeGetItem(STORAGE_KEYS.TRANSACTIONS);
+      return saved ? JSON.parse(saved) : INITIAL_TRANSACTIONS;
+    } catch {
+      return INITIAL_TRANSACTIONS;
+    }
   });
 
   // Synchronized Products state
   const [products, setProducts] = useState<UniformProduct[]>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEYS.PRODUCTS);
+      const saved = safeGetItem(STORAGE_KEYS.PRODUCTS);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -219,7 +269,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Inventory items with synced platform garments + raw materials
   const [inventory, setInventory] = useState<ERPInventoryItem[]>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEYS.INVENTORY);
+      const saved = safeGetItem(STORAGE_KEYS.INVENTORY);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -265,13 +315,17 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [productionOrders, setProductionOrders] = useState<ERPProductionOrder[]>(() => {
-    const saved = localStorage.getItem(STORAGE_KEYS.PRODUCTION);
-    return saved ? JSON.parse(saved) : INITIAL_PRODUCTION_ORDERS;
+    try {
+      const saved = safeGetItem(STORAGE_KEYS.PRODUCTION);
+      return saved ? JSON.parse(saved) : INITIAL_PRODUCTION_ORDERS;
+    } catch {
+      return INITIAL_PRODUCTION_ORDERS;
+    }
   });
 
   const [inquiryTickets, setInquiryTickets] = useState<ERPInquiryTicket[]>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEYS.TICKETS);
+      const saved = safeGetItem(STORAGE_KEYS.TICKETS);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -282,9 +336,9 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return INITIAL_INQUIRY_TICKETS;
   });
 
-  // Sync to localStorage
+  // Sync to safe storage
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.PROFILE, JSON.stringify(businessProfile));
+    safeSetItem(STORAGE_KEYS.PROFILE, JSON.stringify(businessProfile));
   }, [businessProfile]);
 
   // Instantly apply browser favicon to document head whenever it changes or on boot
@@ -293,19 +347,19 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, [businessProfile.faviconUrl]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(customers));
+    safeSetItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(customers));
   }, [customers]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.DOCUMENTS, JSON.stringify(documents));
+    safeSetItem(STORAGE_KEYS.DOCUMENTS, JSON.stringify(documents));
   }, [documents]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
+    safeSetItem(STORAGE_KEYS.TRANSACTIONS, JSON.stringify(transactions));
   }, [transactions]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+    safeSetItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
   }, [products]);
 
   // Track Firebase connection state
@@ -313,9 +367,14 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Test Firebase connectivity on boot
   useEffect(() => {
-    testFirestoreConnection().then((connected) => {
-      setIsFirebaseConnected(connected);
-    });
+    testFirestoreConnection()
+      .then((connected) => {
+        setIsFirebaseConnected(connected);
+      })
+      .catch((err) => {
+        console.warn('Firebase connectivity check notice:', err);
+        setIsFirebaseConnected(false);
+      });
   }, []);
 
   // Real-time Firestore Sync for Inventory
@@ -445,28 +504,28 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   }, []);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.INVENTORY, JSON.stringify(inventory));
+    safeSetItem(STORAGE_KEYS.INVENTORY, JSON.stringify(inventory));
   }, [inventory]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.PRODUCTION, JSON.stringify(productionOrders));
+    safeSetItem(STORAGE_KEYS.PRODUCTION, JSON.stringify(productionOrders));
   }, [productionOrders]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.TICKETS, JSON.stringify(inquiryTickets));
+    safeSetItem(STORAGE_KEYS.TICKETS, JSON.stringify(inquiryTickets));
   }, [inquiryTickets]);
 
   // Storefront Hero Banner Slides & Configuration State
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>(() => {
     try {
-      const syncKey = localStorage.getItem('nasisi_hero_repo_sync_v4');
+      const syncKey = safeGetItem('nasisi_hero_repo_sync_v4');
       // If repo hero assets haven't been synchronized yet, load directly from repository assets
       if (!syncKey) {
-        localStorage.setItem('nasisi_hero_repo_sync_v4', 'true');
-        localStorage.setItem(STORAGE_KEYS.HERO_SLIDES, JSON.stringify(INITIAL_HERO_SLIDES));
+        safeSetItem('nasisi_hero_repo_sync_v4', 'true');
+        safeSetItem(STORAGE_KEYS.HERO_SLIDES, JSON.stringify(INITIAL_HERO_SLIDES));
         return INITIAL_HERO_SLIDES;
       }
-      const saved = localStorage.getItem(STORAGE_KEYS.HERO_SLIDES);
+      const saved = safeGetItem(STORAGE_KEYS.HERO_SLIDES);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -484,7 +543,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [heroConfig, setHeroConfig] = useState<HeroConfig>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEYS.HERO_CONFIG);
+      const saved = safeGetItem(STORAGE_KEYS.HERO_CONFIG);
       if (saved) {
         const parsed = JSON.parse(saved);
         return {
@@ -500,11 +559,11 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.HERO_SLIDES, JSON.stringify(heroSlides));
+    safeSetItem(STORAGE_KEYS.HERO_SLIDES, JSON.stringify(heroSlides));
   }, [heroSlides]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEYS.HERO_CONFIG, JSON.stringify(heroConfig));
+    safeSetItem(STORAGE_KEYS.HERO_CONFIG, JSON.stringify(heroConfig));
   }, [heroConfig]);
 
   const addHeroSlide = (slideData: Omit<HeroSlide, 'id'>): HeroSlide => {
@@ -566,16 +625,16 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const resetHeroToDefault = () => {
     setHeroSlides(INITIAL_HERO_SLIDES);
     setHeroConfig(INITIAL_HERO_CONFIG);
-    localStorage.removeItem(STORAGE_KEYS.HERO_SLIDES);
-    localStorage.removeItem(STORAGE_KEYS.HERO_CONFIG);
+    safeRemoveItem(STORAGE_KEYS.HERO_SLIDES);
+    safeRemoveItem(STORAGE_KEYS.HERO_CONFIG);
   };
 
   const syncHeroSlidesFromRepo = () => {
     setHeroSlides(INITIAL_HERO_SLIDES);
     setHeroConfig(INITIAL_HERO_CONFIG);
-    localStorage.setItem(STORAGE_KEYS.HERO_SLIDES, JSON.stringify(INITIAL_HERO_SLIDES));
-    localStorage.setItem(STORAGE_KEYS.HERO_CONFIG, JSON.stringify(INITIAL_HERO_CONFIG));
-    localStorage.setItem('nasisi_hero_repo_sync_v4', 'true');
+    safeSetItem(STORAGE_KEYS.HERO_SLIDES, JSON.stringify(INITIAL_HERO_SLIDES));
+    safeSetItem(STORAGE_KEYS.HERO_CONFIG, JSON.stringify(INITIAL_HERO_CONFIG));
+    safeSetItem('nasisi_hero_repo_sync_v4', 'true');
   };
 
   // =========================================================================
@@ -584,7 +643,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [adminUsers, setAdminUsers] = useState<AdminUser[]>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEYS.ADMIN_USERS);
+      const saved = safeGetItem(STORAGE_KEYS.ADMIN_USERS);
       if (saved) {
         const parsed: AdminUser[] = JSON.parse(saved);
         const filtered = parsed
@@ -603,7 +662,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [currentUser, setCurrentUser] = useState<AdminUser | null>(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEYS.AUTH_USER);
+      const saved = safeGetItem(STORAGE_KEYS.AUTH_USER);
       if (saved) {
         const parsed: AdminUser = JSON.parse(saved);
         if (parsed && parsed.avatar && parsed.avatar.includes('unsplash')) {
@@ -635,7 +694,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // Sync admin users to storage
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEYS.ADMIN_USERS, JSON.stringify(adminUsers));
+      safeSetItem(STORAGE_KEYS.ADMIN_USERS, JSON.stringify(adminUsers));
     } catch {
       // fallback
     }
@@ -679,7 +738,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               };
 
           setCurrentUser(signedInAdmin);
-          localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(signedInAdmin));
+          safeSetItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(signedInAdmin));
         } else {
           // Regular customer account: access restricted to storefront checkout
           const customerUser: AdminUser = {
@@ -700,7 +759,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           };
 
           setCurrentUser(customerUser);
-          localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(customerUser));
+          safeSetItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(customerUser));
         }
       }
     });
@@ -754,7 +813,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             };
 
         setCurrentUser(updatedUser);
-        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updatedUser));
+        safeSetItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updatedUser));
         setAdminUsers((prev) => {
           const found = prev.some((u) => u.id === updatedUser.id || u.email.toLowerCase() === updatedUser.email.toLowerCase());
           return found
@@ -783,7 +842,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         };
 
         setCurrentUser(customerUser);
-        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(customerUser));
+        safeSetItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(customerUser));
         return { success: true, role: 'customer' };
       }
     } catch (err: any) {
@@ -856,7 +915,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             };
 
         setCurrentUser(adminUser);
-        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(adminUser));
+        safeSetItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(adminUser));
         return { success: true, role: 'admin' };
       } else {
         // Customer account
@@ -878,7 +937,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         };
 
         setCurrentUser(custUser);
-        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(custUser));
+        safeSetItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(custUser));
         return { success: true, role: 'customer' };
       }
     } catch (err: any) {
@@ -914,7 +973,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             };
 
         setCurrentUser(adminUser);
-        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(adminUser));
+        safeSetItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(adminUser));
         return { success: true, role: 'admin' };
       }
 
@@ -971,7 +1030,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           twoFactorEnabled: true,
         };
         setCurrentUser(adminUser);
-        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(adminUser));
+        safeSetItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(adminUser));
         return { success: true, role: 'admin' };
       } else {
         const custUser: AdminUser = {
@@ -991,7 +1050,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           twoFactorEnabled: false,
         };
         setCurrentUser(custUser);
-        localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(custUser));
+        safeSetItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(custUser));
         return { success: true, role: 'customer' };
       }
     } catch (err: any) {
@@ -1027,7 +1086,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       );
     }
     setCurrentUser(null);
-    localStorage.removeItem(STORAGE_KEYS.AUTH_USER);
+    safeRemoveItem(STORAGE_KEYS.AUTH_USER);
   };
 
   const updateUserProfile = (updates: Partial<AdminUser>) => {
@@ -1044,7 +1103,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       recentActivities: [newActivity, ...(currentUser.recentActivities || []).slice(0, 9)],
     };
     setCurrentUser(updated);
-    localStorage.setItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updated));
+    safeSetItem(STORAGE_KEYS.AUTH_USER, JSON.stringify(updated));
     setAdminUsers((prev) =>
       prev.map((u) => (u.id === updated.id ? updated : u))
     );
@@ -1057,7 +1116,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
     let storedPasswords: Record<string, string> = {};
     try {
-      const saved = localStorage.getItem(STORAGE_KEYS.PASSWORDS);
+      const saved = safeGetItem(STORAGE_KEYS.PASSWORDS);
       if (saved) storedPasswords = JSON.parse(saved);
     } catch {
       // fallback
@@ -1067,7 +1126,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, error: 'Current password does not match.' };
     }
     storedPasswords[currentUser.id] = newPass;
-    localStorage.setItem(STORAGE_KEYS.PASSWORDS, JSON.stringify(storedPasswords));
+    safeSetItem(STORAGE_KEYS.PASSWORDS, JSON.stringify(storedPasswords));
 
     const newActivity: AdminUserActivity = {
       id: `act-${Date.now()}`,
@@ -1092,7 +1151,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const id = 'id' in productData && productData.id ? productData.id : `prod-${Date.now()}`;
     const sku =
       productData.sku ||
-      `SKU-GAR-${productData.category.substring(0, 3).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
+      `SKU-GAR-${(productData.category || 'GAR').substring(0, 3).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
 
     const newProduct: UniformProduct = {
       ...productData,
@@ -1102,7 +1161,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       stockOnHand: productData.stockOnHand ?? 50,
       stockReserved: productData.stockReserved ?? 0,
       unitCost: productData.unitCost ?? Math.round(productData.basePrice * 0.58),
-      location: productData.location || 'Warehouse Bay A',
+      location: productData.location || 'Warehouse Main Bay',
       supplier: productData.supplier || 'Nasisi Internal Tailoring Unit',
     };
 
@@ -1110,44 +1169,55 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setProducts((prev) => [newProduct, ...prev]);
 
     // 2. Synchronize to Inventory as a Finished Garment SKU
+    const newInvItem: ERPInventoryItem = {
+      id: `inv-${id}`,
+      productId: id,
+      sku,
+      name: newProduct.name,
+      category: 'finished_garment',
+      categoryLabel: newProduct.categoryLabel || 'Finished Garment',
+      size: newProduct.sizes?.[0] || 'Standard',
+      color: newProduct.availableColors?.[0]?.name || 'Standard',
+      unit: 'pieces',
+      stockOnHand: newProduct.stockOnHand ?? 50,
+      stockReserved: newProduct.stockReserved ?? 0,
+      reorderLevel: 20,
+      unitCost: newProduct.unitCost ?? Math.round(newProduct.basePrice * 0.58),
+      sellingPrice: newProduct.basePrice,
+      location: newProduct.location || 'Warehouse Main Bay',
+      supplier: newProduct.supplier || 'Nasisi Internal Tailoring Unit',
+      lastRestockedDate: new Date().toISOString().split('T')[0],
+      status:
+        (newProduct.stockOnHand ?? 50) <= 0
+          ? 'out_of_stock'
+          : (newProduct.stockOnHand ?? 50) <= 20
+          ? 'low_stock'
+          : 'in_stock',
+      published: newProduct.published !== false,
+    };
+
     setInventory((prev) => {
       const filtered = prev.filter((i) => i.productId !== id && i.id !== `inv-${id}` && i.sku !== sku);
-      const newInvItem: ERPInventoryItem = {
-        id: `inv-${id}`,
-        productId: id,
-        sku,
-        name: newProduct.name,
-        category: 'finished_garment',
-        categoryLabel: newProduct.categoryLabel || 'Finished Garment',
-        size: newProduct.sizes?.[0] || 'Standard',
-        color: newProduct.availableColors?.[0]?.name || 'Standard',
-        unit: 'pieces',
-        stockOnHand: newProduct.stockOnHand ?? 50,
-        stockReserved: newProduct.stockReserved ?? 0,
-        reorderLevel: 20,
-        unitCost: newProduct.unitCost ?? Math.round(newProduct.basePrice * 0.58),
-        sellingPrice: newProduct.basePrice,
-        location: newProduct.location || 'Warehouse Main Bay',
-        supplier: newProduct.supplier || 'Nasisi Internal Tailoring Unit',
-        lastRestockedDate: new Date().toISOString().split('T')[0],
-        status:
-          (newProduct.stockOnHand ?? 50) <= 0
-            ? 'out_of_stock'
-            : (newProduct.stockOnHand ?? 50) <= 20
-            ? 'low_stock'
-            : 'in_stock',
-        published: newProduct.published !== false,
-      };
       return [newInvItem, ...filtered];
     });
 
-    // 3. Asynchronously sync to Firestore
+    // 3. Asynchronously sync to Firestore (both product and inventory SKU)
     try {
-      setDoc(doc(db, 'products', id), {
+      const cleanedProduct = sanitizeFirestorePayload({
         ...newProduct,
         updatedAt: new Date().toISOString(),
-      }).catch((err) => {
+        createdAt: new Date().toISOString(),
+      });
+      setDoc(doc(db, 'products', id), cleanedProduct, { merge: true }).catch((err) => {
         handleFirestoreError(err, OperationType.CREATE, `products/${id}`);
+      });
+
+      const cleanedInv = sanitizeFirestorePayload({
+        ...newInvItem,
+        updatedAt: new Date().toISOString(),
+      });
+      setDoc(doc(db, 'inventory', newInvItem.id), cleanedInv, { merge: true }).catch((err) => {
+        handleFirestoreError(err, OperationType.CREATE, `inventory/${newInvItem.id}`);
       });
     } catch (e) {
       console.warn('Firestore addProduct sync error:', e);
@@ -1169,6 +1239,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       })
     );
 
+    let updatedInvItem: ERPInventoryItem | null = null;
     // Synchronize to Inventory
     setInventory((prev) =>
       prev.map((item) => {
@@ -1181,7 +1252,7 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           const reorder = item.reorderLevel;
           const status = newStock <= 0 ? 'out_of_stock' : newStock <= reorder ? 'low_stock' : 'in_stock';
 
-          return {
+          const itemUpdates: ERPInventoryItem = {
             ...item,
             name: updates.name ?? item.name,
             sku: updates.sku ?? item.sku,
@@ -1195,23 +1266,32 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             published: updates.published !== undefined ? updates.published : item.published,
             status,
           };
+          updatedInvItem = itemUpdates;
+          return itemUpdates;
         }
         return item;
       })
     );
 
-    // Asynchronously sync to Firestore
+    // Asynchronously sync to Firestore (both products and inventory)
     try {
-      setDoc(
-        doc(db, 'products', id),
-        {
-          ...updates,
-          updatedAt: new Date().toISOString(),
-        },
-        { merge: true }
-      ).catch((err) => {
+      const cleanedUpdates = sanitizeFirestorePayload({
+        ...updates,
+        updatedAt: new Date().toISOString(),
+      });
+      setDoc(doc(db, 'products', id), cleanedUpdates, { merge: true }).catch((err) => {
         handleFirestoreError(err, OperationType.UPDATE, `products/${id}`);
       });
+
+      if (updatedInvItem) {
+        const cleanedInv = sanitizeFirestorePayload({
+          ...updatedInvItem,
+          updatedAt: new Date().toISOString(),
+        });
+        setDoc(doc(db, 'inventory', `inv-${id}`), cleanedInv, { merge: true }).catch((err) => {
+          handleFirestoreError(err, OperationType.UPDATE, `inventory/inv-${id}`);
+        });
+      }
     } catch (e) {
       console.warn('Firestore updateProduct sync error:', e);
     }
@@ -1222,10 +1302,13 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     // Also remove corresponding item from inventory
     setInventory((prev) => prev.filter((item) => item.productId !== id && item.id !== `inv-${id}`));
 
-    // Asynchronously delete from Firestore
+    // Asynchronously delete from Firestore (both product and inventory item)
     try {
       deleteDoc(doc(db, 'products', id)).catch((err) => {
         handleFirestoreError(err, OperationType.DELETE, `products/${id}`);
+      });
+      deleteDoc(doc(db, 'inventory', `inv-${id}`)).catch((err) => {
+        handleFirestoreError(err, OperationType.DELETE, `inventory/inv-${id}`);
       });
     } catch (e) {
       console.warn('Firestore deleteProduct sync error:', e);
@@ -1966,14 +2049,14 @@ export const ERPProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setProductionOrders(INITIAL_PRODUCTION_ORDERS);
     setInquiryTickets(INITIAL_INQUIRY_TICKETS);
     resetHeroToDefault();
-    localStorage.removeItem(STORAGE_KEYS.PROFILE);
-    localStorage.removeItem(STORAGE_KEYS.CUSTOMERS);
-    localStorage.removeItem(STORAGE_KEYS.DOCUMENTS);
-    localStorage.removeItem(STORAGE_KEYS.TRANSACTIONS);
-    localStorage.removeItem(STORAGE_KEYS.PRODUCTS);
-    localStorage.removeItem(STORAGE_KEYS.INVENTORY);
-    localStorage.removeItem(STORAGE_KEYS.PRODUCTION);
-    localStorage.removeItem(STORAGE_KEYS.TICKETS);
+    safeRemoveItem(STORAGE_KEYS.PROFILE);
+    safeRemoveItem(STORAGE_KEYS.CUSTOMERS);
+    safeRemoveItem(STORAGE_KEYS.DOCUMENTS);
+    safeRemoveItem(STORAGE_KEYS.TRANSACTIONS);
+    safeRemoveItem(STORAGE_KEYS.PRODUCTS);
+    safeRemoveItem(STORAGE_KEYS.INVENTORY);
+    safeRemoveItem(STORAGE_KEYS.PRODUCTION);
+    safeRemoveItem(STORAGE_KEYS.TICKETS);
   };
 
   return (

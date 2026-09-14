@@ -16,6 +16,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import { updateSEO } from '../utils/seo';
+import { safeGetItem, safeSetItem } from '../utils/storage';
 
 interface CookiePolicyPageProps {
   onBackToStorefront: () => void;
@@ -43,10 +44,10 @@ export const CookiePolicyPage: React.FC<CookiePolicyPageProps> = ({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  // Cookie preferences state loaded from localStorage
+  // Cookie preferences state loaded from safe storage
   const [preferences, setPreferences] = useState<CookiePreferences>(() => {
     try {
-      const saved = localStorage.getItem('nasisi_cookie_preferences');
+      const saved = safeGetItem('nasisi_cookie_preferences');
       if (saved) return JSON.parse(saved);
     } catch {
       // ignore
@@ -74,8 +75,8 @@ export const CookiePolicyPage: React.FC<CookiePolicyPageProps> = ({
 
   const handleSavePreferences = () => {
     try {
-      localStorage.setItem('nasisi_cookie_preferences', JSON.stringify(preferences));
-      localStorage.setItem('nasisi_cookie_consent_status', 'customized');
+      safeSetItem('nasisi_cookie_preferences', JSON.stringify(preferences));
+      safeSetItem('nasisi_cookie_consent_status', 'customized');
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch {
@@ -92,7 +93,7 @@ export const CookiePolicyPage: React.FC<CookiePolicyPageProps> = ({
     };
     setPreferences(defaults);
     try {
-      localStorage.setItem('nasisi_cookie_preferences', JSON.stringify(defaults));
+      safeSetItem('nasisi_cookie_preferences', JSON.stringify(defaults));
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
     } catch {

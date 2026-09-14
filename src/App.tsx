@@ -20,6 +20,7 @@ import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { ServicesSection } from './components/ServicesSection';
 import { ContactSection } from './components/ContactSection';
 import { updateSEO } from './utils/seo';
+import { safeGetItem, safeSetItem, safeRemoveItem } from './utils/storage';
 
 export type AppViewMode = 'storefront' | 'erp' | 'privacy' | 'terms' | 'cookies' | 'location';
 
@@ -38,7 +39,7 @@ export default function App() {
         window.history.replaceState(null, '', window.location.pathname);
       }
       try {
-        localStorage.removeItem('nasisi_view_mode');
+        safeRemoveItem('nasisi_view_mode');
       } catch {
         // ignore
       }
@@ -116,56 +117,10 @@ export default function App() {
     }
   };
 
-  // Auto full screen activation on open and first interaction
-  useEffect(() => {
-    const triggerFullscreen = () => {
-      try {
-        if (!document.fullscreenElement) {
-          const docEl = document.documentElement as any;
-          if (docEl.requestFullscreen) {
-            docEl.requestFullscreen().catch(() => {});
-          } else if (docEl.webkitRequestFullscreen) {
-            docEl.webkitRequestFullscreen();
-          } else if (docEl.mozRequestFullScreen) {
-            docEl.mozRequestFullScreen();
-          } else if (docEl.msRequestFullscreen) {
-            docEl.msRequestFullscreen();
-          }
-        }
-      } catch {
-        // Handled silently
-      }
-    };
-
-    // Attempt immediately on mount
-    triggerFullscreen();
-
-    // Trigger automatically on first user gesture anywhere on the window
-    const handleFirstGesture = () => {
-      triggerFullscreen();
-      window.removeEventListener('pointerdown', handleFirstGesture);
-      window.removeEventListener('click', handleFirstGesture);
-      window.removeEventListener('touchstart', handleFirstGesture);
-      window.removeEventListener('keydown', handleFirstGesture);
-    };
-
-    window.addEventListener('pointerdown', handleFirstGesture, { once: true });
-    window.addEventListener('click', handleFirstGesture, { once: true });
-    window.addEventListener('touchstart', handleFirstGesture, { once: true });
-    window.addEventListener('keydown', handleFirstGesture, { once: true });
-
-    return () => {
-      window.removeEventListener('pointerdown', handleFirstGesture);
-      window.removeEventListener('click', handleFirstGesture);
-      window.removeEventListener('touchstart', handleFirstGesture);
-      window.removeEventListener('keydown', handleFirstGesture);
-    };
-  }, []);
-
-  // Cart state persisted to localStorage
+  // Cart state persisted to safe storage
   const [quoteItems, setQuoteItems] = useState<QuoteItem[]>(() => {
     try {
-      const saved = localStorage.getItem('nasisi_quote_items');
+      const saved = safeGetItem('nasisi_quote_items');
       if (saved) return JSON.parse(saved);
     } catch {
       // ignore
@@ -198,9 +153,9 @@ export default function App() {
     try {
       // Storefront website must always load first on initial visits & refreshes
       if (viewMode !== 'erp') {
-        localStorage.setItem('nasisi_view_mode', viewMode);
+        safeSetItem('nasisi_view_mode', viewMode);
       } else {
-        localStorage.removeItem('nasisi_view_mode');
+        safeRemoveItem('nasisi_view_mode');
       }
     } catch {
       // ignore
@@ -209,7 +164,7 @@ export default function App() {
 
   useEffect(() => {
     try {
-      localStorage.setItem('nasisi_quote_items', JSON.stringify(quoteItems));
+      safeSetItem('nasisi_quote_items', JSON.stringify(quoteItems));
     } catch {
       // ignore
     }

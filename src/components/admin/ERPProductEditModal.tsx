@@ -50,13 +50,59 @@ import {
   Maximize2,
   LayoutGrid,
   ListOrdered,
+  AlertCircle,
+  ExternalLink,
+  Loader2,
 } from 'lucide-react';
 
 interface ERPProductEditModalProps {
   isOpen: boolean;
   onClose: () => void;
   productToEdit?: UniformProduct | null;
+  onViewOnStorefront?: (productId: string) => void;
+  onProductSaved?: (product: UniformProduct, isEdit: boolean) => void;
 }
+
+/**
+ * Compresses an image file before base64 encoding to ensure it stays well within
+ * Firestore's document size limits and loads fast across desktop and mobile.
+ */
+const compressImageFile = (file: File): Promise<string> => {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (readerEvent) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX_DIM = 1200;
+        let width = img.width;
+        let height = img.height;
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width > height) {
+            height = Math.round((height * MAX_DIM) / width);
+            width = MAX_DIM;
+          } else {
+            width = Math.round((width * MAX_DIM) / height);
+            height = MAX_DIM;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', 0.85));
+        } else {
+          resolve(readerEvent.target?.result as string);
+        }
+      };
+      img.onerror = () => resolve(readerEvent.target?.result as string);
+      img.src = readerEvent.target?.result as string;
+    };
+    reader.onerror = () => resolve('');
+    reader.readAsDataURL(file);
+  });
+};
 
 const CATEGORY_OPTIONS: { id: UniformCategory; label: string }[] = [
   { id: 'safety_industrial', label: '1. Safety & Industrial Wear' },
@@ -129,12 +175,19 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
   isOpen,
   onClose,
   productToEdit,
+  onViewOnStorefront,
+  onProductSaved,
 }) => {
   const { addProduct, updateProduct } = useERP();
 
   // Workflow View Mode: 'stepper' (guided in order 1->2->3->4->5) or 'all' (wide full-canvas overview)
   const [viewLayout, setViewLayout] = useState<'stepper' | 'all'>('stepper');
   const [activeStep, setActiveStep] = useState<StageStep>(1);
+
+  // Validation, saving, and notification state
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [saveSuccessNotice, setSaveSuccessNotice] = useState<string | null>(null);
 
   // Form State
   const [name, setName] = useState('');
@@ -296,6 +349,9 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
       });
       setIdealFor(['Academic Uniforms', 'School & College Students']);
     }
+    setValidationError(null);
+    setIsSaving(false);
+    setSaveSuccessNotice(null);
     setActiveStep(1);
   }, [productToEdit, isOpen]);
 
@@ -305,13 +361,15 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
     const cleanUrl = url.trim();
     setImages((prev) => (prev.includes(cleanUrl) ? prev : [...prev, cleanUrl]));
     setCustomUrlInput('');
+    setValidationError(null);
   };
 
   const handleRemoveImage = (index: number) => {
     if (images.length <= 1) {
-      alert('A product must maintain at least one photo.');
+      setValidationError('A garment SKU must maintain at least one photo. Please add a replacement before deleting.');
       return;
     }
+    setValidationError(null);
     setImages((prev) => {
       const next = prev.filter((_, i) => i !== index);
       if (activePreviewIdx >= next.length) {
@@ -331,24 +389,27 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
     setActivePreviewIdx(0);
   };
 
-  const handleMultipleFiles = (fileList: FileList | null) => {
+  const handleMultipleFiles = async (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return;
     const validFiles = Array.from(fileList).filter((f) => f.type.startsWith('image/'));
     if (validFiles.length === 0) {
-      alert('Please select valid image files (PNG, JPG, WEBP).');
+      setValidationError('Please select valid image files (PNG, JPG, WebP).');
       return;
     }
+    setValidationError(null);
+    setUploadedFileName(`Processing ${validFiles.length} photo(s)...`);
 
-    setUploadedFileName(`Uploaded ${validFiles.length} photo(s)`);
-    validFiles.forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        if (e.target?.result) {
-          handleAddImage(e.target.result as string);
+    for (const file of validFiles) {
+      try {
+        const compressed = await compressImageFile(file);
+        if (compressed) {
+          handleAddImage(compressed);
         }
-      };
-      reader.readAsDataURL(file);
-    });
+      } catch (err) {
+        console.warn('Failed to process image file:', err);
+      }
+    }
+    setUploadedFileName(`Added ${validFiles.length} photo(s)`);
   };
 
   // Sizing and specs helpers
@@ -414,63 +475,95 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
   };
 
   // Save product payload
-  const handleSave = (e?: React.FormEvent) => {
+  const handleSave = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!name.trim()) {
-      alert('Please enter a product name.');
+    setValidationError(null);
+
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      setValidationError('Please enter a garment name (e.g. Tailored Academic School Blazer).');
       setActiveStep(1);
       return;
     }
 
-    const finalImages = images.length > 0 ? images : [PRESET_GARMENT_IMAGES[2].url];
-    const primaryImage = finalImages[0] || PRESET_GARMENT_IMAGES[2].url;
-
-    const payload: UniformProduct = {
-      id: productToEdit?.id || `prod-${Date.now()}`,
-      name: name.trim(),
-      tagline: tagline.trim() || 'Premium Kenyan Manufactured Garment',
-      category,
-      categoryLabel,
-      basePrice: Number(basePrice) || 0,
-      unitCost: Number(unitCost) || 0,
-      minOrder: Number(minOrder) || 1,
-      leadTimeDays: Number(leadTimeDays) || 10,
-      leadTime: `${leadTimeDays || 10} Business Days`,
-      stockOnHand: Number(stockOnHand) || 0,
-      stockReserved: Number(stockReserved) || 0,
-      location: location.trim() || 'Warehouse Main Bay',
-      supplier: supplier.trim() || 'Nasisi Internal Tailoring Unit',
-      published: published !== false,
-      badge: badge.trim() || undefined,
-      popular: !!popular,
-      sku: sku.trim() || `SKU-GAR-${category.toUpperCase()}-101`,
-      image: primaryImage,
-      images: finalImages,
-      availableColors:
-        colors.length > 0
-          ? colors
-          : [{ name: 'Navy', hex: '#0F172A', bgClass: 'bg-[#0F172A]' }],
-      sizes: sizes.length > 0 ? sizes : ['Standard'],
-      fabric: {
-        composition: fabricComp || '65% Polyester, 35% Viscose Suiting',
-        weight: fabricWeight || '260 GSM',
-        features: fabricFeatures,
-      },
-      customizationOptions: {
-        ...customization,
-        customStitching: true,
-      },
-      description: description.trim() || `${name} manufactured with industrial-grade tailoring.`,
-      idealFor,
-    };
-
-    if (productToEdit) {
-      updateProduct(productToEdit.id, payload);
-    } else {
-      addProduct(payload);
+    const numericPrice = Number(basePrice);
+    if (isNaN(numericPrice) || numericPrice < 0) {
+      setValidationError('Please specify a valid base selling price (0 or greater).');
+      setActiveStep(3);
+      return;
     }
 
-    onClose();
+    setIsSaving(true);
+
+    try {
+      const finalImages = images.length > 0 ? images : [PRESET_GARMENT_IMAGES[2].url];
+      const primaryImage = finalImages[0] || PRESET_GARMENT_IMAGES[2].url;
+
+      // Auto-generate SKU if left blank
+      const effectiveSku =
+        sku.trim() ||
+        `SKU-GAR-${(category || 'GAR').substring(0, 3).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
+
+      const payload: UniformProduct = {
+        id: productToEdit?.id || `prod-${Date.now()}`,
+        name: trimmedName,
+        tagline: tagline.trim() || 'Premium Kenyan Manufactured Garment',
+        category,
+        categoryLabel: categoryLabel || CATEGORY_OPTIONS.find((c) => c.id === category)?.label || 'Finished Garment',
+        basePrice: Math.max(0, numericPrice),
+        unitCost: Math.max(0, Number(unitCost) || 0),
+        minOrder: Math.max(1, Number(minOrder) || 1),
+        leadTimeDays: Math.max(1, Number(leadTimeDays) || 10),
+        leadTime: `${leadTimeDays || 10} Business Days`,
+        stockOnHand: Math.max(0, Number(stockOnHand) || 0),
+        stockReserved: Math.max(0, Number(stockReserved) || 0),
+        location: location.trim() || 'Warehouse Main Bay',
+        supplier: supplier.trim() || 'Nasisi Internal Tailoring Unit',
+        published: published !== false,
+        badge: badge.trim() || undefined,
+        popular: !!popular,
+        sku: effectiveSku,
+        image: primaryImage,
+        images: finalImages,
+        availableColors:
+          colors.length > 0
+            ? colors
+            : [{ name: 'Navy', hex: '#0F172A', bgClass: 'bg-[#0F172A]' }],
+        sizes: sizes.length > 0 ? sizes : ['Standard'],
+        fabric: {
+          composition: fabricComp || '65% Polyester, 35% Viscose Suiting',
+          weight: fabricWeight || '260 GSM',
+          features: fabricFeatures,
+        },
+        customizationOptions: {
+          ...customization,
+          customStitching: true,
+        },
+        description: description.trim() || `${trimmedName} manufactured with industrial-grade Kenyan craftsmanship.`,
+        idealFor: idealFor.length > 0 ? idealFor : ['Schools & Academies', 'Corporate Institutions'],
+      };
+
+      let savedProduct: UniformProduct;
+      if (productToEdit) {
+        updateProduct(productToEdit.id, payload);
+        savedProduct = payload;
+      } else {
+        savedProduct = addProduct(payload);
+      }
+
+      onProductSaved?.(savedProduct, !!productToEdit);
+      setSaveSuccessNotice(productToEdit ? 'Garment SKU updated successfully!' : 'New Garment SKU created and synchronized!');
+
+      // Smooth brief animation before closing
+      setTimeout(() => {
+        setIsSaving(false);
+        onClose();
+      }, 350);
+    } catch (err: any) {
+      console.error('Error saving garment product:', err);
+      setValidationError(err?.message || 'Failed to save garment SKU. Please check your inputs.');
+      setIsSaving(false);
+    }
   };
 
   const handleSaveRef = useRef(handleSave);
@@ -567,17 +660,40 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                 </button>
               </div>
 
+              {/* Optional View on Storefront button when editing existing product */}
+              {productToEdit && onViewOnStorefront && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onViewOnStorefront(productToEdit.id);
+                    onClose();
+                  }}
+                  className="px-3 py-2 rounded-xl bg-sky-500/20 hover:bg-sky-500/30 text-sky-200 border border-sky-400/40 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+                  title="View this garment live on the customer storefront catalog"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Storefront</span>
+                </button>
+              )}
+
               {/* PRIMARY PROMINENT TOP SAVE BUTTON */}
               <button
                 type="button"
                 id="btn-modal-top-save"
+                disabled={isSaving}
                 onClick={() => handleSave()}
-                className="px-3.5 sm:px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:from-emerald-700 active:to-teal-700 text-white text-xs sm:text-sm font-black rounded-xl shadow-[0_4px_16px_rgba(16,185,129,0.35)] hover:shadow-[0_6px_22px_rgba(16,185,129,0.5)] transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer active:scale-95 border border-emerald-400/40 shrink-0"
+                className={`px-3.5 sm:px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 active:from-emerald-700 active:to-teal-700 text-white text-xs sm:text-sm font-black rounded-xl shadow-[0_4px_16px_rgba(16,185,129,0.35)] hover:shadow-[0_6px_22px_rgba(16,185,129,0.5)] transition-all flex items-center gap-1.5 sm:gap-2 cursor-pointer active:scale-95 border border-emerald-400/40 shrink-0 ${
+                  isSaving ? 'opacity-75 cursor-not-allowed' : ''
+                }`}
                 title="Quick Save Garment SKU (Ctrl+S / ⌘S)"
               >
-                <CheckCircle2 className="w-4 h-4 text-emerald-100 shrink-0" />
+                {isSaving ? (
+                  <Loader2 className="w-4 h-4 text-emerald-100 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-100 shrink-0" />
+                )}
                 <span className="tracking-wide">
-                  {productToEdit ? 'Save Changes' : 'Save Product'}
+                  {isSaving ? 'Saving...' : productToEdit ? 'Save Changes' : 'Save Product'}
                 </span>
                 <span className="hidden lg:inline-block text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-800/80 text-emerald-200 border border-emerald-600/50">
                   ⌘S
@@ -673,15 +789,58 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
                 <button
                   type="button"
                   id="btn-sticky-top-save-action"
+                  disabled={isSaving}
                   onClick={() => handleSave()}
-                  className="px-4 sm:px-5 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer active:scale-95 border border-emerald-400/40"
+                  className={`px-4 sm:px-5 py-2 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white text-xs font-black rounded-xl shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer active:scale-95 border border-emerald-400/40 ${
+                    isSaving ? 'opacity-75 cursor-not-allowed' : ''
+                  }`}
                   title="Save Garment SKU & Sync Instantly (Ctrl+S / ⌘S)"
                 >
-                  <CheckCircle2 className="w-4 h-4 text-emerald-100" />
-                  <span>{productToEdit ? 'Save Changes Now' : 'Save Product Now'}</span>
+                  {isSaving ? (
+                    <Loader2 className="w-4 h-4 text-emerald-100 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-100" />
+                  )}
+                  <span>{isSaving ? 'Saving...' : productToEdit ? 'Save Changes Now' : 'Save Product Now'}</span>
                 </button>
               </div>
             </div>
+
+            {/* Validation Error Alert Banner */}
+            {validationError && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-900 flex items-start justify-between gap-3 text-xs shadow-xs"
+              >
+                <div className="flex items-start gap-2.5">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="font-black text-rose-950 uppercase tracking-wide">Validation Notice:</strong>
+                    <p className="mt-0.5 text-rose-800 font-medium">{validationError}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setValidationError(null)}
+                  className="text-rose-400 hover:text-rose-700 cursor-pointer p-0.5"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </motion.div>
+            )}
+
+            {/* Save Success Notice Banner */}
+            {saveSuccessNotice && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center gap-2.5 text-xs shadow-xs"
+              >
+                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <span className="font-bold">{saveSuccessNotice}</span>
+              </motion.div>
+            )}
 
             {/* STAGE 1: IDENTITY & CATEGORY */}
             {(viewLayout === 'all' || activeStep === 1) && (
@@ -1730,11 +1889,22 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
 
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  disabled={isSaving}
+                  className={`px-6 py-2.5 rounded-xl text-xs font-black text-white bg-emerald-600 hover:bg-emerald-700 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                    isSaving ? 'opacity-75 cursor-not-allowed' : ''
+                  }`}
                 >
-                  <CheckCircle2 className="w-4 h-4 text-emerald-100" />
+                  {isSaving ? (
+                    <Loader2 className="w-4 h-4 text-emerald-100 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-100" />
+                  )}
                   <span>
-                    {productToEdit ? 'Update Garment & Sync ERP' : 'Publish Garment SKU & Save'}
+                    {isSaving
+                      ? 'Saving & Synchronizing...'
+                      : productToEdit
+                      ? 'Update Garment & Sync ERP'
+                      : 'Publish Garment SKU & Save'}
                   </span>
                 </button>
               </div>
