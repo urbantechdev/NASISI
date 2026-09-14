@@ -83,6 +83,8 @@
         "ctaLink": { "type": "string" },
         "order": { "type": "number" },
         "active": { "type": "boolean" },
+        "isActive": { "type": "boolean" },
+        "alt": { "type": "string" },
         "badge": { "type": "string" }
       },
       "required": ["id", "src", "title"]
