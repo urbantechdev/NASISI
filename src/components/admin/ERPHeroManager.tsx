@@ -1,4 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useERP } from '../../context/ERPContext';
 import { HeroSlide, HeroConfig } from '../../types';
 import { PRESET_HERO_IMAGES, PresetHeroImage } from '../../data/heroData';
@@ -21,6 +22,7 @@ import {
   Layers,
   Clock,
   Maximize2,
+  Minimize2,
   Check,
   X,
   Play,
@@ -1369,9 +1371,13 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
   const [src, setSrc] = useState(slide?.src || PRESET_HERO_IMAGES[0].src);
   const [isActive, setIsActive] = useState(slide ? slide.isActive !== false : true);
 
+  // Fullscreen/expanded mode toggle
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   // Tab for image source: 'presets' | 'upload' | 'url'
   const [imageTab, setImageTab] = useState<'presets' | 'upload' | 'url'>('presets');
   const [presetCategory, setPresetCategory] = useState<string>('all');
+  const [presetSearch, setPresetSearch] = useState<string>('');
   const [customUrlInput, setCustomUrlInput] = useState('');
   const [isCompressing, setIsCompressing] = useState(false);
 
@@ -1412,9 +1418,12 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
   };
 
   const filteredPresetImages = useMemo(() => {
-    if (presetCategory === 'all') return PRESET_HERO_IMAGES;
-    return PRESET_HERO_IMAGES.filter((p) => p.category.toLowerCase().includes(presetCategory.toLowerCase()));
-  }, [presetCategory]);
+    return PRESET_HERO_IMAGES.filter((p) => {
+      const matchCat = presetCategory === 'all' || p.category.toLowerCase().includes(presetCategory.toLowerCase());
+      const matchSearch = !presetSearch.trim() || p.name.toLowerCase().includes(presetSearch.toLowerCase()) || p.category.toLowerCase().includes(presetSearch.toLowerCase());
+      return matchCat && matchSearch;
+    });
+  }, [presetCategory, presetSearch]);
 
   const executeSave = () => {
     if (!title.trim()) {
@@ -1455,11 +1464,33 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [title, subtitle, badge, alt, src, isActive]);
 
-  return (
-    <div className="fixed inset-0 z-[100000] overflow-y-auto bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6">
-      <div className="bg-white rounded-3xl max-w-3xl w-full border border-slate-200 shadow-2xl overflow-hidden my-6 flex flex-col max-h-[92vh]">
-        {/* Sticky Modal Header with Top-Right Save Button */}
-        <div className="sticky top-0 z-30 bg-[#06163c] text-white px-5 sm:px-6 py-4 flex items-center justify-between border-b border-blue-950 shadow-md">
+  // Lock background body scroll while editing modal is open
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, []);
+
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div
+      className={`fixed inset-0 z-[999999] bg-slate-950/85 backdrop-blur-md flex items-center justify-center transition-all duration-200 ${
+        isFullscreen ? 'p-0 overflow-hidden' : 'p-2 sm:p-4 lg:p-6 overflow-y-auto'
+      }`}
+      style={{ zIndex: 999999 }}
+    >
+      <div
+        className={`bg-white border border-slate-200 shadow-2xl flex flex-col transition-all duration-200 relative z-[1000000] ${
+          isFullscreen
+            ? 'w-screen h-screen max-w-none max-h-none rounded-none'
+            : 'w-full max-w-[98vw] 2xl:max-w-[1600px] h-full max-h-[96vh] rounded-2xl sm:rounded-3xl overflow-hidden'
+        }`}
+      >
+        {/* Sticky Modal Header with Top-Right Save and Fullscreen Buttons */}
+        <div className="sticky top-0 z-30 bg-[#06163c] text-white px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between border-b border-blue-950 shadow-md shrink-0">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-10 h-10 rounded-xl bg-blue-600/30 border border-blue-400/30 flex items-center justify-center shrink-0">
               <ImageIcon className="w-5 h-5 text-sky-400" />
@@ -1480,21 +1511,30 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
                 </span>
               </div>
               <p className="text-[11px] text-blue-200 truncate hidden sm:block">
-                Configure high-resolution photography, headline typography, and storefront visibility.
+                Full-width banner studio: Configure high-resolution photography, headlines, badges, and storefront visibility.
               </p>
             </div>
           </div>
 
-          {/* Top-Right Actions (Save + Close) */}
-          <div className="flex items-center gap-2.5 shrink-0 ml-3">
+          {/* Top-Right Actions (Save + Fullscreen/Wide Toggle + Close) */}
+          <div className="flex items-center gap-2 shrink-0 ml-3">
             <button
               type="button"
               onClick={executeSave}
-              className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 font-black rounded-xl shadow-md hover:shadow-emerald-500/20 transition-all flex items-center gap-1.5 text-xs cursor-pointer border border-emerald-300 active:scale-95"
+              className="px-3.5 sm:px-4 py-2 bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-slate-950 font-black rounded-xl shadow-md hover:shadow-emerald-500/20 transition-all flex items-center gap-1.5 text-xs cursor-pointer border border-emerald-300 active:scale-95"
               title="Save banner slide (Ctrl+S / Cmd+S)"
             >
               <Save className="w-4 h-4" />
               <span>{slide ? 'Save Changes' : 'Save Banner'}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              title={isFullscreen ? 'Exit Fullscreen (Switch to Wide Window)' : 'Expand to Fullscreen'}
+            >
+              {isFullscreen ? <Minimize2 className="w-5 h-5 text-sky-300" /> : <Maximize2 className="w-5 h-5" />}
             </button>
 
             <button
@@ -1508,299 +1548,365 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
           </div>
         </div>
 
-        {/* Modal Form Body */}
+        {/* Modal Form Body with Wide 2-Column Grid Layout */}
         <form
           id="hero-slide-editor-form"
           onSubmit={handleSubmit}
-          className="flex-1 overflow-y-auto p-6 space-y-6 text-xs text-slate-800"
+          className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-7 space-y-6 text-xs text-slate-800"
         >
-          {/* Real-time preview card */}
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-bold text-slate-700 uppercase tracking-wider text-[11px]">
-                Live Storefront Card Preview
-              </span>
-              <span className="text-[10px] text-slate-400 font-medium">
-                Aspect ratio: 16:9 / Recommended 1920×800
-              </span>
-            </div>
-            <div className="relative h-48 sm:h-60 rounded-2xl overflow-hidden bg-slate-950 border border-slate-200 shadow-inner group">
-              <img
-                src={src}
-                alt={title || 'Preview'}
-                className="w-full h-full object-cover object-center"
-                referrerPolicy="no-referrer"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
-
-              <div className="absolute top-3 right-3">
-                <span
-                  className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm border backdrop-blur-md ${
-                    isActive
-                      ? 'bg-emerald-500/90 text-white border-emerald-400/50'
-                      : 'bg-slate-900/80 text-slate-300 border-slate-700'
-                  }`}
-                >
-                  {isActive ? '✓ Storefront Active' : 'Hidden Draft'}
-                </span>
-              </div>
-
-              <div className="absolute bottom-4 left-4 right-4 text-white">
-                <span className="inline-block px-2.5 py-1 bg-white/20 backdrop-blur-md rounded text-[10px] font-extrabold uppercase mb-1.5 border border-white/20">
-                  {badge || 'Showroom & Atelier'}
-                </span>
-                <h4 className="font-black text-lg sm:text-xl leading-tight line-clamp-1 drop-shadow-md">
-                  {title || 'Slide Title Preview'}
-                </h4>
-                <p className="text-xs text-slate-200 line-clamp-1 mt-0.5 drop-shadow">
-                  {subtitle || 'Subtitle description preview text'}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* 1. Image Selection Tabs */}
-          <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-2.5">
-              <label className="font-bold text-slate-800 uppercase tracking-wider text-xs flex items-center gap-1.5">
-                <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
-                <span>Banner Photography Source *</span>
-              </label>
-
-              <div className="inline-flex p-0.5 bg-slate-200/80 rounded-xl text-[11px] font-semibold">
-                <button
-                  type="button"
-                  onClick={() => setImageTab('presets')}
-                  className={`px-3 py-1 rounded-lg transition-all ${
-                    imageTab === 'presets'
-                      ? 'bg-white text-[#06163c] shadow-xs font-bold'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Factory Presets ({PRESET_HERO_IMAGES.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setImageTab('upload')}
-                  className={`px-3 py-1 rounded-lg transition-all ${
-                    imageTab === 'upload'
-                      ? 'bg-white text-[#06163c] shadow-xs font-bold'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Upload File
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setImageTab('url')}
-                  className={`px-3 py-1 rounded-lg transition-all ${
-                    imageTab === 'url'
-                      ? 'bg-white text-[#06163c] shadow-xs font-bold'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  Direct Web URL
-                </button>
-              </div>
-            </div>
-
-            {/* Presets Grid */}
-            {imageTab === 'presets' && (
-              <div className="space-y-2">
-                {/* Category filter pills */}
-                <div className="flex flex-wrap gap-1">
-                  {['all', 'Panoramic', 'Showroom', 'School', 'Safety', 'Healthcare', 'Hospitality'].map(
-                    (cat) => (
-                      <button
-                        key={cat}
-                        type="button"
-                        onClick={() => setPresetCategory(cat)}
-                        className={`px-2 py-0.5 rounded-lg text-[10px] font-bold capitalize transition-all cursor-pointer ${
-                          presetCategory === cat
-                            ? 'bg-[#06163c] text-white'
-                            : 'bg-white text-slate-600 hover:bg-slate-200'
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    )
-                  )}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+            {/* Left Column (5 cols): Live Preview & Slide Content */}
+            <div className="lg:col-span-5 xl:col-span-5 space-y-5">
+              {/* Real-time preview card */}
+              <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200">
+                <div className="flex items-center justify-between mb-2.5">
+                  <span className="font-bold text-slate-800 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                    <Eye className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Live Storefront Preview</span>
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-medium">
+                    16:9 • 1920×800
+                  </span>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 max-h-52 overflow-y-auto p-1">
-                  {filteredPresetImages.map((preset) => (
-                    <button
-                      key={preset.id}
-                      type="button"
-                      onClick={() => setSrc(preset.src)}
-                      className={`relative h-24 rounded-xl overflow-hidden border-2 text-left group cursor-pointer transition-all ${
-                        src === preset.src
-                          ? 'border-blue-600 ring-2 ring-blue-500/30 shadow-md'
-                          : 'border-slate-200 hover:border-slate-400'
+                <div className="relative aspect-video rounded-2xl overflow-hidden bg-slate-950 border border-slate-300 shadow-md group">
+                  <img
+                    src={src}
+                    alt={title || 'Preview'}
+                    className="w-full h-full object-cover object-center"
+                    referrerPolicy="no-referrer"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent pointer-events-none" />
+
+                  <div className="absolute top-3 right-3">
+                    <span
+                      className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm border backdrop-blur-md ${
+                        isActive
+                          ? 'bg-emerald-500/90 text-white border-emerald-400/50'
+                          : 'bg-slate-900/80 text-slate-300 border-slate-700'
                       }`}
                     >
-                      <img
-                        src={preset.src}
-                        alt={preset.name}
-                        className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
-                        referrerPolicy="no-referrer"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent p-2 flex flex-col justify-end">
-                        <span className="text-[10px] text-white font-bold truncate">
-                          {preset.name}
-                        </span>
-                        <span className="text-[9px] text-blue-200 font-medium">
-                          {preset.category}
-                        </span>
-                      </div>
-                      {src === preset.src && (
-                        <div className="absolute top-1.5 right-1.5 bg-blue-600 text-white rounded-full p-1 shadow-md">
-                          <Check className="w-3 h-3" />
-                        </div>
-                      )}
-                    </button>
-                  ))}
+                      {isActive ? '✓ Storefront Active' : 'Hidden Draft'}
+                    </span>
+                  </div>
+
+                  <div className="absolute bottom-4 left-4 right-4 text-white">
+                    <span className="inline-block px-2.5 py-1 bg-white/20 backdrop-blur-md rounded text-[10px] font-extrabold uppercase mb-1.5 border border-white/20">
+                      {badge || 'Showroom & Atelier'}
+                    </span>
+                    <h4 className="font-black text-base sm:text-lg xl:text-xl leading-tight line-clamp-2 drop-shadow-md font-['Outfit']">
+                      {title || 'Slide Title Preview'}
+                    </h4>
+                    <p className="text-xs text-slate-200 line-clamp-2 mt-1 drop-shadow">
+                      {subtitle || 'Subtitle description preview text'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500 pt-2 border-t border-slate-200">
+                  <span>Aspect ratio: 16:9 widescreen</span>
+                  <span className="text-blue-600 font-medium truncate max-w-[200px] text-right">
+                    {src.startsWith('data:') ? 'Custom Uploaded Media' : src.split('/').pop() || 'Preset Asset'}
+                  </span>
                 </div>
               </div>
-            )}
 
-            {/* Upload File */}
-            {imageTab === 'upload' && (
-              <div className="p-6 border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-2xl bg-white text-center transition-colors">
-                {isCompressing ? (
-                  <div className="py-4 space-y-2">
-                    <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto" />
-                    <p className="font-bold text-slate-800 text-xs">Optimizing & compressing banner image for database sync...</p>
-                    <p className="text-[11px] text-slate-500">Preparing lightweight high-definition payload for instant global load.</p>
-                  </div>
-                ) : (
-                  <>
-                    <Upload className="w-7 h-7 text-slate-400 mx-auto mb-2" />
-                    <p className="font-bold text-slate-800 text-xs">Choose an image from your device</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
-                      High-resolution landscape photos recommended (1920×800 or 16:9). PNG, JPG, WebP. Auto-compressed for uniform cloud sync.
-                    </p>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      className="mt-3 block w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#06163c] file:text-white hover:file:bg-blue-900 cursor-pointer"
-                    />
-                  </>
-                )}
-              </div>
-            )}
+              {/* Headlines & Text Configuration */}
+              <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
+                  <span className="font-bold text-slate-800 uppercase tracking-wider text-xs flex items-center gap-1.5">
+                    <Edit3 className="w-3.5 h-3.5 text-blue-600" />
+                    <span>Banner Typography & Labels</span>
+                  </span>
+                </div>
 
-            {/* Custom URL */}
-            {imageTab === 'url' && (
-              <div className="space-y-2">
-                <div className="flex gap-2">
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase tracking-wider text-[11px] mb-1">
+                    Slide Headline / Primary Title *
+                  </label>
                   <input
-                    type="url"
-                    placeholder="https://example.com/banner-photo.jpg"
-                    value={customUrlInput}
-                    onChange={(e) => setCustomUrlInput(e.target.value)}
-                    className="flex-1 px-3.5 py-2 text-xs bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    type="text"
+                    required
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="e.g. Modern Uniform Tailoring Showroom"
+                    className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs shadow-xs"
                   />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-slate-700 uppercase tracking-wider text-[11px] mb-1">
+                      Badge / Tag Ribbon
+                    </label>
+                    <input
+                      type="text"
+                      value={badge}
+                      onChange={(e) => setBadge(e.target.value)}
+                      placeholder="e.g. Kenyan Factory & Atelier"
+                      className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs shadow-xs"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-slate-700 uppercase tracking-wider text-[11px] mb-1">
+                      SEO Alt Text (Accessibility)
+                    </label>
+                    <input
+                      type="text"
+                      value={alt}
+                      onChange={(e) => setAlt(e.target.value)}
+                      placeholder="e.g. Bespoke tailored blazers"
+                      className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs shadow-xs"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-slate-700 uppercase tracking-wider text-[11px] mb-1">
+                    Subtitle / Description Text
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={subtitle}
+                    onChange={(e) => setSubtitle(e.target.value)}
+                    placeholder="e.g. Precision Tailoring & Bulk Institutional Uniform Manufacturing in Kenya"
+                    className="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs shadow-xs"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between p-3.5 rounded-xl bg-white border border-slate-200 shadow-xs">
+                  <div>
+                    <span className="font-bold text-slate-900 block text-xs">Storefront Visibility</span>
+                    <span className="text-[11px] text-slate-500">
+                      Include in active customer-facing carousel rotation
+                    </span>
+                  </div>
                   <button
                     type="button"
-                    onClick={handleApplyUrl}
-                    className="px-4 py-2 bg-[#06163c] hover:bg-blue-900 text-white font-bold rounded-xl cursor-pointer text-xs"
+                    onClick={() => setIsActive(!isActive)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs ${
+                      isActive
+                        ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                        : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                    }`}
                   >
-                    Apply URL
+                    {isActive ? '✓ Published & Active' : 'Draft / Hidden'}
                   </button>
                 </div>
-                <p className="text-[10px] text-slate-500">
-                  Paste any public cloud asset URL or image link to use as the hero banner background.
-                </p>
               </div>
-            )}
-          </div>
-
-          {/* 2. Slide Headlines & Captions */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <label className="block font-bold text-slate-700 uppercase tracking-wider text-[11px] mb-1">
-                Slide Headline / Primary Title *
-              </label>
-              <input
-                type="text"
-                required
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="e.g. Modern Uniform Tailoring Showroom"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-900 focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs"
-              />
             </div>
 
-            <div>
-              <label className="block font-bold text-slate-700 uppercase tracking-wider text-[11px] mb-1">
-                Badge / Tag Ribbon
-              </label>
-              <input
-                type="text"
-                value={badge}
-                onChange={(e) => setBadge(e.target.value)}
-                placeholder="e.g. Kenyan Factory & Atelier"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs"
-              />
-            </div>
+            {/* Right Column (7 cols): Photography Source & Asset Selector */}
+            <div className="lg:col-span-7 xl:col-span-7 space-y-5">
+              <div className="bg-slate-50 p-4 sm:p-5 rounded-2xl border border-slate-200 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
+                  <div>
+                    <label className="font-bold text-slate-800 uppercase tracking-wider text-xs flex items-center gap-1.5">
+                      <ImageIcon className="w-4 h-4 text-blue-600" />
+                      <span>Banner Photography Source *</span>
+                    </label>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Select a factory preset, upload high-res imagery, or paste a web asset URL
+                    </p>
+                  </div>
 
-            <div>
-              <label className="block font-bold text-slate-700 uppercase tracking-wider text-[11px] mb-1">
-                SEO Alt Text (Accessibility)
-              </label>
-              <input
-                type="text"
-                value={alt}
-                onChange={(e) => setAlt(e.target.value)}
-                placeholder="e.g. Bespoke tailored blazers and corporate uniforms"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs"
-              />
-            </div>
+                  <div className="inline-flex p-1 bg-slate-200/80 rounded-xl text-xs font-semibold self-start sm:self-auto">
+                    <button
+                      type="button"
+                      onClick={() => setImageTab('presets')}
+                      className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                        imageTab === 'presets'
+                          ? 'bg-white text-[#06163c] shadow-xs font-bold'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Factory Presets ({PRESET_HERO_IMAGES.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setImageTab('upload')}
+                      className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                        imageTab === 'upload'
+                          ? 'bg-white text-[#06163c] shadow-xs font-bold'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Upload File
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setImageTab('url')}
+                      className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                        imageTab === 'url'
+                          ? 'bg-white text-[#06163c] shadow-xs font-bold'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      Direct Web URL
+                    </button>
+                  </div>
+                </div>
 
-            <div className="md:col-span-2">
-              <label className="block font-bold text-slate-700 uppercase tracking-wider text-[11px] mb-1">
-                Subtitle / Description Text
-              </label>
-              <textarea
-                rows={2}
-                value={subtitle}
-                onChange={(e) => setSubtitle(e.target.value)}
-                placeholder="e.g. Precision Tailoring & Bulk Institutional Uniform Manufacturing in Kenya"
-                className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none text-xs"
-              />
-            </div>
+                {/* Presets Grid */}
+                {imageTab === 'presets' && (
+                  <div className="space-y-3">
+                    {/* Category filter pills and Search */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                      <div className="flex flex-wrap gap-1.5">
+                        {['all', 'Panoramic', 'Showroom', 'School', 'Safety', 'Healthcare', 'Hospitality'].map(
+                          (cat) => (
+                            <button
+                              key={cat}
+                              type="button"
+                              onClick={() => setPresetCategory(cat)}
+                              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold capitalize transition-all cursor-pointer ${
+                                presetCategory === cat
+                                  ? 'bg-[#06163c] text-white shadow-xs'
+                                  : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'
+                              }`}
+                            >
+                              {cat}
+                            </button>
+                          )
+                        )}
+                      </div>
 
-            <div className="md:col-span-2 flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-200">
-              <div>
-                <span className="font-bold text-slate-900 block text-xs">Storefront Visibility</span>
-                <span className="text-[11px] text-slate-500">
-                  Slide is active and rotated in the customer-facing storefront carousel
-                </span>
+                      <div className="relative shrink-0 sm:w-48">
+                        <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" />
+                        <input
+                          type="text"
+                          placeholder="Search presets..."
+                          value={presetSearch}
+                          onChange={(e) => setPresetSearch(e.target.value)}
+                          className="w-full pl-8 pr-2.5 py-1 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 max-h-[460px] overflow-y-auto p-1 border border-slate-200 rounded-xl bg-slate-100/50">
+                      {filteredPresetImages.map((preset) => (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => setSrc(preset.src)}
+                          className={`relative h-28 rounded-xl overflow-hidden border-2 text-left group cursor-pointer transition-all ${
+                            src === preset.src
+                              ? 'border-blue-600 ring-2 ring-blue-500/40 shadow-lg scale-[1.02]'
+                              : 'border-white hover:border-slate-300 bg-slate-200'
+                          }`}
+                        >
+                          <img
+                            src={preset.src}
+                            alt={preset.name}
+                            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-300"
+                            referrerPolicy="no-referrer"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent p-2 flex flex-col justify-end">
+                            <span className="text-[10px] text-white font-bold truncate drop-shadow">
+                              {preset.name}
+                            </span>
+                            <span className="text-[9px] text-blue-200 font-medium">
+                              {preset.category}
+                            </span>
+                          </div>
+                          {src === preset.src && (
+                            <div className="absolute top-1.5 right-1.5 bg-blue-600 text-white rounded-full p-1 shadow-md">
+                              <Check className="w-3 h-3" />
+                            </div>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Upload File */}
+                {imageTab === 'upload' && (
+                  <div className="p-8 border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-2xl bg-white text-center transition-colors">
+                    {isCompressing ? (
+                      <div className="py-8 space-y-3">
+                        <Loader2 className="w-10 h-10 text-blue-600 animate-spin mx-auto" />
+                        <p className="font-bold text-slate-800 text-sm">Optimizing & compressing banner image for database sync...</p>
+                        <p className="text-xs text-slate-500">Preparing lightweight high-definition payload for instant global load.</p>
+                      </div>
+                    ) : (
+                      <div className="py-4 space-y-3">
+                        <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto shadow-xs border border-blue-100">
+                          <Upload className="w-7 h-7" />
+                        </div>
+                        <div>
+                          <p className="font-black text-slate-900 text-sm font-['Outfit']">Choose an image from your device</p>
+                          <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+                            High-resolution landscape photos recommended (1920×800 or 16:9). PNG, JPG, WebP. Auto-compressed for uniform cloud sync.
+                          </p>
+                        </div>
+                        <label className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#06163c] hover:bg-blue-900 text-white text-xs font-black rounded-xl cursor-pointer shadow-md transition-all active:scale-95">
+                          <span>Browse Local Files</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileUpload}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Custom URL */}
+                {imageTab === 'url' && (
+                  <div className="p-6 bg-white rounded-2xl border border-slate-200 space-y-4">
+                    <div>
+                      <label className="block font-bold text-slate-700 uppercase tracking-wider text-[11px] mb-1.5">
+                        Direct Image or Cloud Storage URL
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="url"
+                          placeholder="https://example.com/banner-photo.jpg"
+                          value={customUrlInput}
+                          onChange={(e) => setCustomUrlInput(e.target.value)}
+                          className="flex-1 px-3.5 py-2.5 text-xs bg-slate-50 border border-slate-300 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleApplyUrl}
+                          className="px-5 py-2.5 bg-[#06163c] hover:bg-blue-900 text-white font-bold rounded-xl cursor-pointer text-xs shrink-0 shadow-sm"
+                        >
+                          Apply URL
+                        </button>
+                      </div>
+                    </div>
+                    <p className="text-[11px] text-slate-500">
+                      Paste any public cloud asset URL or image link to use as the hero banner background.
+                    </p>
+                  </div>
+                )}
               </div>
-              <button
-                type="button"
-                onClick={() => setIsActive(!isActive)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer shadow-xs ${
-                  isActive
-                    ? 'bg-emerald-600 text-white hover:bg-emerald-700'
-                    : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
-                }`}
-              >
-                {isActive ? '✓ Published & Active' : 'Draft / Hidden'}
-              </button>
+
+              {/* Banner Photography Guidelines */}
+              <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/80 flex items-start gap-3 text-xs text-blue-950">
+                <Sparkles className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                <div className="space-y-1 text-[11px]">
+                  <p className="font-bold text-blue-900">Photography Standard for NASISI Uniforms</p>
+                  <p className="text-blue-800 leading-relaxed">
+                    Hero banners render across ultrawide desktop monitors down to mobile smartphones. For highest visual impact, keep subjects horizontally centered and ensure sufficient contrast with the bottom gradient overlay where titles appear.
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Modal Sticky Footer Actions */}
-          <div className="sticky bottom-0 z-20 bg-white/95 backdrop-blur-md pt-4 pb-2 border-t border-slate-200 flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 text-[11px] text-slate-500">
-              <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-              <span className="hidden sm:inline">
-                {isActive ? 'Will publish active on storefront' : 'Will save as hidden draft'}
+          <div className="sticky bottom-0 z-20 bg-white/95 backdrop-blur-md pt-4 pb-2 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5 text-[11px] text-slate-500">
+              <span className={`w-2.5 h-2.5 rounded-full ${isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+              <span className="font-semibold text-slate-700">
+                {isActive ? 'Will publish live on storefront' : 'Will save as hidden draft'}
               </span>
-              <span className="text-[10px] text-slate-400 hidden md:inline">• Ctrl+S / Cmd+S to save</span>
+              <span className="text-[10px] text-slate-400 hidden sm:inline">• Ctrl+S / Cmd+S to save • Esc to close</span>
             </div>
 
             <div className="flex items-center gap-2.5">
@@ -1814,7 +1920,7 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
 
               <button
                 type="submit"
-                className="px-6 py-2.5 bg-[#06163c] hover:bg-blue-900 text-white font-extrabold rounded-xl shadow-md transition-all cursor-pointer text-xs flex items-center gap-2 active:scale-95"
+                className="px-6 py-2.5 bg-[#06163c] hover:bg-blue-900 active:bg-blue-950 text-white font-extrabold rounded-xl shadow-md transition-all cursor-pointer text-xs flex items-center gap-2 active:scale-95"
               >
                 <Save className="w-4 h-4 text-emerald-400" />
                 <span>{slide ? 'Save Slide Updates' : 'Publish Banner Slide'}</span>
@@ -1823,6 +1929,7 @@ const ERPEditHeroSlideModal: React.FC<ERPEditHeroSlideModalProps> = ({
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };

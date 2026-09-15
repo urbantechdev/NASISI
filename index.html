@@ -4,6 +4,38 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
+    <!-- Global Extension & Benign Channel Error Guard -->
+    <script>
+      (function() {
+        function isBenignError(err) {
+          if (!err) return false;
+          var msg = typeof err === 'string' ? err : (err.message || String(err) || '');
+          return (
+            msg.indexOf('Could not establish connection. Receiving end does not exist') !== -1 ||
+            msg.indexOf('Receiving end does not exist') !== -1 ||
+            msg.indexOf('ResizeObserver loop') !== -1 ||
+            msg.indexOf('message channel closed') !== -1
+          );
+        }
+        window.addEventListener('unhandledrejection', function(event) {
+          if (isBenignError(event.reason)) {
+            event.preventDefault();
+            if (typeof event.stopImmediatePropagation === 'function') {
+              event.stopImmediatePropagation();
+            }
+          }
+        }, true);
+        window.addEventListener('error', function(event) {
+          if (isBenignError(event.error) || isBenignError(event.message)) {
+            event.preventDefault();
+            if (typeof event.stopImmediatePropagation === 'function') {
+              event.stopImmediatePropagation();
+            }
+          }
+        }, true);
+      })();
+    </script>
+
     <!-- Primary SEO Meta Tags -->
     <title>NASISI Uniforms & Custom Knitwear | Uniforms, Embroidery & Screen Printing Nairobi</title>
     <meta name="title" content="NASISI Uniforms & Custom Knitwear | Uniforms, Embroidery & Screen Printing Nairobi" />

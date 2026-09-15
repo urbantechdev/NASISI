@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useERP } from '../../context/ERPContext';
 import { AdminUser, AdminRole } from '../../types';
 import {
@@ -278,8 +279,13 @@ export const ERPUserModal: React.FC<ERPUserModalProps> = ({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-xs overflow-y-auto">
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[999999] flex items-center justify-center p-3 sm:p-4 bg-slate-950/80 backdrop-blur-xs overflow-y-auto"
+      style={{ zIndex: 999999 }}
+    >
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -708,6 +714,7 @@ export const ERPUserModal: React.FC<ERPUserModalProps> = ({
           </div>
         </form>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 };

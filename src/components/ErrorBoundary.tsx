@@ -22,10 +22,26 @@ export class ErrorBoundary extends (React.Component as any) {
   }
 
   public static getDerivedStateFromError(error: Error): State {
+    const msg = error?.message || String(error);
+    if (
+      msg.includes('Could not establish connection. Receiving end does not exist') ||
+      msg.includes('Receiving end does not exist') ||
+      msg.includes('ResizeObserver loop')
+    ) {
+      return { hasError: false, error: null };
+    }
     return { hasError: true, error };
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    const msg = error?.message || String(error);
+    if (
+      msg.includes('Could not establish connection. Receiving end does not exist') ||
+      msg.includes('Receiving end does not exist') ||
+      msg.includes('ResizeObserver loop')
+    ) {
+      return;
+    }
     console.error('Uncaught application error caught by ErrorBoundary:', error, errorInfo);
   }
 

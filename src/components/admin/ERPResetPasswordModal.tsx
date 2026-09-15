@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useERP } from '../../context/ERPContext';
 import { AdminUser } from '../../types';
 import {
@@ -80,8 +81,13 @@ export const ERPResetPasswordModal: React.FC<ERPResetPasswordModalProps> = ({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-xs">
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div
+      className="fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs"
+      style={{ zIndex: 999999 }}
+    >
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -208,6 +214,7 @@ export const ERPResetPasswordModal: React.FC<ERPResetPasswordModalProps> = ({
           </div>
         </form>
       </motion.div>
-    </div>
+    </div>,
+    document.body
   );
 };

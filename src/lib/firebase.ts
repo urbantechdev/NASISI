@@ -50,14 +50,14 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 
 export async function testFirestoreConnection(): Promise<boolean> {
   try {
-    await getDocFromServer(doc(db, 'test', 'connection'));
+    await getDoc(doc(db, 'test', 'connection'));
     return true;
   } catch (error) {
-    if (error instanceof Error && error.message.includes('the client is offline')) {
+    const err = error as { code?: string; message?: string };
+    if (err?.message && err.message.includes('the client is offline')) {
       console.warn('Firebase configuration notice: client is offline.');
-      return false;
     }
-    return true;
+    return false;
   }
 }
 

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { UniformProduct, UniformCategory } from '../../types';
 import { useERP } from '../../context/ERPContext';
 import { formatKsh } from '../../utils/currency';
@@ -597,9 +598,14 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
     { step: 5, label: '5. Copy & Target Audience', short: 'Overview', icon: FileText },
   ];
 
-  return (
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
     <AnimatePresence>
-      <div className="fixed inset-0 z-[100000] overflow-y-auto bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6">
+      <div
+        className="fixed inset-0 z-[999999] overflow-y-auto bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-2 sm:p-4 md:p-6"
+        style={{ zIndex: 999999 }}
+      >
         {/* WIDE MODAL CONTAINER (max-w-7xl) */}
         <motion.div
           initial={{ opacity: 0, scale: 0.96, y: 15 }}
@@ -1912,6 +1918,7 @@ export const ERPProductEditModal: React.FC<ERPProductEditModalProps> = ({
           </form>
         </motion.div>
       </div>
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 };
